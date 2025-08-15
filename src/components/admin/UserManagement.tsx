@@ -34,7 +34,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({
   onDeleteUser,
   onViewUserChats
 }) => {
-  const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [showActions, setShowActions] = useState<string | null>(null);
 
   const getStatusBadge = (status: User['status']) => {
@@ -89,11 +88,6 @@ export const UserManagement: React.FC<UserManagementProps> = ({
             User Management
           </CardTitle>
           <div className="flex items-center gap-2">
-            {selectedUsers.length > 0 && (
-              <Button variant="outline" size="sm">
-                Bulk Actions ({selectedUsers.length})
-              </Button>
-            )}
             <Button size="sm">
               Export Users
             </Button>

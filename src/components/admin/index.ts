@@ -22,3 +22,4 @@ export { ChatVisualization } from './ChatVisualization';
 export { StatisticsOverview } from './StatisticsOverview';
 export { SystemSettingsPanel as SystemSettings } from './SystemSettings';
 export { AdminPromptManagement } from './AdminPromptManagement';
+export { default as DataConnectionSetup } from '../DataConnectionSetup';

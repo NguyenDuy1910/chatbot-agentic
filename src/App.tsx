@@ -29,33 +29,38 @@ function App() {
   }, [sessions.length, handleNewChat]);
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-background via-background to-muted/10 overflow-hidden">
+    <div className="flex h-screen bg-gradient-to-br from-[#f8fafc] via-[#e0e7ef] to-[#f1f5f9] overflow-hidden relative">
       {/* Animated background elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-32 lg:w-64 h-32 lg:h-64 bg-primary/5 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-24 lg:w-48 h-24 lg:h-48 bg-purple-500/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 right-1/3 w-16 lg:w-32 h-16 lg:h-32 bg-blue-500/5 rounded-full blur-2xl animate-float" style={{ animationDelay: '2s' }}></div>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[20%] left-[20%] w-40 lg:w-64 aspect-square bg-primary/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-[30%] right-[20%] w-32 lg:w-48 aspect-square bg-purple-400/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-[45%] right-[35%] w-24 lg:w-32 aspect-square bg-blue-400/10 rounded-full blur-2xl animate-float" style={{ animationDelay: '2s' }}></div>
       </div>
 
-      {/* Mobile-first responsive layout */}
-      <div className="hidden lg:block">
-        <Sidebar
-          sessions={sessions}
-          currentSessionId={currentSessionId}
-          onSelectSession={handleSelectSession}
-          onDeleteSession={handleDeleteSession}
-          onNewChat={handleNewChat}
-        />
-      </div>
+      {/* Sidebar */}
+      <aside className="hidden lg:block h-full z-10 p-4">
+        <div className="h-full bg-white/80 backdrop-blur-md shadow-xl border-r border-border/30 rounded-3xl flex flex-col transition-all duration-300">
+          <Sidebar
+            sessions={sessions}
+            currentSessionId={currentSessionId}
+            onSelectSession={handleSelectSession}
+            onDeleteSession={handleDeleteSession}
+            onNewChat={handleNewChat}
+          />
+        </div>
+      </aside>
 
-      <div className="flex-1 relative z-10 min-w-0">
-        <ChatArea
-          messages={messages}
-          isLoading={isLoading}
-          onSendMessage={handleSendMessage}
-          onStop={stop}
-        />
-      </div>
+      {/* Main chat area */}
+      <main className="flex-1 relative z-10 min-w-0 p-4">
+        <div className="w-full h-full bg-white/70 backdrop-blur-lg rounded-3xl shadow-2xl border border-border/20 flex flex-col overflow-hidden transition-all duration-300">
+          <ChatArea
+            messages={messages}
+            isLoading={isLoading}
+            onSendMessage={handleSendMessage}
+            onStop={stop}
+          />
+        </div>
+      </main>
 
       {/* Mobile sidebar overlay - implement if needed */}
       {/* TODO: Add mobile sidebar toggle and overlay */}

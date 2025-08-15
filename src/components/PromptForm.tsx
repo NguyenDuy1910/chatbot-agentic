@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
 import { X, Plus } from 'lucide-react';
-import { cn } from '@/lib/utils';
+
 
 interface PromptFormProps {
   prompt?: Prompt;

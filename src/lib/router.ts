@@ -20,6 +20,12 @@ export const adminRoutes: Record<string, AdminRoute> = {
     description: 'Main dashboard with statistics and recent activity',
     component: 'DashboardOverview'
   },
+  connections: {
+    path: '/admin/connections',
+    title: 'Data Connections',
+    description: 'Set up and manage data connections',
+    component: 'DataConnectionSetup'
+  },
   users: {
     path: '/admin/users',
     title: 'User Management',
@@ -65,6 +71,7 @@ export class AdminRouter {
     if (path.startsWith('/admin/prompts')) return 'prompts';
     if (path.startsWith('/admin/settings')) return 'settings';
     if (path.startsWith('/admin/uris')) return 'uris';
+    if (path.startsWith('/admin/connections')) return 'connections';
     
     return 'overview'; // default
   }

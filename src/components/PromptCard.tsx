@@ -1,11 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Prompt } from '@/types/prompt';
-import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
-import { Edit3, Trash2, Copy, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Edit2, Trash2, Copy, Play } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
-interface PromptCardProps {
+export interface PromptCardProps {
   prompt: Prompt;
   onEdit: (prompt: Prompt) => void;
   onDelete: (id: string) => void;
@@ -18,121 +17,112 @@ export const PromptCard: React.FC<PromptCardProps> = ({
   onEdit,
   onDelete,
   onUse,
-  onCopy
+  onCopy,
 }) => {
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      general: 'bg-blue-100 text-blue-800',
-      coding: 'bg-green-100 text-green-800',
-      creative: 'bg-purple-100 text-purple-800',
-      analysis: 'bg-orange-100 text-orange-800',
-      conversation: 'bg-pink-100 text-pink-800',
-      custom: 'bg-gray-100 text-gray-800',
-    };
-    return colors[category as keyof typeof colors] || colors.custom;
-  };
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className={cn(
-      'bg-card border rounded-lg p-4 space-y-3 transition-all hover:shadow-md',
-      !prompt.isActive && 'opacity-60'
-    )}>
-      <div className="flex items-start justify-between">
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-medium text-card-foreground truncate">
-              {prompt.name}
-            </h3>
-            <Badge 
-              variant="outline" 
-              className={cn('text-xs', getCategoryColor(prompt.category))}
-            >
-              {prompt.category}
-            </Badge>
-            {!prompt.isActive && (
-              <Badge variant="secondary" className="text-xs">
-                Inactive
-              </Badge>
-            )}
-          </div>
-          
-          {prompt.description && (
-            <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
+    <div 
+      className={cn(
+        "group relative rounded-xl overflow-hidden backdrop-blur-sm border border-border/30 transition-all duration-300",
+        isExpanded ? "shadow-lg ring-2 ring-primary/20" : "hover:shadow-md hover:scale-102"
+      )}
+      onClick={() => setIsExpanded(!isExpanded)}
+    >
+      <div className="p-4 bg-gradient-to-r from-background/80 to-muted/20">
+        <div className="flex justify-between items-start gap-4">
+          <div className="min-w-0 flex-1">
+            <h3 className="font-medium text-foreground truncate mb-1">{prompt.name}</h3>
+            <div className={cn(
+              "text-sm text-muted-foreground overflow-hidden transition-all duration-300",
+              isExpanded ? "" : "line-clamp-1"
+            )}>
               {prompt.description}
-            </p>
+            </div>
+          </div>
+          <div className="flex gap-1.5 flex-shrink-0">
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-7 w-7 transition-all duration-200",
+                "text-primary hover:text-primary hover:bg-primary/10",
+                !isExpanded && "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100"
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                onUse(prompt);
+              }}
+            >
+              <Play className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-7 w-7 transition-all duration-200",
+                "text-muted-foreground hover:text-foreground hover:bg-muted/50",
+                !isExpanded && "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100"
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(prompt);
+              }}
+            >
+              <Edit2 className="h-3.5 w-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "h-7 w-7 transition-all duration-200",
+                "text-destructive/80 hover:text-destructive hover:bg-destructive/10",
+                !isExpanded && "opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100"
+              )}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(prompt.id);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+
+        <div className={cn(
+          "space-y-3 transition-all duration-300",
+          isExpanded ? "opacity-100 mt-4" : "opacity-0 mt-0 pointer-events-none h-0"
+        )}>
+          {prompt.tags && prompt.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {prompt.tags.map(tag => (
+                <span key={tag} className="inline-flex text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                  {tag}
+                </span>
+              ))}
+            </div>
           )}
           
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <BarChart3 className="h-3 w-3" />
-              Used {prompt.usageCount} times
-            </span>
-            <span>
-              Updated {prompt.updatedAt.toLocaleDateString()}
-            </span>
+          <div className="text-sm text-muted-foreground">{prompt.content}</div>
+          
+          <div className="flex items-center justify-between border-t border-border/50 pt-3">
+            <div className="text-xs text-muted-foreground">
+              Last updated: {prompt.updatedAt.toLocaleDateString()}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs gap-1.5 text-primary/80 hover:text-primary hover:bg-primary/10"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCopy(prompt.content);
+              }}
+            >
+              <Copy className="h-3 w-3" />
+              Copy
+            </Button>
           </div>
         </div>
-        
-        <div className="flex items-center gap-1 ml-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => onCopy(prompt.content)}
-            title="Copy prompt"
-          >
-            <Copy className="h-3 w-3" />
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => onEdit(prompt)}
-            title="Edit prompt"
-          >
-            <Edit3 className="h-3 w-3" />
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive hover:text-destructive"
-            onClick={() => onDelete(prompt.id)}
-            title="Delete prompt"
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <div className="bg-muted/50 rounded-md p-3">
-          <p className="text-sm text-card-foreground line-clamp-3">
-            {prompt.content}
-          </p>
-        </div>
-        
-        {prompt.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
-            {prompt.tags.map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs">
-                #{tag}
-              </Badge>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="flex justify-between items-center pt-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onUse(prompt)}
-          disabled={!prompt.isActive}
-        >
-          Use Prompt
-        </Button>
       </div>
     </div>
   );

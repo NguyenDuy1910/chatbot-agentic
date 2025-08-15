@@ -5,10 +5,8 @@ import { PromptForm } from '@/components/PromptForm';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { Badge } from '@/components/ui/Badge';
 import { 
   Plus, 
-  Search, 
   Filter, 
   Download, 
   Upload,
@@ -16,8 +14,6 @@ import {
   Zap,
   TrendingUp 
 } from 'lucide-react';
-import { promptAPI } from '@/lib/promptAPI';
-import { cn } from '@/lib/utils';
 
 interface PromptManagerProps {
   onSelectPrompt?: (prompt: Prompt) => void;
@@ -202,7 +198,7 @@ export const PromptManager: React.FC<PromptManagerProps> = ({
           />
         )}
 
-        <div className="grid gap-3">
+        <div className="grid gap-4 p-4">
           {filteredPrompts.slice(0, 6).map((prompt) => (
             <PromptCard
               key={prompt.id}
@@ -364,7 +360,7 @@ export const PromptManager: React.FC<PromptManagerProps> = ({
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 p-4">
             {filteredPrompts.map((prompt) => (
               <PromptCard
                 key={prompt.id}

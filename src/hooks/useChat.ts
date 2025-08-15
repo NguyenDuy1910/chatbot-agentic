@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { useChat as useVercelChat } from '@ai-sdk/react';
+import { useChat as useVercelChat } from 'ai/react';
 import { Message, FileAttachment, ChatSession } from '@/types/chat';
 
 // Convert Vercel AI message to our Message type
@@ -23,6 +23,19 @@ export interface UseChatOptions {
   onResponse?: (response: Response) => void;
   onFinish?: (message: Message) => void;
   onError?: (error: Error) => void;
+}
+
+export interface UIDataTypes {
+  attachments?: FileAttachment[];
+}
+
+interface UITools {}
+
+interface UIMessage {
+  id: string;
+  content: string;
+  role: 'user' | 'assistant';
+  timestamp: Date;
 }
 
 export const useChat = (options: UseChatOptions = {}) => {
@@ -126,7 +139,7 @@ export const useChat = (options: UseChatOptions = {}) => {
       createdAt: new Date(),
     }, {
       data: {
-        attachments,
+        attachments: attachments ? JSON.stringify(attachments) : '',
       },
     });
   }, [currentSessionId, handleNewChat, append]);

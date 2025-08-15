@@ -23,14 +23,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'chats' | 'prompts' | 'database'>('chats');
   return (
-    <div className="w-80 max-w-[90vw] lg:max-w-none bg-gradient-to-b from-background to-muted/30 border-r border-border/50 flex flex-col h-full backdrop-blur-sm">
+    <div className="w-80 max-w-[90vw] lg:max-w-none bg-gradient-to-b from-background to-muted/30 border-r border-border/50 flex flex-col h-full backdrop-blur-sm overflow-x-hidden">
       {/* Header with tabs */}
-      <div className="p-3 lg:p-4 border-b border-border/50 bg-gradient-to-r from-background/80 to-muted/20 backdrop-blur-sm">
-        <div className="flex rounded-xl bg-muted/30 p-1 backdrop-blur-sm border border-border/30">
+      <div className="px-4 py-3 border-b border-border/50 bg-gradient-to-r from-background/80 to-muted/20 backdrop-blur-sm shrink-0">
+        <div className="flex rounded-xl bg-muted/30 p-1.5 backdrop-blur-sm border border-border/30">
           <button
             onClick={() => setActiveTab('chats')}
             className={cn(
-              'flex-1 flex items-center justify-center gap-1 lg:gap-2 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm font-medium transition-all duration-300',
+              'flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 min-w-0 whitespace-nowrap overflow-hidden text-ellipsis',
               activeTab === 'chats'
                 ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-105'
                 : 'text-muted-foreground hover:text-foreground hover:bg-background/50 hover:scale-102'
@@ -42,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <button
             onClick={() => setActiveTab('prompts')}
             className={cn(
-              'flex-1 flex items-center justify-center gap-1 lg:gap-2 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm font-medium transition-all duration-300',
+              'flex-1 flex items-center justify-center gap-1 lg:gap-2 px-2 lg:px-3 py-2 rounded-lg text-xs lg:text-sm font-medium transition-all duration-300 min-w-0 whitespace-nowrap overflow-hidden text-ellipsis',
               activeTab === 'prompts'
                 ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/30 scale-105'
                 : 'text-muted-foreground hover:text-foreground hover:bg-background/50 hover:scale-102'
@@ -69,23 +69,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Tab Content */}
       <div className="flex-1 overflow-hidden">
         {activeTab === 'chats' ? (
-          <div className="h-full flex flex-col fade-in">
-            <div className="p-3 lg:p-4 border-b border-border/30">
+          <div className="h-full flex flex-col fade-in overflow-hidden ">
+            <div className="px-4 py-3 border-b border-border/30">
               <Button
                 onClick={onNewChat}
-                className="w-full justify-start gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-105 transition-all duration-300 text-sm lg:text-base"
+                className="w-full justify-start gap-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/20 hover:shadow-primary/30 hover:scale-102 transition-all duration-300 text-sm"
               >
-                <MessageSquare className="h-3 w-3 lg:h-4 lg:w-4" />
-                New Chat
+                <MessageSquare className="h-4 w-4" />
               </Button>
             </div>
             
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar px-4 py-2">
               {sessions.length === 0 ? (
-                <div className="text-center text-muted-foreground p-4 lg:p-8 fade-in">
-                  <MessageSquare className="h-8 w-8 lg:h-12 lg:w-12 mx-auto mb-4 opacity-50 animate-float" />
+                <div className="text-center text-muted-foreground py-8 fade-in">
+                  <MessageSquare className="h-10 w-10 mx-auto mb-4 opacity-50 animate-float" />
                   <p className="text-sm">No conversations yet</p>
-                  <p className="text-xs mt-2 opacity-70 hidden lg:block">Start a new chat to get started</p>
+                  <p className="text-xs mt-2 opacity-70">Start a new chat to get started</p>
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -102,8 +101,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       onClick={() => onSelectSession(session.id)}
                     >
                       <div className="p-3">
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate mb-1">
+                        <div className="flex-1 min-w-0 pr-8">
+                          <p className="text-sm font-medium truncate mb-1.5">
                             {session.title}
                           </p>
                           <p className="text-xs text-muted-foreground">
@@ -130,17 +129,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           </div>
         ) : activeTab === 'prompts' ? (
-          <div className="h-full slide-in-right">
+          <div className="h-full slide-in-right overflow-hidden">
             <PromptManager compact />
           </div>
         ) : (
-          <div className="h-full slide-in-left">
+          <div className="h-full slide-in-left overflow-hidden">
             <DatabaseManager compact />
           </div>
         )}
       </div>
       
-      <div className="p-4 border-t border-border/30 bg-gradient-to-r from-muted/20 to-background/50 backdrop-blur-sm">
+      <div className="px-4 py-3 border-t border-border/30 bg-gradient-to-r from-muted/20 to-background/50 backdrop-blur-sm shrink-0">
         <div className="text-xs text-muted-foreground text-center gradient-text font-medium">
           Powered by Vikki ChatBot ✨
         </div>

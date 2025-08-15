@@ -241,7 +241,7 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({
         )}
 
         <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="grid gap-3">
+          <div className="grid gap-4 p-4">
             {filteredConnections.slice(0, 3).map((connection) => (
               <DatabaseConnectionCard
                 key={connection.id}
@@ -429,7 +429,7 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 lg:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 p-4">
                 {filteredConnections.map((connection) => (
                   <DatabaseConnectionCard
                     key={connection.id}
@@ -452,8 +452,8 @@ export const DatabaseManager: React.FC<DatabaseManagerProps> = ({
               isConnected: c.isConnected
             }))}
             activeConnectionId={state.activeConnectionId}
-            onConnectionChange={(id) => setState(prev => ({ ...prev, activeConnectionId: id }))}
-            onGenerateSQL={async (_request) => {
+            onConnectionChange={(id: string) => setState(prev => ({ ...prev, activeConnectionId: id }))}
+            onGenerateSQL={async (_request: string) => {
               // Mock Text-to-SQL generation
               const mockResponses = [
                 {
@@ -480,7 +480,7 @@ LIMIT 10;`,
               
               return mockResponses[Math.floor(Math.random() * mockResponses.length)];
             }}
-            onExecuteSQL={async (_sql) => {
+            onExecuteSQL={async (_sql: string) => {
               // Mock SQL execution
               return {
                 results: {
