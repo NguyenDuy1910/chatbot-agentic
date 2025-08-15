@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# Julius AI Chatbot with Prompt Management - Demo Script
+# Vikki ChatBot with Prompt Management - Demo Script
 # This script demonstrates the key features of the prompt management system
 
-echo "🚀 Julius AI Chatbot - Prompt Management Demo"
+echo "🚀 Vikki ChatBot - Prompt Management Demo"
 echo "============================================="
 echo ""
 

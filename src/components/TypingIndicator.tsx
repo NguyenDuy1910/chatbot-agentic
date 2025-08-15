@@ -13,7 +13,7 @@ export const TypingIndicator: React.FC<TypingIndicatorProps> = ({ className }) =
         <span></span>
         <span></span>
       </div>
-      <span className="text-sm text-muted-foreground ml-2">Julius is thinking...</span>
+      <span className="text-sm text-muted-foreground ml-2">Vikki is thinking...</span>
     </div>
   );
 };

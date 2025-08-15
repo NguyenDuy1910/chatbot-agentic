@@ -20,7 +20,7 @@ interface ChatInputProps {
 export const ChatInput: React.FC<ChatInputProps> = ({
   onSendMessage,
   disabled = false,
-  placeholder = "Ask Julius anything...",
+  placeholder = "Ask Vikki anything...",
   onPromptSelect,
   onSQLQuery,
   activeConnection

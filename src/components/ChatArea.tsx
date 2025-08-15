@@ -4,18 +4,21 @@ import { Prompt } from '@/types/prompt';
 import { MessageBubble } from '@/components/MessageBubble';
 import { TypingIndicator } from '@/components/TypingIndicator';
 import { ChatInput } from '@/components/ChatInput';
-import { Sparkles, Zap, Brain, Database } from 'lucide-react';
+import { Sparkles, Zap, Brain, Database, Square } from 'lucide-react';
+import { Button } from '@/components/ui/Button';
 
 interface ChatAreaProps {
   messages: Message[];
   isLoading: boolean;
   onSendMessage: (message: string, attachments?: FileAttachment[]) => void;
+  onStop?: () => void;
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
   messages,
   isLoading,
-  onSendMessage
+  onSendMessage,
+  onStop
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -46,7 +49,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
         <div className="flex items-center justify-between">
           <div className="fade-in min-w-0 flex-1">
             <h1 className="text-xl lg:text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              Julius AI ✨
+              Vikki ChatBot ✨
             </h1>
             <p className="text-xs lg:text-sm text-muted-foreground mt-1">
               Your intelligent assistant with superpowers
@@ -74,7 +77,7 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
               </div>
               
               <h2 className="text-2xl lg:text-3xl font-bold mb-2 lg:mb-3 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-                Welcome to Julius AI
+                Welcome to Vikki ChatBot
               </h2>
               <p className="text-muted-foreground mb-6 lg:mb-8 text-base lg:text-lg leading-relaxed px-4">
                 I'm your AI-powered assistant, ready to help with anything from answering questions 
@@ -110,7 +113,22 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
                 <MessageBubble message={message} />
               </div>
             ))}
-            {isLoading && <TypingIndicator />}
+            {isLoading && (
+              <div className="flex items-center justify-between px-4 py-2">
+                <TypingIndicator />
+                {onStop && (
+                  <Button
+                    onClick={onStop}
+                    variant="outline"
+                    size="sm"
+                    className="ml-4 flex items-center gap-2 text-muted-foreground hover:text-foreground"
+                  >
+                    <Square className="w-3 h-3" />
+                    Stop
+                  </Button>
+                )}
+              </div>
+            )}
             <div ref={messagesEndRef} />
           </div>
         )}

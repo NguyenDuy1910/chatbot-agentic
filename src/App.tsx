@@ -1,124 +1,32 @@
-import { useState, useEffect } from 'react';
-import { ChatSession, Message, FileAttachment } from '@/types/chat';
+import { useEffect } from 'react';
 import { Sidebar } from '@/components/Sidebar';
 import { ChatArea } from '@/components/ChatArea';
+import { useChat } from '@/hooks/useChat';
 
 function App() {
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const currentSession = sessions.find(s => s.id === currentSessionId);
-  const messages = currentSession?.messages || [];
-
-  // Generate a simple ID
-  const generateId = () => Math.random().toString(36).substr(2, 9);
-
-  // Create a new chat session
-  const createNewSession = (): ChatSession => {
-    return {
-      id: generateId(),
-      title: 'New Chat',
-      messages: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-  };
-
-  // Handle new chat
-  const handleNewChat = () => {
-    const newSession = createNewSession();
-    setSessions(prev => [newSession, ...prev]);
-    setCurrentSessionId(newSession.id);
-  };
-
-  // Handle session selection
-  const handleSelectSession = (sessionId: string) => {
-    setCurrentSessionId(sessionId);
-  };
-
-  // Handle session deletion
-  const handleDeleteSession = (sessionId: string) => {
-    setSessions(prev => prev.filter(s => s.id !== sessionId));
-    if (currentSessionId === sessionId) {
-      setCurrentSessionId(null);
-    }
-  };
-
-  // Handle sending message
-  const handleSendMessage = async (content: string, attachments?: FileAttachment[]) => {
-    if (!currentSessionId) {
-      handleNewChat();
-      return;
-    }
-
-    const userMessage: Message = {
-      id: generateId(),
-      content,
-      role: 'user',
-      timestamp: new Date(),
-      attachments: attachments || undefined,
-    };
-
-    // Add user message
-    setSessions(prev => prev.map(session => 
-      session.id === currentSessionId 
-        ? {
-            ...session,
-            messages: [...session.messages, userMessage],
-            title: session.messages.length === 0 ? content.slice(0, 50) : session.title,
-            updatedAt: new Date(),
-          }
-        : session
-    ));
-
-    setIsLoading(true);
-
-    try {
-      // Simulate API call - replace with actual backend integration
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-      
-      let responseContent = `I understand you're asking about: "${content}". This is a demo response from Julius AI.`;
-      
-      if (attachments && attachments.length > 0) {
-        const fileNames = attachments.map(att => att.name).join(', ');
-        responseContent += ` I can see you've uploaded ${attachments.length} file${attachments.length > 1 ? 's' : ''}: ${fileNames}. In a real implementation, I would analyze these files and provide insights based on their content.`;
-      } else {
-        responseContent += ` In a real implementation, this would be connected to your backend API that processes the message and returns an appropriate AI response.`;
-      }
-      
-      const assistantMessage: Message = {
-        id: generateId(),
-        content: responseContent,
-        role: 'assistant',
-        timestamp: new Date(),
-      };
-
-      // Add assistant message
-      setSessions(prev => prev.map(session => 
-        session.id === currentSessionId 
-          ? {
-              ...session,
-              messages: [...session.messages, assistantMessage],
-              updatedAt: new Date(),
-            }
-          : session
-      ));
-
-    } catch (error) {
-      console.error('Failed to send message:', error);
-      // Handle error - you could show a toast notification here
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    sessions,
+    currentSessionId,
+    messages,
+    isLoading,
+    handleNewChat,
+    handleSelectSession,
+    handleDeleteSession,
+    handleSendMessage,
+    stop,
+  } = useChat({
+    onError: (error) => {
+      console.error('Chat error:', error);
+      // You can add toast notifications here
+    },
+  });
 
   // Initialize with a default session if none exist
   useEffect(() => {
     if (sessions.length === 0) {
       handleNewChat();
     }
-  }, []);
+  }, [sessions.length, handleNewChat]);
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-background via-background to-muted/10 overflow-hidden">
@@ -145,6 +53,7 @@ function App() {
           messages={messages}
           isLoading={isLoading}
           onSendMessage={handleSendMessage}
+          onStop={stop}
         />
       </div>
 

@@ -142,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       
       <div className="p-4 border-t border-border/30 bg-gradient-to-r from-muted/20 to-background/50 backdrop-blur-sm">
         <div className="text-xs text-muted-foreground text-center gradient-text font-medium">
-          Powered by Julius AI ✨
+          Powered by Vikki ChatBot ✨
         </div>
       </div>
     </div>

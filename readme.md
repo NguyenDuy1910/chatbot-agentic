@@ -1,6 +1,6 @@
-# Julius AI - Chatbot Frontend with Prompt Management
+# Vikki ChatBot - Frontend with Prompt Management
 
-A modern, responsive chatbot frontend similar to Julius AI, built with React, TypeScript, and Tailwind CSS. Now featuring comprehensive **Prompt Management** capabilities for AI agents.
+A modern, responsive chatbot frontend - Vikki ChatBot, built with React, TypeScript, and Tailwind CSS. Now featuring comprehensive **Prompt Management** capabilities for AI agents.
 
 ## 🚀 New Features - Prompt Management
 
@@ -22,7 +22,7 @@ A modern, responsive chatbot frontend similar to Julius AI, built with React, Ty
 
 ## Features
 
-- 🤖 **Modern Chat Interface** - Clean, intuitive design similar to Julius AI
+- 🤖 **Modern Chat Interface** - Clean, intuitive design for Vikki ChatBot
 - 💬 **Real-time Messaging** - Smooth chat experience with typing indicators
 - 📱 **Responsive Design** - Works perfectly on desktop and mobile
 - 🎨 **Beautiful UI** - Modern design with dark/light theme support
