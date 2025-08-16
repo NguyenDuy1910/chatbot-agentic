@@ -125,3 +125,4 @@ storybook-static/
 # API keys and secrets (be extra careful with these)
 secrets.json
 config/secrets/
+memory-bank/
