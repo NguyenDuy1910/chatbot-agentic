@@ -1,286 +1,137 @@
-# Vikki ChatBot - Frontend with Prompt Management
+# Vikki ChatBot - AI Agentic Chatbot
 
-A modern, responsive chatbot frontend - Vikki ChatBot, built with React, TypeScript, and Tailwind CSS. Now featuring comprehensive **Prompt Management** capabilities for AI agents.
+Một ứng dụng chatbot hiện đại được xây dựng với React, TypeScript, và Tailwind CSS, tích hợp quản lý prompt và kết nối database.
 
-## 🚀 New Features - Prompt Management
+## 🚀 Tính năng chính
 
-### ✨ Advanced Prompt System
-- 📝 **Create & Edit Prompts** - Build reusable prompt templates with variables
-- 🏷️ **Categorization** - Organize prompts by category (General, Coding, Creative, Analysis, etc.)
-- 🔍 **Smart Search & Filter** - Find prompts quickly with search and category filters
-- 📊 **Usage Analytics** - Track which prompts are most effective
-- 🎯 **Template Variables** - Dynamic prompts with `{variable_name}` placeholders
-- 🏃‍♂️ **Quick Access** - One-click prompt insertion from chat interface
+- 🤖 **Giao diện chat hiện đại** - Thiết kế sạch sẽ, trực quan
+- 💬 **Tin nhắn thời gian thực** - Trải nghiệm chat mượt mà
+- 📱 **Responsive Design** - Hoạt động tốt trên mọi thiết bị
+- 🧠 **Quản lý Prompt** - Tạo và quản lý prompt templates
+- 🔗 **Kết nối Database** - Quản lý nhiều kết nối database
+- 👤 **Xác thực người dùng** - Hệ thống đăng nhập/đăng ký
+- ⚙️ **Quản trị hệ thống** - Panel admin cho quản lý
 
-### 📋 Prompt Categories
-- **General** - All-purpose prompts for various tasks
-- **Coding** - Programming assistance, code review, debugging
-- **Creative** - Writing, brainstorming, content creation
-- **Analysis** - Data analysis, research, insights
-- **Conversation** - Chat enhancement, role-playing
-- **Custom** - User-defined specialized prompts
+## 🛠️ Tech Stack
 
-## Features
+- **Frontend**: React 18 + TypeScript + Vite
+- **Styling**: Tailwind CSS
+- **Backend**: Python FastAPI
+- **Database**: PostgreSQL/MySQL
+- **Authentication**: JWT
 
-- 🤖 **Modern Chat Interface** - Clean, intuitive design for Vikki ChatBot
-- 💬 **Real-time Messaging** - Smooth chat experience with typing indicators
-- 📱 **Responsive Design** - Works perfectly on desktop and mobile
-- 🎨 **Beautiful UI** - Modern design with dark/light theme support
-- 📁 **Session Management** - Multiple chat sessions with sidebar navigation
-- ⚡ **Fast Performance** - Built with Vite for lightning-fast development
-- 🔌 **Backend Ready** - Easy integration with your Python backend
-- 🧠 **Prompt Management** - Complete prompt lifecycle management
-- 🎯 **Template System** - Dynamic prompts with variable substitution
+## 📁 Cấu trúc Project
 
-## Tech Stack
-
-- **React 18** with TypeScript
-- **Vite** for fast development and building
-- **Tailwind CSS** for styling
-- **Lucide React** for beautiful icons
-- **Framer Motion** for smooth animations
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js (version 16 or higher)
-- npm or yarn
-
-### Installation
-
-1. Install dependencies:
-```bash
-npm install
+```
+├── src/
+│   ├── components/          # React components
+│   │   ├── shared/         # Shared components
+│   │   │   ├── ui/        # UI components (Button, Input, etc.)
+│   │   │   └── AppWithAuth.tsx
+│   │   └── features/      # Feature-specific components
+│   │       ├── admin/     # Admin components
+│   │       ├── auth/      # Authentication
+│   │       ├── chat/      # Chat interface
+│   │       ├── connections/ # Database connections
+│   │       └── prompts/   # Prompt management
+│   ├── pages/              # Page components
+│   ├── hooks/              # Custom React hooks
+│   ├── lib/                # Utilities & API
+│   ├── types/              # TypeScript definitions
+│   ├── contexts/           # React contexts
+│   └── styles/             # Styling files
+├── backend/                # Python backend
+│   └── finx/              # FastAPI application
+└── package.json           # Dependencies
 ```
 
-2. Start the development server:
+## 🚀 Cài đặt và Chạy
+
+### Prerequisites
+- Node.js (v16+)
+- Python (v3.8+)
+- PostgreSQL/MySQL
+
+### Frontend
 ```bash
+npm install
 npm run dev
 ```
 
-3. Open your browser and navigate to `http://localhost:3000`
-
-### Building for Production
-
+### Backend
 ```bash
-npm run build
+cd backend
+pip install -r requirements.txt
+python -m uvicorn finx.main:app --reload
 ```
 
-### Preview Production Build
+## 🔧 Cấu hình
 
-```bash
-npm run preview
+### Environment Variables
+```env
+# Frontend (.env)
+VITE_API_BASE_URL=http://localhost:8000
+VITE_JWT_SECRET=your-secret-key
+
+# Backend
+DATABASE_URL=postgresql://user:pass@localhost/db
+JWT_SECRET=your-secret-key
 ```
 
-## Project Structure
+## 📖 Hướng dẫn sử dụng
 
-```
-src/
-├── components/           # React components
-│   ├── ui/              # Reusable UI components
-│   │   ├── Button.tsx   # Button component
-│   │   ├── Input.tsx    # Input component
-│   │   ├── Textarea.tsx # Textarea component
-│   │   ├── Select.tsx   # Select dropdown
-│   │   └── Badge.tsx    # Badge/tag component
-│   ├── ChatArea.tsx     # Main chat interface
-│   ├── ChatInput.tsx    # Message input with prompt integration
-│   ├── MessageBubble.tsx # Individual message display
-│   ├── Sidebar.tsx      # Session & prompt management sidebar
-│   ├── TypingIndicator.tsx # Typing animation
-│   ├── PromptManager.tsx   # Main prompt management interface
-│   ├── PromptForm.tsx      # Create/edit prompt form
-│   └── PromptCard.tsx      # Individual prompt display
-├── types/               # TypeScript type definitions
-│   ├── chat.ts          # Chat-related types
-│   └── prompt.ts        # Prompt management types
-├── lib/                 # Utility functions
-│   ├── api.ts          # Chat API integration
-│   ├── promptAPI.ts    # Prompt management API
-│   └── utils.ts        # Helper utilities
-├── App.tsx             # Main application component
-├── main.tsx            # Application entry point
-└── index.css           # Global styles and Tailwind imports
-```
+### 1. Đăng nhập/Đăng ký
+- Truy cập `/auth/login` để đăng nhập
+- Tạo tài khoản mới tại `/auth/register`
 
-## Prompt Management Usage
+### 2. Chat với AI
+- Sử dụng giao diện chat chính
+- Chọn prompt có sẵn hoặc tạo prompt mới
+- Gửi tin nhắn và nhận phản hồi từ AI
 
-### Creating Prompts
+### 3. Quản lý Prompt
+- Truy cập tab "Prompts" trong sidebar
+- Tạo, chỉnh sửa, và tổ chức prompt templates
+- Sử dụng biến động `{variable_name}` trong prompt
 
-1. **Access Prompt Manager** - Click the "Prompts" tab in the sidebar
-2. **Create New Prompt** - Click "New Prompt" button
-3. **Fill Details**:
-   - **Name**: Descriptive name for your prompt
-   - **Category**: Select appropriate category
-   - **Description**: Brief explanation of the prompt's purpose
-   - **Content**: The actual prompt text with variables like `{variable_name}`
-   - **Tags**: Add searchable tags
-   - **Active**: Toggle prompt availability
+### 4. Kết nối Database
+- Cấu hình kết nối database trong settings
+- Quản lý nhiều kết nối cùng lúc
+- Test kết nối trước khi sử dụng
 
-### Using Prompts
+## 🔗 API Endpoints
 
-1. **From Chat Input** - Click the ✨ sparkles icon to open prompt selector
-2. **Quick Selection** - Browse and click any prompt to insert it
-3. **Variable Substitution** - Replace `{variable_name}` placeholders with actual values
-4. **Send Message** - The prompt is ready to use with your AI agent
+### Authentication
+- `POST /auth/login` - Đăng nhập
+- `POST /auth/register` - Đăng ký
+- `POST /auth/logout` - Đăng xuất
 
-### Example Prompts
+### Chat
+- `POST /chat` - Gửi tin nhắn
+- `GET /sessions` - Lấy danh sách phiên chat
 
-```
-Name: Code Review Assistant
-Category: Coding
-Content: You are a senior software engineer. Review this code and provide feedback on:
+### Prompts
+- `GET /prompts` - Lấy danh sách prompt
+- `POST /prompts` - Tạo prompt mới
+- `PUT /prompts/:id` - Cập nhật prompt
 
-1. Code quality and best practices
-2. Potential bugs or issues  
-3. Performance optimizations
-4. Readability improvements
+### Connections
+- `GET /connections` - Lấy danh sách kết nối
+- `POST /connections` - Tạo kết nối mới
+- `POST /connections/:id/test` - Test kết nối
 
-Code to review:
-{code}
+## 🎨 Customization
 
-Additional context: {context}
-```
-
-```
-Name: Creative Writing Helper  
-Category: Creative
-Content: You are a creative writing assistant. Help me with my {writing_type} by:
-
-1. Providing creative suggestions
-2. Improving narrative flow
-3. Enhancing character development
-4. Suggesting plot improvements
-
-Topic: {topic}
-Genre: {genre}
-Target audience: {audience}
-```
-
-## Backend Integration
-
-The frontend is designed to work with your Python backend. Update the API endpoints in `src/lib/api.ts`:
-
-```typescript
-const API_BASE_URL = 'http://your-backend-url:8000';
-```
-
-### Expected API Endpoints
-
-#### Chat Endpoints
-- `POST /chat` - Send a message and receive AI response
-- `GET /sessions` - Retrieve user's chat sessions
-- `DELETE /sessions/:id` - Delete a chat session
-
-#### Prompt Management Endpoints
-- `GET /prompts` - Retrieve all prompts
-- `POST /prompts` - Create a new prompt
-- `PUT /prompts/:id` - Update an existing prompt
-- `DELETE /prompts/:id` - Delete a prompt
-- `POST /prompts/:id/use` - Increment usage counter
-- `GET /prompt-templates` - Get prompt templates
-
-### API Request/Response Examples
-
-**Create Prompt:**
-```json
-POST /prompts
-{
-  "name": "Code Review Assistant",
-  "description": "Helps review code and suggest improvements",
-  "content": "You are a senior software engineer...",
-  "category": "coding",
-  "tags": ["code-review", "development"],
-  "isActive": true
-}
-```
-
-**Use Prompt:**
-```json
-POST /prompts/123/use
-// Increments usage count
-```
-
-## Customization
-
-### Styling
-
-The project uses Tailwind CSS with a custom design system. You can customize colors, fonts, and spacing in:
-
-- `tailwind.config.js` - Tailwind configuration
-- `src/index.css` - Global styles and CSS variables
+### Themes
+- Light/Dark mode support
+- Tùy chỉnh màu sắc trong `tailwind.config.js`
+- CSS variables trong `src/styles/`
 
 ### Components
+- Tất cả components đều modular
+- Dễ dàng tùy chỉnh và mở rộng
+- TypeScript support đầy đủ
 
-All components are modular and can be easily customized:
+## 📝 License
 
-- **ChatArea** - Main chat interface layout
-- **MessageBubble** - Individual message styling
-- **Sidebar** - Session management UI
-- **ChatInput** - Message input with send button
-
-### Theme
-
-The app supports both light and dark themes using CSS variables. You can modify the theme colors in `src/index.css`.
-
-## Features in Detail
-
-### Chat Interface
-- Clean, modern message bubbles
-- User and AI message differentiation
-- Timestamp display
-- Smooth animations
-
-### Session Management
-- Create new chat sessions
-- Switch between conversations
-- Delete unwanted sessions
-- Session titles auto-generated from first message
-
-### Responsive Design
-- Mobile-first approach
-- Collapsible sidebar on mobile
-- Touch-friendly interface
-- Optimized for all screen sizes
-
-### Performance
-- Optimized bundle size
-- Lazy loading where appropriate
-- Smooth scrolling and animations
-- Efficient state management
-
-## Development
-
-### Adding New Features
-
-1. Create new components in `src/components/`
-2. Add types in `src/types/`
-3. Update API integration in `src/lib/api.ts`
-4. Follow the existing code patterns
-
-### Code Style
-
-- Use TypeScript for type safety
-- Follow React best practices
-- Use Tailwind for styling
-- Keep components small and focused
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
-
-## Support
-
-If you have questions or need help, please open an issue on GitHub.
-
----
-
-Built with ❤️ for modern chatbot experiences
+MIT License - xem file [LICENSE](LICENSE) để biết thêm chi tiết.

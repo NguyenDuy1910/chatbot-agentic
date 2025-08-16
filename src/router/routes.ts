@@ -1,5 +1,8 @@
 import { ComponentType } from 'react';
-import { ChatPage, AdminPage, ConnectionsPage, LoginPage } from '@/pages';
+import {
+  ChatPage, AdminPage, ConnectionsPage, LoginPage, MainPage,
+  NotebooksPage, FilesPage, SettingsPage, DemoPage
+} from '@/pages';
 
 export interface RouteConfig {
   path: string;
@@ -12,9 +15,14 @@ export interface RouteConfig {
 // Route constants
 export const ROUTES = {
   HOME: '/',
+  MAIN: '/',
   CHAT: '/chat',
   ADMIN: '/admin',
   CONNECTIONS: '/connections',
+  NOTEBOOKS: '/notebooks',
+  FILES: '/files',
+  SETTINGS: '/settings',
+  DEMO: '/demo',
   LOGIN: '/login',
 } as const;
 
@@ -22,7 +30,7 @@ export const ROUTES = {
 export const routeConfigs: RouteConfig[] = [
   {
     path: ROUTES.HOME,
-    component: ChatPage,
+    component: MainPage,
     exact: true,
   },
   {
@@ -40,6 +48,25 @@ export const routeConfigs: RouteConfig[] = [
     path: ROUTES.CONNECTIONS,
     component: ConnectionsPage,
     protected: true,
+  },
+  {
+    path: ROUTES.NOTEBOOKS,
+    component: NotebooksPage,
+    protected: true,
+  },
+  {
+    path: ROUTES.FILES,
+    component: FilesPage,
+    protected: true,
+  },
+  {
+    path: ROUTES.SETTINGS,
+    component: SettingsPage,
+    protected: true,
+  },
+  {
+    path: ROUTES.DEMO,
+    component: DemoPage,
   },
   {
     path: ROUTES.LOGIN,
