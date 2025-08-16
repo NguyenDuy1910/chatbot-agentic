@@ -9,10 +9,9 @@ import {
   SkeletonGrid 
 } from '@/components/shared/ui';
 import { navigateToPath } from '@/lib/navigation';
-import { 
-  Play, 
-  Pause, 
-  RotateCcw, 
+import {
+  Play,
+  RotateCcw,
   Loader2,
   Sparkles,
   Zap

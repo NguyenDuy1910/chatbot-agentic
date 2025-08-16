@@ -494,11 +494,7 @@ LIMIT 10;`,
                 executionTime: 45
               };
             }}
-            queryHistory={state.queryHistory.filter(q => q.executedAt).map(q => ({
-              naturalLanguage: q.naturalLanguage,
-              generatedSQL: q.generatedSQL,
-              executedAt: q.executedAt!
-            }))}
+
           />
         )}
       </div>
