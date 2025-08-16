@@ -12,13 +12,15 @@ interface ChatAreaProps {
   isLoading: boolean;
   onSendMessage: (message: string, attachments?: FileAttachment[]) => void;
   onStop?: () => void;
+  placeholder?: string;
 }
 
 export const ChatArea: React.FC<ChatAreaProps> = ({
   messages,
   isLoading,
   onSendMessage,
-  onStop
+  onStop,
+  placeholder = "Ask Vikki anything..."
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -135,10 +137,11 @@ export const ChatArea: React.FC<ChatAreaProps> = ({
       </div>
 
       {/* Input */}
-      <ChatInput 
+      <ChatInput
         onSendMessage={onSendMessage}
         disabled={isLoading}
         onPromptSelect={handlePromptSelect}
+        placeholder={placeholder}
       />
     </div>
   );

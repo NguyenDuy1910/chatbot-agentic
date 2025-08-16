@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChatArea, ChatInput } from '@/components/features/chat';
+import { ChatArea } from '@/components/features/chat';
 import { Message } from '@/types/features/chat';
 
 /**
@@ -43,20 +43,13 @@ export const ChatPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-1 overflow-hidden">
-        <ChatArea
-          messages={messages}
-          isLoading={isLoading}
-          onSendMessage={handleSendMessage}
-        />
-      </div>
-      <div className="border-t border-gray-200 bg-white p-4">
-        <ChatInput
-          onSendMessage={handleSendMessage}
-          placeholder={`Hi ${user.name}! Ask me anything...`}
-        />
-      </div>
+    <div className="h-full">
+      <ChatArea
+        messages={messages}
+        isLoading={isLoading}
+        onSendMessage={handleSendMessage}
+        placeholder={`Hi ${user.name}! Ask me anything...`}
+      />
     </div>
   );
 };
