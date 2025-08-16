@@ -1,4 +1,4 @@
-import { DatabaseConnection, SQLQuery, Text2SQLRequest, DatabaseMetadata } from '@/types/database';
+import { DatabaseConnection, SQLQuery, Text2SQLRequest, DatabaseMetadata } from '@/types/features/database';
 
 const API_BASE_URL = '/api';
 

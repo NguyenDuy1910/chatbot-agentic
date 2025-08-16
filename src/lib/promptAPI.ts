@@ -1,4 +1,4 @@
-import { Prompt, PromptTemplate } from '@/types/prompt';
+import { Prompt, PromptTemplate } from '@/types/features/prompt';
 
 const API_BASE_URL = '/api';
 

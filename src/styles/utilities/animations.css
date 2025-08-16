@@ -1,0 +1,345 @@
+/* Hover transitions */
+.hover-scale {
+  transition: transform 0.2s;
+}
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* Button hover effects */
+.button-glow {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.button-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+  background: linear-gradient(45deg, transparent, rgba(255,255,255,0.2), transparent);
+}
+.button-glow:hover::after {
+  opacity: 1;
+}
+
+/* State transitions */
+.state-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Loading skeleton */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: #e5e7eb;
+}
+.dark .skeleton {
+  background-color: #374151;
+}
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.1),
+    transparent
+  );
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Interactive card */
+.interactive-card {
+  transition: all 0.3s ease-out;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+.interactive-card:hover {
+  transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
+  box-shadow: 
+    0 5px 15px rgba(0,0,0,0.1),
+    0 15px 35px rgba(0,0,0,0.05);
+}
+
+/* Success animation */
+@keyframes success-circle {
+  0% { 
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.success-animation {
+  animation: success-circle 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Error shake */
+@keyframes error-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.error-animation {
+  animation: error-shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Floating labels */
+.floating-label {
+  transition: all 0.2s ease-in-out;
+}
+.floating-label:focus-within label,
+.floating-label.active label {
+  transform: translateY(-1.5rem) scale(0.75);
+  color: var(--primary);
+}
+
+/* Progress bar */
+.progress-bar {
+  position: relative;
+  overflow: hidden;
+  background-color: #e5e7eb;
+  border-radius: 9999px;
+}
+.dark .progress-bar {
+  background-color: #374151;
+}
+.progress-bar-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  transition: all 0.5s ease-out;
+  background: linear-gradient(90deg, var(--primary), var(--primary-foreground));
+}
+
+/* Chat bubbles */
+.chat-bubble-in {
+  animation: chat-slide-in 0.3s ease-out;
+  transform-origin: bottom left;
+}
+
+.chat-bubble-out {
+  animation: chat-slide-in 0.3s ease-out;
+  transform-origin: bottom right;
+}
+
+@keyframes chat-slide-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Ripple effect */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+.ripple::after {
+  content: '';
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  padding-top: 300%;
+  padding-left: 300%;
+  margin-left: -20px;
+  margin-top: -120%;
+  opacity: 0;
+  transition: all 0.8s;
+}
+.ripple:active::after {
+  padding: 0;
+  margin: 0;
+  opacity: 1;
+  transition: 0s;
+}
+
+/* Badge pulse */
+.badge-pulse {
+  position: relative;
+}
+.badge-pulse::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* Smooth state transitions */
+.state-transition {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+/* Loading skeleton animation */
+.skeleton {
+  @apply relative overflow-hidden bg-gray-200 dark:bg-gray-700;
+}
+.skeleton::after {
+  content: '';
+  @apply absolute inset-0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.1),
+    transparent
+  );
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Interactive card hover effect */
+.interactive-card {
+  @apply transition-all duration-300 ease-out;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+.interactive-card:hover {
+  transform: translateY(-5px) rotateX(2deg) rotateY(2deg);
+  box-shadow: 
+    0 5px 15px rgba(0,0,0,0.1),
+    0 15px 35px rgba(0,0,0,0.05);
+}
+
+/* Success animation */
+@keyframes success-circle {
+  0% { 
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.success-animation {
+  animation: success-circle 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Error shake animation */
+@keyframes error-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.error-animation {
+  animation: error-shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* Floating labels */
+.floating-label {
+  @apply transition-all duration-200 ease-in-out;
+}
+.floating-label:focus-within label,
+.floating-label.active label {
+  @apply transform -translate-y-6 scale-75 text-primary;
+}
+
+/* Progress bar animation */
+.progress-bar {
+  @apply relative overflow-hidden bg-gray-200 dark:bg-gray-700 rounded-full;
+}
+.progress-bar-fill {
+  @apply absolute left-0 top-0 h-full transition-all duration-500 ease-out;
+  background: linear-gradient(90deg, var(--primary), var(--primary-foreground));
+}
+
+/* Chat bubble animations */
+.chat-bubble-in {
+  animation: chat-slide-in 0.3s ease-out;
+  transform-origin: bottom left;
+}
+
+.chat-bubble-out {
+  animation: chat-slide-in 0.3s ease-out;
+  transform-origin: bottom right;
+}
+
+@keyframes chat-slide-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Ripple effect */
+.ripple {
+  @apply relative overflow-hidden;
+}
+.ripple::after {
+  content: '';
+  @apply absolute block rounded-full;
+  background: rgba(255,255,255,0.3);
+  padding-top: 300%;
+  padding-left: 300%;
+  margin-left: -20px;
+  margin-top: -120%;
+  opacity: 0;
+  transition: all 0.8s;
+}
+.ripple:active::after {
+  padding: 0;
+  margin: 0;
+  opacity: 1;
+  transition: 0s;
+}
+
+/* Badge pulse animation */
+.badge-pulse {
+  @apply relative;
+}
+.badge-pulse::before {
+  content: '';
+  @apply absolute inset-0 rounded-full;
+  animation: badge-pulse 2s infinite;
+}
+
+@keyframes badge-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}

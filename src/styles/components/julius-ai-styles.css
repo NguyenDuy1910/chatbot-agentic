@@ -1,0 +1,318 @@
+/* Julius AI Connection Management Styles */
+
+.julius-sidebar {
+  background: #ffffff;
+  border-right: 1px solid #e5e7eb;
+  width: 256px;
+  min-height: 100vh;
+}
+
+.julius-sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.julius-logo {
+  width: 32px;
+  height: 32px;
+  background: #2563eb;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+}
+
+.julius-nav-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 12px;
+  text-align: left;
+  border: none;
+  background: none;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.julius-nav-item:hover {
+  background: #f9fafb;
+  color: #111827;
+}
+
+.julius-nav-item.active {
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-right: 2px solid #1d4ed8;
+}
+
+.julius-nav-item svg {
+  margin-right: 12px;
+  width: 16px;
+  height: 16px;
+}
+
+.julius-main-content {
+  flex: 1;
+  background: #f9fafb;
+  overflow: hidden;
+}
+
+.julius-header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 24px;
+}
+
+.julius-content {
+  background: white;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.julius-connections-table {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.julius-connections-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.julius-connections-table th {
+  background: #f9fafb;
+  padding: 12px 24px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.julius-connections-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.julius-connections-table tr:hover {
+  background: #f9fafb;
+}
+
+.julius-connection-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #2563eb;
+}
+
+.julius-template-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 24px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.julius-template-card:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border-color: #d1d5db;
+}
+
+.julius-template-icon {
+  width: 48px;
+  height: 48px;
+  background: #f3f4f6;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  margin-bottom: 16px;
+  transition: all 0.2s;
+}
+
+.julius-template-card:hover .julius-template-icon {
+  background: #eff6ff;
+}
+
+.julius-template-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+  transition: all 0.2s;
+}
+
+.julius-template-card:hover .julius-template-title {
+  color: #2563eb;
+}
+
+.julius-template-description {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.julius-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.julius-badge-gray {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.julius-badge-blue {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.julius-badge-green {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.julius-badge-red {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.julius-badge-yellow {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.julius-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.julius-btn-primary {
+  background: #2563eb;
+  color: white;
+}
+
+.julius-btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.julius-btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.julius-btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.julius-search-input {
+  width: 100%;
+  max-width: 384px;
+  padding: 8px 12px 8px 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  background: white;
+}
+
+.julius-search-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.julius-search-container {
+  position: relative;
+}
+
+.julius-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  width: 16px;
+  height: 16px;
+}
+
+.julius-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.julius-empty-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.julius-empty-icon {
+  width: 48px;
+  height: 48px;
+  color: #9ca3af;
+  margin: 0 auto 16px;
+}
+
+.julius-empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.julius-empty-description {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .julius-sidebar {
+    width: 100%;
+    min-height: auto;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .julius-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .julius-header {
+    padding: 12px 16px;
+  }
+  
+  .julius-content {
+    padding: 16px;
+  }
+}

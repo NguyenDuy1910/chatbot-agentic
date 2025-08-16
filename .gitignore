@@ -10,7 +10,7 @@ lerna-debug.log*
 dist/
 build/
 out/
-
+venv/
 # Environment variables
 .env
 .env.local
