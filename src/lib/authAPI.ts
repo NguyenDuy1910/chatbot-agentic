@@ -5,7 +5,7 @@ import {
   UserProfile, 
   PasswordUpdate, 
   ProfileUpdate 
-} from '@/types/auth';
+} from '@/types/features/auth';
 
 // Mock API - replace with actual API endpoints
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));

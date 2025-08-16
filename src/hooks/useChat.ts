@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useChat as useVercelChat } from 'ai/react';
-import { Message, FileAttachment, ChatSession } from '@/types/chat';
+import { Message, FileAttachment, ChatSession } from '@/types/features/chat';
 
 // Convert Vercel AI message to our Message type
 const convertMessage = (vercelMessage: any): Message => ({

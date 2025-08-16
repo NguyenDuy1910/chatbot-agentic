@@ -1,4 +1,4 @@
-import { User, ChatStatistics, SystemSettings, AdminDashboardData } from '@/types/admin';
+import { User, ChatStatistics, SystemSettings, AdminDashboardData } from '@/types/features/admin';
 
 // Mock data for demonstration
 const mockUsers: User[] = [

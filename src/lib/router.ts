@@ -22,9 +22,9 @@ export const adminRoutes: Record<string, AdminRoute> = {
   },
   connections: {
     path: '/admin/connections',
-    title: 'Data Connections',
-    description: 'Set up and manage data connections',
-    component: 'DataConnectionSetup'
+    title: 'Connection Management',
+    description: 'Manage external service connections and integrations',
+    component: 'ConnectionDashboard'
   },
   users: {
     path: '/admin/users',
