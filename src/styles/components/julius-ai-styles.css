@@ -1,10 +1,48 @@
-/* Julius AI Connection Management Styles */
+/* Julius AI Layout Template Styles */
+
+.julius-app-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #f9fafb;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.julius-main-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.julius-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 24px;
+  flex-shrink: 0;
+  z-index: 50;
+}
+
+.julius-footer {
+  background: #ffffff;
+  border-top: 1px solid #e5e7eb;
+  padding: 12px 24px;
+  flex-shrink: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.julius-footer-extended {
+  padding: 0;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+}
 
 .julius-sidebar {
   background: #ffffff;
   border-right: 1px solid #e5e7eb;
   width: 256px;
   min-height: 100vh;
+  flex-shrink: 0;
 }
 
 .julius-sidebar-header {
@@ -49,6 +87,82 @@
   background: #eff6ff;
   color: #1d4ed8;
   border-right: 2px solid #1d4ed8;
+}
+
+.julius-nav-arrow {
+  margin-left: auto;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.julius-nav-menu {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.julius-sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: auto;
+}
+
+.julius-dropdown {
+  position: relative;
+}
+
+.julius-dropdown button {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+}
+
+/* Collapsed Sidebar Styles */
+.julius-sidebar-collapsed {
+  width: 64px;
+  transition: width 0.3s ease;
+}
+
+.julius-nav-item-collapsed {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  color: #6b7280;
+  transition: all 0.2s;
+  cursor: pointer;
+  position: relative;
+}
+
+.julius-nav-item-collapsed:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.julius-nav-item-collapsed.active {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.julius-nav-count-collapsed {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 4px;
+  border-radius: 8px;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .julius-nav-item svg {
@@ -268,6 +382,160 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 24px;
+}
+
+/* Main Page Specific Styles */
+.julius-main-content {
+  background: #f9fafb;
+  min-height: 100vh;
+}
+
+.julius-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 24px;
+}
+
+.julius-search-input {
+  width: 100%;
+  max-width: 600px;
+  padding: 12px 16px 12px 48px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 16px;
+  background: white;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.julius-search-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.julius-search-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+}
+
+.julius-search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  width: 20px;
+  height: 20px;
+}
+
+/* Template Card Styles */
+.julius-template-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.julius-template-card:hover {
+  border-color: #2563eb;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.julius-template-icon {
+  font-size: 32px;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.julius-template-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.julius-template-description {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .julius-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 40;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .julius-sidebar.open {
+    transform: translateX(0);
+  }
+
+  .julius-main-container {
+    margin-left: 0;
+  }
+
+  .julius-header {
+    padding: 12px 16px;
+  }
+
+  .julius-search-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+@media (max-width: 768px) {
+  .julius-header {
+    padding: 8px 12px;
+  }
+
+  .julius-footer {
+    padding: 8px 12px;
+  }
+
+  .julius-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .julius-template-card {
+    padding: 16px;
+  }
+
+  .julius-search-container {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .julius-header h1 {
+    font-size: 18px;
+  }
+
+  .julius-template-title {
+    font-size: 14px;
+  }
+
+  .julius-template-description {
+    font-size: 13px;
+  }
+
+  .julius-btn {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
 }
 
 .julius-empty-state {
