@@ -13,7 +13,7 @@ supabase
 psycopg2-binary
 sqlalchemy
 alembic
-
+aiohttp
 # Additional utilities
 python-multipart
 python-jose[cryptography]

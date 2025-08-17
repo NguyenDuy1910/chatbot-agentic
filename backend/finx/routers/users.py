@@ -85,7 +85,7 @@ class UserPermissions(BaseModel):
     features: FeaturesPermissions
 
 
-@router.get("/default/permissions", response_model=UserPermissions)
+@router.get("/me/permissions", response_model=UserPermissions)
 async def get_user_permissions(request: Request, user=Depends(get_admin_user)):
     return {
         "workspace": WorkspacePermissions(
@@ -100,7 +100,7 @@ async def get_user_permissions(request: Request, user=Depends(get_admin_user)):
     }
 
 
-@router.post("/default/permissions")
+@router.put("/me/permissions")
 async def update_user_permissions(
     request: Request, form_data: UserPermissions, user=Depends(get_admin_user)
 ):
@@ -113,10 +113,10 @@ async def update_user_permissions(
 ############################
 
 
-@router.post("/update/role", response_model=Optional[UserModel])
-async def update_user_role(form_data: UserRoleUpdateForm, user=Depends(get_admin_user)):
-    if user.id != form_data.id and form_data.id != Users.get_first_user().id:
-        return Users.update_user_role_by_id(form_data.id, form_data.role)
+@router.put("/{id}/role", response_model=Optional[UserModel])
+async def update_user_role(id: str, form_data: UserRoleUpdateForm, user=Depends(get_admin_user)):
+    if user.id != id and id != Users.get_first_user().id:
+        return Users.update_user_role_by_id(id, form_data.role)
 
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
@@ -129,7 +129,7 @@ async def update_user_role(form_data: UserRoleUpdateForm, user=Depends(get_admin
 ############################
 
 
-@router.get("/user/settings", response_model=Optional[UserSettings])
+@router.get("/me/settings", response_model=Optional[UserSettings])
 async def get_user_settings_by_session_user(user=Depends(get_verified_user)):
     user = Users.get_user_by_id(user.id)
     if user:
@@ -146,7 +146,7 @@ async def get_user_settings_by_session_user(user=Depends(get_verified_user)):
 ############################
 
 
-@router.post("/user/settings/update", response_model=UserSettings)
+@router.put("/me/settings", response_model=UserSettings)
 async def update_user_settings_by_session_user(
     form_data: UserSettings, user=Depends(get_verified_user)
 ):
@@ -165,7 +165,7 @@ async def update_user_settings_by_session_user(
 ############################
 
 
-@router.get("/user/info", response_model=Optional[dict])
+@router.get("/me", response_model=Optional[dict])
 async def get_user_info_by_session_user(user=Depends(get_verified_user)):
     user = Users.get_user_by_id(user.id)
     if user:
@@ -182,7 +182,7 @@ async def get_user_info_by_session_user(user=Depends(get_verified_user)):
 ############################
 
 
-@router.post("/user/info/update", response_model=Optional[dict])
+@router.put("/me", response_model=Optional[dict])
 async def update_user_info_by_session_user(
     form_data: dict, user=Depends(get_verified_user)
 ):
@@ -254,13 +254,13 @@ async def get_user_by_id(user_id: str, current_user=Depends(get_verified_user)):
 ############################
 
 
-@router.post("/{user_id}/update", response_model=Optional[UserModel])
+@router.put("/{id}", response_model=Optional[UserModel])
 async def update_user_by_id(
-    user_id: str,
+    id: str,
     form_data: UserUpdateForm,
     session_user=Depends(get_admin_user),
 ):
-    user = Users.get_user_by_id(user_id)
+    user = Users.get_user_by_id(id)
 
     if user:
         if form_data.email.lower() != user.email:
@@ -274,11 +274,11 @@ async def update_user_by_id(
         if form_data.password:
             hashed = get_password_hash(form_data.password)
             log.debug(f"hashed: {hashed}")
-            Auths.update_user_password_by_id(user_id, hashed)
+            Auths.update_user_password_by_id(id, hashed)
 
-        Auths.update_email_by_id(user_id, form_data.email.lower())
+        Auths.update_email_by_id(id, form_data.email.lower())
         updated_user = Users.update_user_by_id(
-            user_id,
+            id,
             {
                 "name": form_data.name,
                 "email": form_data.email.lower(),

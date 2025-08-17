@@ -1,44 +1,106 @@
-const API_BASE_URL = '/api';
+import { apiConfig } from '@/config/api';
+import { env } from '@/config/env';
 
-export const chatAPI = {
-  async sendMessage(message: string, sessionId?: string) {
-    const response = await fetch(`${API_BASE_URL}/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message,
-        session_id: sessionId,
-      }),
-    });
+/**
+ * API utility functions for making HTTP requests
+ */
 
-    if (!response.ok) {
-      throw new Error('Failed to send message');
-    }
+// Get auth token from localStorage or cookie
+const getAuthToken = (): string | null => {
+  // Try localStorage first
+  const token = localStorage.getItem('authToken');
+  if (token) return token;
 
-    return response.json();
-  },
+  // Try cookie as fallback
+  const cookies = document.cookie.split(';');
+  const tokenCookie = cookies.find(cookie =>
+    cookie.trim().startsWith(`${env.AUTH_COOKIE_NAME}=`)
+  );
 
-  async getSessions() {
-    const response = await fetch(`${API_BASE_URL}/sessions`);
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch sessions');
-    }
+  if (tokenCookie) {
+    return tokenCookie.split('=')[1];
+  }
 
-    return response.json();
-  },
-
-  async deleteSession(sessionId: string) {
-    const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to delete session');
-    }
-
-    return response.json();
-  },
+  return null;
 };
+
+// Create headers with authentication
+const createHeaders = (additionalHeaders: Record<string, string> = {}): HeadersInit => {
+  const headers: Record<string, string> = {
+    ...apiConfig.defaultHeaders,
+    ...additionalHeaders,
+  };
+
+  const token = getAuthToken();
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  return headers;
+};
+
+// Generic API request function
+export const apiRequest = async <T = any>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> => {
+  const url = `${apiConfig.baseURL}${endpoint}`;
+
+  const config: RequestInit = {
+    ...options,
+    headers: createHeaders(options.headers as Record<string, string>),
+  };
+
+  try {
+    const response = await fetch(url, config);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || errorData.message || `HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    // Handle empty responses
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return await response.json();
+    }
+
+    return response.text() as unknown as T;
+  } catch (error) {
+    console.error(`API request failed for ${endpoint}:`, error);
+    throw error;
+  }
+};
+
+// HTTP method helpers
+export const api = {
+  get: <T = any>(endpoint: string, options?: RequestInit): Promise<T> =>
+    apiRequest<T>(endpoint, { ...options, method: 'GET' }),
+
+  post: <T = any>(endpoint: string, data?: any, options?: RequestInit): Promise<T> =>
+    apiRequest<T>(endpoint, {
+      ...options,
+      method: 'POST',
+      body: data ? JSON.stringify(data) : undefined,
+    }),
+
+  put: <T = any>(endpoint: string, data?: any, options?: RequestInit): Promise<T> =>
+    apiRequest<T>(endpoint, {
+      ...options,
+      method: 'PUT',
+      body: data ? JSON.stringify(data) : undefined,
+    }),
+
+  patch: <T = any>(endpoint: string, data?: any, options?: RequestInit): Promise<T> =>
+    apiRequest<T>(endpoint, {
+      ...options,
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    }),
+
+  delete: <T = any>(endpoint: string, options?: RequestInit): Promise<T> =>
+    apiRequest<T>(endpoint, { ...options, method: 'DELETE' }),
+};
+
+// Note: Legacy chatAPI has been moved to chatAPI.ts
+// Import { chatAPI } from './chatAPI' for chat functionality

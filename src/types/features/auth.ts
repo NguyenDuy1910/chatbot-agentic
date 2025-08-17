@@ -1,3 +1,41 @@
+// Backend-compatible auth types
+export interface SigninForm {
+  email: string;
+  password: string;
+}
+
+export interface SignupForm {
+  name: string;
+  email: string;
+  password: string;
+  profile_image_url?: string;
+}
+
+export interface UpdatePasswordForm {
+  password: string;
+  new_password: string;
+}
+
+export interface UpdateProfileForm {
+  profile_image_url: string;
+  name: string;
+}
+
+// Backend response types
+export interface UserResponse {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  profile_image_url: string;
+}
+
+export interface SigninResponse extends UserResponse {
+  token: string;
+  token_type: string;
+}
+
+// Frontend-compatible types (for backward compatibility)
 export interface LoginCredentials {
   email: string;
   password: string;
@@ -9,6 +47,7 @@ export interface RegisterData {
   email: string;
   password: string;
   confirmPassword: string;
+  profile_image_url?: string;
 }
 
 export interface UserProfile {
@@ -20,7 +59,7 @@ export interface UserProfile {
   phone?: string;
   location?: string;
   timezone?: string;
-  role: 'user' | 'admin';
+  role: 'user' | 'admin' | 'pending';
   status: 'active' | 'inactive' | 'banned';
   createdAt: Date;
   lastActive: Date;
@@ -44,8 +83,8 @@ export interface UserProfile {
 export interface AuthResponse {
   user: UserProfile;
   token: string;
-  refreshToken: string;
-  expiresIn: number;
+  refreshToken?: string;
+  expiresIn?: number;
 }
 
 export interface PasswordUpdate {

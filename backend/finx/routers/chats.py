@@ -44,29 +44,29 @@ async def get_chats(
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-@router.get("/{chat_id}", response_model=ChatModel)
-async def get_chat(chat_id: str, current_user=Depends(get_verified_user)):
+@router.get("/{id}", response_model=ChatModel)
+async def get_chat(id: str, current_user=Depends(get_verified_user)):
     """Get a specific chat by ID"""
     try:
-        chat = Chats.get_chat_by_id(chat_id)
+        chat = Chats.get_chat_by_id(id)
         if not chat:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=ERROR_MESSAGES.RESOURCE_NOT_FOUND
             )
-        
+
         # Check if user owns the chat
         if chat.user_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=ERROR_MESSAGES.ACCESS_PROHIBITED
             )
-        
+
         return chat
     except HTTPException:
         raise
     except Exception as e:
-        log.error(f"Error fetching chat {chat_id}: {str(e)}")
+        log.error(f"Error fetching chat {id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
@@ -93,79 +93,79 @@ async def create_chat(
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-@router.put("/{chat_id}", response_model=ChatModel)
+@router.put("/{id}", response_model=ChatModel)
 async def update_chat(
-    chat_id: str,
+    id: str,
     chat_data: ChatUpdateForm,
     current_user=Depends(get_verified_user)
 ):
     """Update an existing chat"""
     try:
         # Check if chat exists and user owns it
-        existing_chat = Chats.get_chat_by_id(chat_id)
+        existing_chat = Chats.get_chat_by_id(id)
         if not existing_chat:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=ERROR_MESSAGES.RESOURCE_NOT_FOUND
             )
-        
+
         if existing_chat.user_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=ERROR_MESSAGES.ACCESS_PROHIBITED
             )
-        
+
         # Update chat
         update_data = chat_data.model_dump(exclude_unset=True)
-        updated_chat = Chats.update_chat_by_id(chat_id, update_data)
-        
+        updated_chat = Chats.update_chat_by_id(id, update_data)
+
         if not updated_chat:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update chat"
             )
-        
+
         return updated_chat
     except HTTPException:
         raise
     except Exception as e:
-        log.error(f"Error updating chat {chat_id}: {str(e)}")
+        log.error(f"Error updating chat {id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-@router.delete("/{chat_id}")
-async def delete_chat(chat_id: str, current_user=Depends(get_verified_user)):
+@router.delete("/{id}")
+async def delete_chat(id: str, current_user=Depends(get_verified_user)):
     """Delete a chat"""
     try:
         # Check if chat exists and user owns it
-        existing_chat = Chats.get_chat_by_id(chat_id)
+        existing_chat = Chats.get_chat_by_id(id)
         if not existing_chat:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=ERROR_MESSAGES.RESOURCE_NOT_FOUND
             )
-        
+
         if existing_chat.user_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=ERROR_MESSAGES.ACCESS_PROHIBITED
             )
-        
+
         # Delete chat
-        success = Chats.delete_chat_by_id(chat_id)
+        success = Chats.delete_chat_by_id(id)
         if not success:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to delete chat"
             )
-        
+
         return {"message": "Chat deleted successfully"}
     except HTTPException:
         raise
     except Exception as e:
-        log.error(f"Error deleting chat {chat_id}: {str(e)}")
+        log.error(f"Error deleting chat {id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
@@ -175,71 +175,71 @@ async def delete_chat(chat_id: str, current_user=Depends(get_verified_user)):
 # Chat Actions
 ############################
 
-@router.post("/{chat_id}/archive", response_model=ChatModel)
-async def toggle_chat_archive(chat_id: str, current_user=Depends(get_verified_user)):
+@router.put("/{id}/archive", response_model=ChatModel)
+async def toggle_chat_archive(id: str, current_user=Depends(get_verified_user)):
     """Toggle chat archive status"""
     try:
         # Check if chat exists and user owns it
-        existing_chat = Chats.get_chat_by_id(chat_id)
+        existing_chat = Chats.get_chat_by_id(id)
         if not existing_chat:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=ERROR_MESSAGES.RESOURCE_NOT_FOUND
             )
-        
+
         if existing_chat.user_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=ERROR_MESSAGES.ACCESS_PROHIBITED
             )
-        
-        updated_chat = Chats.toggle_chat_archive_by_id(chat_id)
+
+        updated_chat = Chats.toggle_chat_archive_by_id(id)
         if not updated_chat:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to toggle chat archive"
             )
-        
+
         return updated_chat
     except HTTPException:
         raise
     except Exception as e:
-        log.error(f"Error toggling archive for chat {chat_id}: {str(e)}")
+        log.error(f"Error toggling archive for chat {id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-@router.post("/{chat_id}/pin", response_model=ChatModel)
-async def toggle_chat_pin(chat_id: str, current_user=Depends(get_verified_user)):
+@router.put("/{id}/pin", response_model=ChatModel)
+async def toggle_chat_pin(id: str, current_user=Depends(get_verified_user)):
     """Toggle chat pin status"""
     try:
         # Check if chat exists and user owns it
-        existing_chat = Chats.get_chat_by_id(chat_id)
+        existing_chat = Chats.get_chat_by_id(id)
         if not existing_chat:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=ERROR_MESSAGES.RESOURCE_NOT_FOUND
             )
-        
+
         if existing_chat.user_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=ERROR_MESSAGES.ACCESS_PROHIBITED
             )
-        
-        updated_chat = Chats.toggle_chat_pin_by_id(chat_id)
+
+        updated_chat = Chats.toggle_chat_pin_by_id(id)
         if not updated_chat:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to toggle chat pin"
             )
-        
+
         return updated_chat
     except HTTPException:
         raise
     except Exception as e:
-        log.error(f"Error toggling pin for chat {chat_id}: {str(e)}")
+        log.error(f"Error toggling pin for chat {id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
@@ -269,40 +269,40 @@ async def get_shared_chat(share_id: str):
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-@router.post("/{chat_id}/share")
+@router.post("/{id}/share")
 async def share_chat(
-    chat_id: str,
+    id: str,
     share_id: Optional[str] = None,
     current_user=Depends(get_verified_user)
 ):
     """Share a chat or update its share ID"""
     try:
         # Check if chat exists and user owns it
-        existing_chat = Chats.get_chat_by_id(chat_id)
+        existing_chat = Chats.get_chat_by_id(id)
         if not existing_chat:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=ERROR_MESSAGES.RESOURCE_NOT_FOUND
             )
-        
+
         if existing_chat.user_id != current_user.id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=ERROR_MESSAGES.ACCESS_PROHIBITED
             )
-        
-        updated_chat = Chats.update_chat_share_id_by_id(chat_id, share_id)
+
+        updated_chat = Chats.update_chat_share_id_by_id(id, share_id)
         if not updated_chat:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Failed to update chat share"
             )
-        
+
         return {"message": "Chat share updated successfully", "share_id": share_id}
     except HTTPException:
         raise
     except Exception as e:
-        log.error(f"Error sharing chat {chat_id}: {str(e)}")
+        log.error(f"Error sharing chat {id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR

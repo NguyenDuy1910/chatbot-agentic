@@ -85,7 +85,7 @@ async def signup(response: Response, form_data: SignupForm):
     except Exception as err:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=ERROR_MESSAGES.DEFAULT(err),
+            detail=ERROR_MESSAGES.DEFAULT(str(err)),
         )
 
 
@@ -166,7 +166,7 @@ async def get_session_user(user=Depends(get_authenticated_user)):
 # UpdateProfile
 ############################
 
-@router.post("/update/profile", response_model=UserResponse)
+@router.put("/profile", response_model=UserResponse)
 async def update_profile(form_data: UpdateProfileForm, user=Depends(get_authenticated_user)):
     """
     Update user profile
@@ -198,7 +198,7 @@ async def update_profile(form_data: UpdateProfileForm, user=Depends(get_authenti
 # UpdatePassword
 ############################
 
-@router.post("/update/password", response_model=bool)
+@router.put("/password", response_model=bool)
 async def update_password(form_data: UpdatePasswordForm, user=Depends(get_authenticated_user)):
     """
     Update user password

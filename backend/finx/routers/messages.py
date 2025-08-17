@@ -50,29 +50,29 @@ async def get_messages(
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-@router.get("/{message_id}", response_model=MessageModel)
-async def get_message(message_id: str, current_user=Depends(get_verified_user)):
+@router.get("/{id}", response_model=MessageModel)
+async def get_message(id: str, current_user=Depends(get_verified_user)):
     """Get a specific message by ID"""
     try:
-        message = Messages.get_message_by_id(message_id)
+        message = Messages.get_message_by_id(id)
         if not message:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=ERROR_MESSAGES.RESOURCE_NOT_FOUND
             )
-        
+
         # Users can only see their own messages unless they're admin
         if message.user_id != current_user.id and current_user.role != "admin":
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail=ERROR_MESSAGES.ACCESS_PROHIBITED
             )
-        
+
         return message
     except HTTPException:
         raise
     except Exception as e:
-        log.error(f"Error fetching message {message_id}: {str(e)}")
+        log.error(f"Error fetching message {id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR

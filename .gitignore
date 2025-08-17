@@ -126,3 +126,5 @@ storybook-static/
 secrets.json
 config/secrets/
 memory-bank/
+
+__pycache__

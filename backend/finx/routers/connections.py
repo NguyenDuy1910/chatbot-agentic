@@ -21,7 +21,8 @@ from finx.utils.connections import (
 )
 from finx.utils.security import (
     encrypt_credentials, decrypt_credentials, mask_credentials,
-    check_connection_permission, audit_connection_access, SecurityError
+    check_connection_permission, audit_connection_access, SecurityError,
+    validate_credentials
 )
 from finx.utils.health_monitor import force_health_check, get_health_summary
 
@@ -410,7 +411,7 @@ async def delete_connection(
 ####################
 
 @router.post("/test", response_model=ConnectionTestResult)
-async def test_connection_endpoint(
+async def test_connection_configuration(
     test_data: ConnectionTestForm,
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
@@ -530,8 +531,8 @@ async def get_connection_templates(
             detail="Failed to fetch connection templates"
         )
 
-@router.get("/stats", response_model=ConnectionStatsResponse)
-async def get_connection_stats(
+@router.get("/statistics", response_model=ConnectionStatsResponse)
+async def get_connection_statistics(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
@@ -680,7 +681,7 @@ async def force_connection_health_check(
             detail="Failed to perform health check"
         )
 
-@router.get("/health/summary")
+@router.get("/health-summary")
 async def get_connections_health_summary(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
@@ -697,7 +698,7 @@ async def get_connections_health_summary(
             detail="Failed to fetch health summary"
         )
 
-@router.get("/health/alerts")
+@router.get("/health-alerts")
 async def get_connection_alerts(
     limit: int = Query(50, ge=1, le=100),
     db: Session = Depends(get_db),

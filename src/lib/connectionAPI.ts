@@ -1,7 +1,7 @@
-import { 
-  Connection, 
-  ConnectionFormData, 
-  ConnectionTestRequest, 
+import {
+  Connection,
+  ConnectionFormData,
+  ConnectionTestRequest,
   ConnectionTestResult,
   ConnectionTemplate,
   ConnectionListResponse,
@@ -11,8 +11,8 @@ import {
   ConnectionType,
   ConnectionStatus
 } from '@/types/features/connections';
-
-const API_BASE_URL = '/api';
+import { api } from './api';
+import { apiConfig } from '@/config/api';
 
 export const connectionAPI = {
   // Connection CRUD operations
@@ -25,168 +25,62 @@ export const connectionAPI = {
     search?: string;
   }): Promise<ConnectionListResponse> {
     const searchParams = new URLSearchParams();
-    
+
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
     if (params?.type) searchParams.append('type', params.type);
     if (params?.status) searchParams.append('status', params.status);
     if (params?.provider) searchParams.append('provider', params.provider);
     if (params?.search) searchParams.append('search', params.search);
-    
-    const url = `${API_BASE_URL}/connections${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-    
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch connections');
-    }
+    const endpoint = `${apiConfig.endpoints.connections.base}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
 
-    return response.json();
+    return api.get<ConnectionListResponse>(endpoint);
   },
 
   async getConnection(id: string): Promise<{ connection: Connection }> {
-    const response = await fetch(`${API_BASE_URL}/connections/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch connection');
-    }
-
-    return response.json();
+    return api.get<{ connection: Connection }>(apiConfig.endpoints.connections.byId(id));
   },
 
   async createConnection(connectionData: ConnectionFormData): Promise<{ connection: Connection }> {
-    const response = await fetch(`${API_BASE_URL}/connections`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify(connectionData),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to create connection');
-    }
-
-    return response.json();
+    return api.post<{ connection: Connection }>(apiConfig.endpoints.connections.base, connectionData);
   },
 
   async updateConnection(id: string, connectionData: Partial<ConnectionFormData>): Promise<{ connection: Connection }> {
-    const response = await fetch(`${API_BASE_URL}/connections/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify(connectionData),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to update connection');
-    }
-
-    return response.json();
+    return api.put<{ connection: Connection }>(apiConfig.endpoints.connections.byId(id), connectionData);
   },
 
   async deleteConnection(id: string): Promise<{ message: string }> {
-    const response = await fetch(`${API_BASE_URL}/connections/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to delete connection');
-    }
-
-    return response.json();
+    return api.delete<{ message: string }>(apiConfig.endpoints.connections.byId(id));
   },
 
   // Connection testing
   async testConnection(testData: ConnectionTestRequest): Promise<ConnectionTestResult> {
-    const response = await fetch(`${API_BASE_URL}/connections/test`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-      body: JSON.stringify(testData),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to test connection');
-    }
-
-    return response.json();
+    return api.post<ConnectionTestResult>(apiConfig.endpoints.connections.test, testData);
   },
 
   async testExistingConnection(
-    id: string, 
-    testEndpoint?: string, 
+    id: string,
+    testEndpoint?: string,
     testMethod?: string
   ): Promise<ConnectionTestResult> {
     const params = new URLSearchParams();
     if (testEndpoint) params.append('test_endpoint', testEndpoint);
     if (testMethod) params.append('test_method', testMethod);
-    
-    const url = `${API_BASE_URL}/connections/${id}/test${params.toString() ? `?${params.toString()}` : ''}`;
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to test connection');
-    }
+    const endpoint = `${apiConfig.endpoints.connections.testById(id)}${params.toString() ? `?${params.toString()}` : ''}`;
 
-    return response.json();
+    return api.post<ConnectionTestResult>(endpoint);
   },
 
   // Templates and metadata
   async getConnectionTemplates(): Promise<ConnectionTemplateResponse> {
-    const response = await fetch(`${API_BASE_URL}/connections/templates`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch connection templates');
-    }
-
-    return response.json();
+    return api.get<ConnectionTemplateResponse>(apiConfig.endpoints.connections.templates);
   },
 
   // Statistics and monitoring
   async getConnectionStats(): Promise<ConnectionDashboardStats> {
-    const response = await fetch(`${API_BASE_URL}/connections/stats`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to fetch connection statistics');
-    }
-
-    return response.json();
+    return api.get<ConnectionDashboardStats>(apiConfig.endpoints.connections.stats);
   },
 
   // Logs
@@ -204,24 +98,19 @@ export const connectionAPI = {
     limit: number;
   }> {
     const searchParams = new URLSearchParams();
-    
+
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
     if (params?.level) searchParams.append('level', params.level);
-    
-    const url = `${API_BASE_URL}/connections/${connectionId}/logs${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-    
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch connection logs');
-    }
+    const endpoint = `${apiConfig.endpoints.connections.logs(connectionId)}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
 
-    return response.json();
+    return api.get<{
+      logs: ConnectionLog[];
+      total: number;
+      page: number;
+      limit: number;
+    }>(endpoint);
   },
 
   // Health check utilities

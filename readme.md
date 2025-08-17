@@ -17,7 +17,40 @@ Một ứng dụng chatbot hiện đại được xây dựng với React, TypeS
 - **Frontend**: React 18 + TypeScript + Vite
 - **Styling**: Tailwind CSS
 - **Backend**: Python FastAPI
-- **Database**: PostgreSQL/MySQL
+- **Database**: PostgreSQL/MySQL/Supabase
+
+## 🚀 Backend Deployment
+
+### Quick Deploy
+```bash
+# Deploy backend với Docker
+./deploy.sh production
+
+# Kiểm tra health
+curl http://localhost:8000/health
+
+# API docs
+open http://localhost:8000/docs
+```
+
+### Commands
+```bash
+# Xem logs
+docker-compose logs -f backend
+
+# Restart backend
+docker-compose restart backend
+
+# Update deployment
+git pull && ./deploy.sh production
+```
+
+### Endpoints
+- **API**: `http://localhost:8000/api/v1`
+- **Health**: `http://localhost:8000/health`
+- **Docs**: `http://localhost:8000/docs`
+
+📚 **Chi tiết deployment**: Xem `README-DEPLOYMENT.md`
 - **Authentication**: JWT
 
 ## 📁 Cấu trúc Project
