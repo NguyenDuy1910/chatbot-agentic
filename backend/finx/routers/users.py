@@ -1,9 +1,9 @@
 import logging
 from typing import Optional
 
-from open_webui.models.auths import Auths
-from open_webui.models.chats import Chats
-from open_webui.models.users import (
+from finx.models.auths import Auths
+from finx.models.chats import Chats
+from finx.models.users import (
     UserModel,
     UserRoleUpdateForm,
     Users,
@@ -11,16 +11,13 @@ from open_webui.models.users import (
     UserUpdateForm,
 )
 
-
-from open_webui.socket.main import get_active_status_by_user_id
-from open_webui.constants import ERROR_MESSAGES
-from open_webui.env import SRC_LOG_LEVELS
+from finx.constants import ERROR_MESSAGES, SRC_LOG_LEVELS
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel
-from open_webui.utils.auth import get_admin_user, get_password_hash, get_verified_user
+from finx.utils.auth import get_admin_user, get_password_hash, get_verified_user
 
 log = logging.getLogger(__name__)
-log.setLevel(SRC_LOG_LEVELS["MODELS"])
+log.setLevel(SRC_LOG_LEVELS["API"])
 
 router = APIRouter()
 
@@ -221,7 +218,7 @@ class UserResponse(BaseModel):
 
 
 @router.get("/{user_id}", response_model=UserResponse)
-async def get_user_by_id(user_id: str, user=Depends(get_verified_user)):
+async def get_user_by_id(user_id: str, current_user=Depends(get_verified_user)):
     # Check if user_id is a shared chat
     # If it is, get the user_id from the chat
     if user_id.startswith("shared-"):
@@ -239,11 +236,11 @@ async def get_user_by_id(user_id: str, user=Depends(get_verified_user)):
 
     if user:
         return UserResponse(
-            **{
-                "name": user.name,
-                "profile_image_url": user.profile_image_url,
-                "active": get_active_status_by_user_id(user_id),
-            }
+            id=user.id,
+            name=user.name,
+            email=user.email,
+            role=user.role,
+            profile_image_url=user.profile_image_url
         )
     else:
         raise HTTPException(

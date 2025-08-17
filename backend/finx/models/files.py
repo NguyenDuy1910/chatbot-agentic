@@ -2,7 +2,7 @@ import time
 import uuid
 from typing import Optional, List
 
-from finx.internal.db import Base, JSONField, get_db
+from finx.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
@@ -12,6 +12,7 @@ from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
 class File(Base):
     __tablename__ = "file"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String, primary_key=True)
     user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
@@ -78,7 +79,7 @@ class FileResponse(BaseModel):
 
 class FilesTable:
     def insert_new_file(self, user_id: str, form_data: FileForm) -> Optional[FileModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             id = str(uuid.uuid4())
             file = FileModel(
                 **{
@@ -105,7 +106,7 @@ class FilesTable:
 
     def get_file_by_id(self, id: str) -> Optional[FileModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 file = db.query(File).filter_by(id=id).first()
                 return FileModel.model_validate(file) if file else None
         except Exception:
@@ -113,14 +114,14 @@ class FilesTable:
 
     def get_file_by_hash(self, hash: str) -> Optional[FileModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 file = db.query(File).filter_by(hash=hash).first()
                 return FileModel.model_validate(file) if file else None
         except Exception:
             return None
 
     def get_files_by_user_id(self, user_id: str, skip: int = 0, limit: int = 50) -> List[FileModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             files = (
                 db.query(File)
                 .filter_by(user_id=user_id)
@@ -132,7 +133,7 @@ class FilesTable:
             return [FileModel.model_validate(file) for file in files]
 
     def get_files_by_filename(self, filename: str, user_id: Optional[str] = None) -> List[FileModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             query = db.query(File).filter_by(filename=filename)
             if user_id:
                 query = query.filter_by(user_id=user_id)
@@ -141,7 +142,7 @@ class FilesTable:
 
     def get_public_files(self) -> List[FileModel]:
         """Get files that are publicly accessible"""
-        with get_db() as db:
+        with get_db_context() as db:
             files = db.query(File).all()
             public_files = []
             for file in files:
@@ -152,7 +153,7 @@ class FilesTable:
 
     def update_file_by_id(self, id: str, updated: dict) -> Optional[FileModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 updated["updated_at"] = int(time.time())
                 db.query(File).filter_by(id=id).update(updated)
                 db.commit()
@@ -163,7 +164,7 @@ class FilesTable:
 
     def update_file_hash_by_id(self, id: str, hash: str) -> Optional[FileModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(File).filter_by(id=id).update({
                     "hash": hash,
                     "updated_at": int(time.time())
@@ -176,7 +177,7 @@ class FilesTable:
 
     def update_file_path_by_id(self, id: str, path: str) -> Optional[FileModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(File).filter_by(id=id).update({
                     "path": path,
                     "updated_at": int(time.time())
@@ -189,7 +190,7 @@ class FilesTable:
 
     def delete_file_by_id(self, id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(File).filter_by(id=id).delete()
                 db.commit()
                 return True
@@ -198,7 +199,7 @@ class FilesTable:
 
     def delete_files_by_user_id(self, user_id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(File).filter_by(user_id=user_id).delete()
                 db.commit()
                 return True
@@ -207,7 +208,7 @@ class FilesTable:
 
     def delete_files_by_hash(self, hash: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(File).filter_by(hash=hash).delete()
                 db.commit()
                 return True
@@ -215,12 +216,12 @@ class FilesTable:
             return False
 
     def get_file_count_by_user_id(self, user_id: str) -> int:
-        with get_db() as db:
+        with get_db_context() as db:
             return db.query(File).filter_by(user_id=user_id).count()
 
     def get_total_file_size_by_user_id(self, user_id: str) -> int:
         """Get total file size for a user (from meta data)"""
-        with get_db() as db:
+        with get_db_context() as db:
             files = db.query(File).filter_by(user_id=user_id).all()
             total_size = 0
             for file in files:

@@ -3,7 +3,7 @@ import uuid
 from typing import Optional
 
 import hashlib
-from finx.internal.db import Base, get_db
+from finx.internal.db import Base, JSONField, get_db_context
 from .users import UserModel, Users
 from finx.constants import SRC_LOG_LEVELS
 from pydantic import BaseModel
@@ -31,6 +31,7 @@ def hash_password(password: str) -> str:
 
 class Auth(Base):
     __tablename__ = "auth"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String, primary_key=True)
     email = Column(String)
@@ -116,7 +117,7 @@ class AuthsTable:
         role: str = "pending",
         oauth_sub: Optional[str] = None,
     ) -> Optional[UserModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             log.info("insert_new_auth")
 
             id = str(uuid.uuid4())
@@ -142,7 +143,7 @@ class AuthsTable:
     def authenticate_user(self, email: str, password: str) -> Optional[UserModel]:
         log.info(f"authenticate_user: {email}")
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 auth = db.query(Auth).filter_by(email=email, active=True).first()
                 if auth:
                     if verify_password(password, auth.password):
@@ -170,7 +171,7 @@ class AuthsTable:
     def authenticate_user_by_trusted_header(self, email: str) -> Optional[UserModel]:
         log.info(f"authenticate_user_by_trusted_header: {email}")
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 auth = db.query(Auth).filter_by(email=email, active=True).first()
                 if auth:
                     user = Users.get_user_by_id(auth.id)
@@ -180,7 +181,7 @@ class AuthsTable:
 
     def update_user_password_by_id(self, id: str, new_password: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 result = (
                     db.query(Auth).filter_by(id=id).update({"password": hash_password(new_password)})
                 )
@@ -191,7 +192,7 @@ class AuthsTable:
 
     def update_email_by_id(self, id: str, email: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 result = db.query(Auth).filter_by(id=id).update({"email": email})
                 db.commit()
                 return True if result == 1 else False
@@ -200,7 +201,7 @@ class AuthsTable:
 
     def delete_auth_by_id(self, id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 # Delete User
                 result = Users.delete_user_by_id(id)
 

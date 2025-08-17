@@ -2,7 +2,7 @@ import time
 import uuid
 from typing import Optional, List
 
-from finx.internal.db import Base, JSONField, get_db
+from finx.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Boolean, Column, String, Text, ForeignKey
 
@@ -12,6 +12,7 @@ from sqlalchemy import BigInteger, Boolean, Column, String, Text, ForeignKey
 
 class Folder(Base):
     __tablename__ = "folder"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String, primary_key=True)
     parent_id = Column(String, ForeignKey("folder.id", ondelete="CASCADE"), nullable=True)
@@ -44,6 +45,7 @@ class FolderModel(BaseModel):
 
 class Chat(Base):
     __tablename__ = "chat"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String, primary_key=True)
     user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
@@ -116,7 +118,7 @@ class FoldersTable:
     def insert_new_folder(
         self, user_id: str, name: str, parent_id: Optional[str] = None
     ) -> Optional[FolderModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             id = str(uuid.uuid4())
             folder = FolderModel(
                 **{
@@ -142,25 +144,25 @@ class FoldersTable:
 
     def get_folder_by_id(self, id: str) -> Optional[FolderModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 folder = db.query(Folder).filter_by(id=id).first()
                 return FolderModel.model_validate(folder) if folder else None
         except Exception:
             return None
 
     def get_folders_by_user_id(self, user_id: str) -> List[FolderModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             folders = db.query(Folder).filter_by(user_id=user_id).order_by(Folder.created_at.desc()).all()
             return [FolderModel.model_validate(folder) for folder in folders]
 
     def get_folders_by_parent_id(self, parent_id: Optional[str], user_id: str) -> List[FolderModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             folders = db.query(Folder).filter_by(parent_id=parent_id, user_id=user_id).order_by(Folder.created_at.desc()).all()
             return [FolderModel.model_validate(folder) for folder in folders]
 
     def update_folder_by_id(self, id: str, updated: dict) -> Optional[FolderModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 updated["updated_at"] = int(time.time())
                 db.query(Folder).filter_by(id=id).update(updated)
                 db.commit()
@@ -171,7 +173,7 @@ class FoldersTable:
 
     def delete_folder_by_id(self, id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 # Delete all subfolders recursively
                 self._delete_subfolders_recursive(db, id)
                 # Delete the folder itself
@@ -195,7 +197,7 @@ class FoldersTable:
 
 class ChatsTable:
     def insert_new_chat(self, user_id: str, form_data: ChatForm) -> Optional[ChatModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             id = str(uuid.uuid4())
             chat = ChatModel(
                 **{
@@ -219,7 +221,7 @@ class ChatsTable:
 
     def get_chat_by_id(self, id: str) -> Optional[ChatModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 chat = db.query(Chat).filter_by(id=id).first()
                 return ChatModel.model_validate(chat) if chat else None
         except Exception:
@@ -227,14 +229,14 @@ class ChatsTable:
 
     def get_chat_by_share_id(self, share_id: str) -> Optional[ChatModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 chat = db.query(Chat).filter_by(share_id=share_id).first()
                 return ChatModel.model_validate(chat) if chat else None
         except Exception:
             return None
 
     def get_chats_by_user_id(self, user_id: str, skip: int = 0, limit: int = 50) -> List[ChatModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             chats = (
                 db.query(Chat)
                 .filter_by(user_id=user_id)
@@ -246,7 +248,7 @@ class ChatsTable:
             return [ChatModel.model_validate(chat) for chat in chats]
 
     def get_chats_by_folder_id(self, folder_id: Optional[str], user_id: str) -> List[ChatModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             chats = (
                 db.query(Chat)
                 .filter_by(folder_id=folder_id, user_id=user_id)
@@ -256,7 +258,7 @@ class ChatsTable:
             return [ChatModel.model_validate(chat) for chat in chats]
 
     def get_archived_chats_by_user_id(self, user_id: str) -> List[ChatModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             chats = (
                 db.query(Chat)
                 .filter_by(user_id=user_id, archived=True)
@@ -266,7 +268,7 @@ class ChatsTable:
             return [ChatModel.model_validate(chat) for chat in chats]
 
     def get_pinned_chats_by_user_id(self, user_id: str) -> List[ChatModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             chats = (
                 db.query(Chat)
                 .filter_by(user_id=user_id, pinned=True)
@@ -277,7 +279,7 @@ class ChatsTable:
 
     def update_chat_by_id(self, id: str, updated: dict) -> Optional[ChatModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 updated["updated_at"] = int(time.time())
                 db.query(Chat).filter_by(id=id).update(updated)
                 db.commit()
@@ -288,7 +290,7 @@ class ChatsTable:
 
     def update_chat_share_id_by_id(self, id: str, share_id: Optional[str]) -> Optional[ChatModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Chat).filter_by(id=id).update({
                     "share_id": share_id,
                     "updated_at": int(time.time())
@@ -301,7 +303,7 @@ class ChatsTable:
 
     def toggle_chat_archive_by_id(self, id: str) -> Optional[ChatModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 chat = db.query(Chat).filter_by(id=id).first()
                 if chat:
                     chat.archived = not chat.archived
@@ -314,7 +316,7 @@ class ChatsTable:
 
     def toggle_chat_pin_by_id(self, id: str) -> Optional[ChatModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 chat = db.query(Chat).filter_by(id=id).first()
                 if chat:
                     chat.pinned = not chat.pinned
@@ -327,7 +329,7 @@ class ChatsTable:
 
     def delete_chat_by_id(self, id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Chat).filter_by(id=id).delete()
                 db.commit()
                 return True
@@ -336,7 +338,7 @@ class ChatsTable:
 
     def delete_chats_by_user_id(self, user_id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Chat).filter_by(user_id=user_id).delete()
                 db.commit()
                 return True

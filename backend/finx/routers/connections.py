@@ -6,8 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_, desc
 
-from backend.finx.internal.db import get_db
-from backend.finx.models.connections import (
+from finx.internal.db import get_db
+from finx.models.connections import (
     Connection, ConnectionTemplate, ConnectionLog,
     ConnectionModel, ConnectionTemplateModel, ConnectionLogModel,
     ConnectionCreateForm, ConnectionUpdateForm, ConnectionTestForm,
@@ -15,15 +15,15 @@ from backend.finx.models.connections import (
     ConnectionStatsResponse, ConnectionTestResult,
     ConnectionType, ConnectionStatus
 )
-from backend.finx.utils.auth import get_current_user
-from backend.finx.utils.connections import (
+from finx.utils.auth import get_current_user
+from finx.utils.connections import (
     test_connection, get_connection_templates, create_connection_log
 )
-from backend.finx.utils.security import (
+from finx.utils.security import (
     encrypt_credentials, decrypt_credentials, mask_credentials,
     check_connection_permission, audit_connection_access, SecurityError
 )
-from backend.finx.utils.health_monitor import force_health_check, get_health_summary
+from finx.utils.health_monitor import force_health_check, get_health_summary
 
 log = logging.getLogger(__name__)
 
@@ -44,7 +44,6 @@ async def get_connections(
     db: Session = Depends(get_db),
     current_user = Depends(get_current_user)
 ):
-    """Get paginated list of connections with optional filtering"""
     try:
         query = db.query(Connection)
         
@@ -457,7 +456,7 @@ async def test_existing_connection(
         decrypted_creds = decrypt_credentials(connection.credentials) if connection.credentials else {}
 
         # Create test form data
-        from backend.finx.models.connections import ConnectionCredentials, ConnectionConfig, ConnectionHealthCheck
+        from finx.models.connections import ConnectionCredentials, ConnectionConfig, ConnectionHealthCheck
         test_data = ConnectionCreateForm(
             name=connection.name,
             type=connection.type,

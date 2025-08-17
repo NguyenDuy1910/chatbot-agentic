@@ -13,6 +13,7 @@ SRC_LOG_LEVELS = {
     "CONNECTIONS": logging.INFO,
     "HEALTH": logging.INFO,
     "SECURITY": logging.WARNING,
+    "MODELS": logging.INFO,
     "DEFAULT": logging.INFO
 }
 
@@ -151,3 +152,29 @@ ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 IS_PRODUCTION = ENVIRONMENT == "production"
 IS_DEVELOPMENT = ENVIRONMENT == "development"
 IS_TESTING = ENVIRONMENT == "testing"
+
+# Error Messages
+class ErrorMessages:
+    DEFAULT = lambda msg="Something went wrong": msg
+    USER_NOT_FOUND = "User not found"
+    EMAIL_TAKEN = "Email is already taken"
+    ACTION_PROHIBITED = "Action prohibited"
+    ACCESS_PROHIBITED = "Access prohibited"
+    INVALID_TOKEN = "Invalid token"
+    UNAUTHORIZED = "Unauthorized"
+    API_KEY_NOT_ALLOWED = "API key not allowed"
+    DELETE_USER_ERROR = "Failed to delete user"
+    INVALID_CREDENTIALS = "Invalid credentials"
+    INVALID_CRED = "Invalid credentials"
+    INVALID_PASSWORD = "Invalid password"
+    CREATE_USER_ERROR = "Failed to create user"
+    EXPIRED_TOKEN = "Token has expired"
+    INSUFFICIENT_PERMISSIONS = "Insufficient permissions"
+    RESOURCE_NOT_FOUND = "Resource not found"
+    VALIDATION_ERROR = "Validation error"
+    INTERNAL_SERVER_ERROR = "Internal server error"
+    BAD_REQUEST = "Bad request"
+    CONFLICT = "Resource conflict"
+    RATE_LIMIT_EXCEEDED = "Rate limit exceeded"
+
+ERROR_MESSAGES = ErrorMessages()

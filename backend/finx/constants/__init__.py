@@ -17,7 +17,8 @@ from .config import (
     ENVIRONMENT,
     IS_PRODUCTION,
     IS_DEVELOPMENT,
-    IS_TESTING
+    IS_TESTING,
+    ERROR_MESSAGES
 )
 
 __all__ = [
@@ -35,5 +36,6 @@ __all__ = [
     "ENVIRONMENT",
     "IS_PRODUCTION",
     "IS_DEVELOPMENT",
-    "IS_TESTING"
+    "IS_TESTING",
+    "ERROR_MESSAGES"
 ]

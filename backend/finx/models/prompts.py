@@ -1,7 +1,7 @@
 import time
 from typing import Optional
 
-from finx.internal.db import Base, get_db, JSONField
+from finx.internal.db import Base, JSONField, get_db_context, JSONField
 
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text
@@ -13,6 +13,7 @@ from sqlalchemy import BigInteger, Column, String, Text
 
 class Prompt(Base):
     __tablename__ = "prompt"
+    __table_args__ = {'extend_existing': True}
 
     command = Column(String, primary_key=True)
     user_id = Column(String)
@@ -78,7 +79,7 @@ class PromptsTable:
         )
 
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 result = Prompt(**prompt.model_dump())
                 db.add(result)
                 db.commit()
@@ -92,19 +93,19 @@ class PromptsTable:
 
     def get_prompt_by_command(self, command: str) -> Optional[PromptModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 prompt = db.query(Prompt).filter_by(command=command).first()
                 return PromptModel.model_validate(prompt)
         except Exception:
             return None
 
     def get_prompts(self) -> list[PromptModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             prompts = db.query(Prompt).order_by(Prompt.timestamp.desc()).all()
             return [PromptModel.model_validate(prompt) for prompt in prompts]
 
     def get_prompts_by_user_id(self, user_id: str) -> list[PromptModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             prompts = db.query(Prompt).filter_by(user_id=user_id).order_by(Prompt.timestamp.desc()).all()
             return [PromptModel.model_validate(prompt) for prompt in prompts]
 
@@ -112,7 +113,7 @@ class PromptsTable:
         self, command: str, form_data: PromptForm
     ) -> Optional[PromptModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 prompt = db.query(Prompt).filter_by(command=command).first()
                 prompt.title = form_data.title
                 prompt.content = form_data.content
@@ -125,7 +126,7 @@ class PromptsTable:
 
     def delete_prompt_by_command(self, command: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Prompt).filter_by(command=command).delete()
                 db.commit()
 
