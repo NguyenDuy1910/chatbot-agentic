@@ -16,13 +16,16 @@ RUN apt-get update \
         g++ \
         libpq-dev \
         curl \
+        build-essential \
+        python3-dev \
+        pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip \
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
     && pip install --no-cache-dir -r requirements.txt
 
 # Copy application code

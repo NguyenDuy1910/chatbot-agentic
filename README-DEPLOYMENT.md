@@ -19,7 +19,17 @@ curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
 sudo usermod -aG docker $USER
 
-# Cài đặt Docker Compose
+# Cài đặt Docker (AlmaLinux/RHEL/CentOS)
+# Nếu gặp lỗi "Unsupported distribution 'almalinux'", sử dụng:
+sudo dnf remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
+sudo dnf install -y dnf-utils
+sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
+
+# Cài đặt Docker Compose (nếu chưa có)
 sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
@@ -158,6 +168,37 @@ docker-compose logs -f backend | grep ERROR
 
 ### 🛠️ Troubleshooting
 
+#### Docker installation issues trên AlmaLinux:
+
+```bash
+# Nếu gặp lỗi "Unsupported distribution 'almalinux'"
+# Gỡ bỏ Docker cũ (nếu có)
+sudo dnf remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
+
+# Cài đặt dependencies
+sudo dnf install -y dnf-utils device-mapper-persistent-data lvm2
+
+# Thêm Docker repository (sử dụng CentOS repo cho AlmaLinux)
+sudo dnf config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+# Cài đặt Docker
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Start và enable Docker service
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Thêm user vào docker group
+sudo usermod -aG docker $USER
+
+# Kiểm tra cài đặt
+docker --version
+docker-compose --version
+
+# Test Docker
+sudo docker run hello-world
+```
+
 #### Backend không start được:
 
 ```bash
@@ -170,6 +211,23 @@ netstat -tulpn | grep :8000
 # Rebuild container
 docker-compose build --no-cache backend
 docker-compose up -d backend
+```
+
+#### Docker build fails với pip install error:
+
+```bash
+# Nếu gặp lỗi "pip install did not complete successfully"
+# Kiểm tra requirements.txt có dòng git+ssh không hợp lệ
+
+# Clean build
+docker system prune -f
+docker-compose build --no-cache --pull backend
+
+# Nếu vẫn lỗi, thử build với verbose
+docker-compose build --no-cache --progress=plain backend
+
+# Kiểm tra disk space
+df -h
 ```
 
 #### Database connection issues:
