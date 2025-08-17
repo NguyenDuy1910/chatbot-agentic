@@ -4,17 +4,11 @@ import time
 from typing import Optional
 import uuid
 
-from open_webui.internal.db import Base, get_db
-from open_webui.env import SRC_LOG_LEVELS
-
-from open_webui.models.files import FileMetadataResponse
-from open_webui.models.users import Users, UserResponse
-
+from finx.internal.db import Base, get_db, JSONField
+from finx.constants import SRC_LOG_LEVELS
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import BigInteger, Column, String, Text, JSON
-
-from open_webui.utils.access_control import has_access
+from sqlalchemy import BigInteger, Column, String, Text
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MODELS"])
@@ -33,10 +27,10 @@ class Knowledge(Base):
     name = Column(Text)
     description = Column(Text)
 
-    data = Column(JSON, nullable=True)
-    meta = Column(JSON, nullable=True)
+    data = Column(JSONField, nullable=True)
+    meta = Column(JSONField, nullable=True)
 
-    access_control = Column(JSON, nullable=True)  # Controls data access levels.
+    access_control = Column(JSONField, nullable=True)  # Controls data access levels.
     # Defines access control rules for this entry.
     # - `None`: Public access, available to all users with the "user" role.
     # - `{}`: Private access, restricted exclusively to the owner.
@@ -80,16 +74,8 @@ class KnowledgeModel(BaseModel):
 ####################
 
 
-class KnowledgeUserModel(KnowledgeModel):
-    user: Optional[UserResponse] = None
-
-
 class KnowledgeResponse(KnowledgeModel):
-    files: Optional[list[FileMetadataResponse | dict]] = None
-
-
-class KnowledgeUserResponse(KnowledgeUserModel):
-    files: Optional[list[FileMetadataResponse | dict]] = None
+    files: Optional[list[dict]] = None
 
 
 class KnowledgeForm(BaseModel):
@@ -126,33 +112,15 @@ class KnowledgeTable:
             except Exception:
                 return None
 
-    def get_knowledge_bases(self) -> list[KnowledgeUserModel]:
+    def get_knowledge_bases(self) -> list[KnowledgeModel]:
         with get_db() as db:
-            knowledge_bases = []
-            for knowledge in (
-                db.query(Knowledge).order_by(Knowledge.updated_at.desc()).all()
-            ):
-                user = Users.get_user_by_id(knowledge.user_id)
-                knowledge_bases.append(
-                    KnowledgeUserModel.model_validate(
-                        {
-                            **KnowledgeModel.model_validate(knowledge).model_dump(),
-                            "user": user.model_dump() if user else None,
-                        }
-                    )
-                )
-            return knowledge_bases
+            knowledge_bases = db.query(Knowledge).order_by(Knowledge.updated_at.desc()).all()
+            return [KnowledgeModel.model_validate(knowledge) for knowledge in knowledge_bases]
 
-    def get_knowledge_bases_by_user_id(
-        self, user_id: str, permission: str = "write"
-    ) -> list[KnowledgeUserModel]:
-        knowledge_bases = self.get_knowledge_bases()
-        return [
-            knowledge_base
-            for knowledge_base in knowledge_bases
-            if knowledge_base.user_id == user_id
-            or has_access(user_id, permission, knowledge_base.access_control)
-        ]
+    def get_knowledge_bases_by_user_id(self, user_id: str) -> list[KnowledgeModel]:
+        with get_db() as db:
+            knowledge_bases = db.query(Knowledge).filter_by(user_id=user_id).order_by(Knowledge.updated_at.desc()).all()
+            return [KnowledgeModel.model_validate(knowledge) for knowledge in knowledge_bases]
 
     def get_knowledge_by_id(self, id: str) -> Optional[KnowledgeModel]:
         try:
@@ -163,11 +131,10 @@ class KnowledgeTable:
             return None
 
     def update_knowledge_by_id(
-        self, id: str, form_data: KnowledgeForm, overwrite: bool = False
+        self, id: str, form_data: KnowledgeForm
     ) -> Optional[KnowledgeModel]:
         try:
             with get_db() as db:
-                knowledge = self.get_knowledge_by_id(id=id)
                 db.query(Knowledge).filter_by(id=id).update(
                     {
                         **form_data.model_dump(),
@@ -185,7 +152,6 @@ class KnowledgeTable:
     ) -> Optional[KnowledgeModel]:
         try:
             with get_db() as db:
-                knowledge = self.get_knowledge_by_id(id=id)
                 db.query(Knowledge).filter_by(id=id).update(
                     {
                         "data": data,

@@ -1,11 +1,7 @@
 import time
 from typing import Optional
 
-from open_webui.internal.db import Base, JSONField, get_db
-
-
-from open_webui.models.chats import Chats
-from open_webui.models.groups import Groups
+from finx.internal.db import Base, JSONField, get_db
 
 
 from pydantic import BaseModel, ConfigDict
@@ -273,6 +269,10 @@ class UsersTable:
 
     def delete_user_by_id(self, id: str) -> bool:
         try:
+            # Import here to avoid circular imports
+            from finx.models.groups import Groups
+            from finx.models.chats import Chats
+
             # Remove User from Groups
             Groups.remove_user_from_all_groups(id)
 
