@@ -1,13 +1,10 @@
 import time
 from typing import Optional
 
-from open_webui.internal.db import Base, get_db
-from open_webui.models.users import Users, UserResponse
+from finx.internal.db import Base, get_db, JSONField
 
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import BigInteger, Column, String, Text, JSON
-
-from open_webui.utils.access_control import has_access
+from sqlalchemy import BigInteger, Column, String, Text
 
 ####################
 # Prompts DB Schema
@@ -23,7 +20,7 @@ class Prompt(Base):
     content = Column(Text)
     timestamp = Column(BigInteger)
 
-    access_control = Column(JSON, nullable=True)  # Controls data access levels.
+    access_control = Column(JSONField, nullable=True)  # Controls data access levels.
     # Defines access control rules for this entry.
     # - `None`: Public access, available to all users with the "user" role.
     # - `{}`: Private access, restricted exclusively to the owner.
@@ -57,8 +54,8 @@ class PromptModel(BaseModel):
 ####################
 
 
-class PromptUserResponse(PromptModel):
-    user: Optional[UserResponse] = None
+class PromptResponse(PromptModel):
+    pass
 
 
 class PromptForm(BaseModel):
@@ -101,34 +98,15 @@ class PromptsTable:
         except Exception:
             return None
 
-    def get_prompts(self) -> list[PromptUserResponse]:
+    def get_prompts(self) -> list[PromptModel]:
         with get_db() as db:
-            prompts = []
+            prompts = db.query(Prompt).order_by(Prompt.timestamp.desc()).all()
+            return [PromptModel.model_validate(prompt) for prompt in prompts]
 
-            for prompt in db.query(Prompt).order_by(Prompt.timestamp.desc()).all():
-                user = Users.get_user_by_id(prompt.user_id)
-                prompts.append(
-                    PromptUserResponse.model_validate(
-                        {
-                            **PromptModel.model_validate(prompt).model_dump(),
-                            "user": user.model_dump() if user else None,
-                        }
-                    )
-                )
-
-            return prompts
-
-    def get_prompts_by_user_id(
-        self, user_id: str, permission: str = "write"
-    ) -> list[PromptUserResponse]:
-        prompts = self.get_prompts()
-
-        return [
-            prompt
-            for prompt in prompts
-            if prompt.user_id == user_id
-            or has_access(user_id, permission, prompt.access_control)
-        ]
+    def get_prompts_by_user_id(self, user_id: str) -> list[PromptModel]:
+        with get_db() as db:
+            prompts = db.query(Prompt).filter_by(user_id=user_id).order_by(Prompt.timestamp.desc()).all()
+            return [PromptModel.model_validate(prompt) for prompt in prompts]
 
     def update_prompt_by_command(
         self, command: str, form_data: PromptForm

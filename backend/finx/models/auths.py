@@ -2,15 +2,27 @@ import logging
 import uuid
 from typing import Optional
 
-from backend.finx.internal.db import Base, get_db
-from open_webui.models.users import UserModel, Users
-from open_webui.env import SRC_LOG_LEVELS
+import hashlib
+from finx.internal.db import Base, get_db
+from .users import UserModel, Users
+from finx.constants import SRC_LOG_LEVELS
 from pydantic import BaseModel
 from sqlalchemy import Boolean, Column, String, Text
-from open_webui.utils.auth import verify_password
 
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MODELS"])
+
+# Simple password verification function
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    """Simple password verification - in production, use proper hashing like bcrypt"""
+    if not hashed_password:
+        return False
+    # For now, using simple SHA256 - replace with bcrypt in production
+    return hashlib.sha256(plain_password.encode()).hexdigest() == hashed_password
+
+def hash_password(password: str) -> str:
+    """Simple password hashing - in production, use proper hashing like bcrypt"""
+    return hashlib.sha256(password.encode()).hexdigest()
 
 ####################
 # DB MODEL
@@ -110,7 +122,7 @@ class AuthsTable:
             id = str(uuid.uuid4())
 
             auth = AuthModel(
-                **{"id": id, "email": email, "password": password, "active": True}
+                **{"id": id, "email": email, "password": hash_password(password), "active": True}
             )
             result = Auth(**auth.model_dump())
             db.add(result)
@@ -170,7 +182,7 @@ class AuthsTable:
         try:
             with get_db() as db:
                 result = (
-                    db.query(Auth).filter_by(id=id).update({"password": new_password})
+                    db.query(Auth).filter_by(id=id).update({"password": hash_password(new_password)})
                 )
                 db.commit()
                 return True if result == 1 else False
