@@ -2,7 +2,7 @@ import time
 import uuid
 from typing import Optional, List
 
-from finx.internal.db import Base, JSONField, get_db
+from finx.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Boolean, Column, String, Text, ForeignKey
 
@@ -12,6 +12,7 @@ from sqlalchemy import BigInteger, Boolean, Column, String, Text, ForeignKey
 
 class Model(Base):
     __tablename__ = "model"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String, primary_key=True)
     user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
@@ -75,7 +76,7 @@ class ModelResponse(BaseModel):
 
 class ModelsTable:
     def insert_new_model(self, user_id: str, form_data: ModelForm) -> Optional[ModelModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             id = str(uuid.uuid4())
             model = ModelModel(
                 **{
@@ -102,30 +103,30 @@ class ModelsTable:
 
     def get_model_by_id(self, id: str) -> Optional[ModelModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 model = db.query(Model).filter_by(id=id).first()
                 return ModelModel.model_validate(model) if model else None
         except Exception:
             return None
 
     def get_models_by_user_id(self, user_id: str) -> List[ModelModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             models = db.query(Model).filter_by(user_id=user_id).order_by(Model.created_at.desc()).all()
             return [ModelModel.model_validate(model) for model in models]
 
     def get_active_models_by_user_id(self, user_id: str) -> List[ModelModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             models = db.query(Model).filter_by(user_id=user_id, is_active=True).order_by(Model.created_at.desc()).all()
             return [ModelModel.model_validate(model) for model in models]
 
     def get_models_by_base_model_id(self, base_model_id: str) -> List[ModelModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             models = db.query(Model).filter_by(base_model_id=base_model_id).order_by(Model.created_at.desc()).all()
             return [ModelModel.model_validate(model) for model in models]
 
     def get_public_models(self) -> List[ModelModel]:
         """Get models that are publicly accessible"""
-        with get_db() as db:
+        with get_db_context() as db:
             models = db.query(Model).filter_by(is_active=True).all()
             public_models = []
             for model in models:
@@ -136,13 +137,13 @@ class ModelsTable:
 
     def get_base_models(self) -> List[ModelModel]:
         """Get models that are base models (no base_model_id)"""
-        with get_db() as db:
+        with get_db_context() as db:
             models = db.query(Model).filter(Model.base_model_id.is_(None)).filter_by(is_active=True).order_by(Model.created_at.desc()).all()
             return [ModelModel.model_validate(model) for model in models]
 
     def update_model_by_id(self, id: str, updated: dict) -> Optional[ModelModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 updated["updated_at"] = int(time.time())
                 db.query(Model).filter_by(id=id).update(updated)
                 db.commit()
@@ -153,7 +154,7 @@ class ModelsTable:
 
     def toggle_model_active_by_id(self, id: str) -> Optional[ModelModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 model = db.query(Model).filter_by(id=id).first()
                 if model:
                     model.is_active = not model.is_active
@@ -166,7 +167,7 @@ class ModelsTable:
 
     def delete_model_by_id(self, id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 # Update any models that use this as base_model_id to None
                 db.query(Model).filter_by(base_model_id=id).update({"base_model_id": None})
                 # Delete the model
@@ -178,7 +179,7 @@ class ModelsTable:
 
     def delete_models_by_user_id(self, user_id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 # Get all models by user
                 user_models = db.query(Model).filter_by(user_id=user_id).all()
                 user_model_ids = [model.id for model in user_models]
@@ -195,11 +196,11 @@ class ModelsTable:
             return False
 
     def get_model_count_by_user_id(self, user_id: str) -> int:
-        with get_db() as db:
+        with get_db_context() as db:
             return db.query(Model).filter_by(user_id=user_id).count()
 
     def get_active_model_count_by_user_id(self, user_id: str) -> int:
-        with get_db() as db:
+        with get_db_context() as db:
             return db.query(Model).filter_by(user_id=user_id, is_active=True).count()
 
 

@@ -101,6 +101,9 @@ def init_database():
         # Create session factory using provider
         SessionLocal = provider.create_session_factory()
 
+        # Set up event listeners after engine is created
+        setup_event_listeners()
+
         log.info(f"Database initialized with {provider.__class__.__name__}")
 
     return engine, SessionLocal
@@ -198,27 +201,19 @@ def get_provider_info() -> Dict[str, Any]:
     }
 
 
-# Event listeners for connection management
-@event.listens_for(engine, "connect")
-def set_sqlite_pragma(dbapi_connection, connection_record):
+def setup_event_listeners():
     """
-    Set database connection parameters
+    Set up database event listeners after engine is created
     """
-    # This is mainly for PostgreSQL optimizations
-    pass
+    global engine
+    if engine is not None:
+        @event.listens_for(engine, "connect")
+        def set_sqlite_pragma(dbapi_connection, connection_record):
+            """
+            Set database connection parameters
+            """
+            # This is mainly for PostgreSQL optimizations
+            pass
 
 
-@event.listens_for(engine, "checkout")
-def receive_checkout(dbapi_connection, connection_record, connection_proxy):
-    """
-    Handle connection checkout from pool
-    """
-    log.debug("Database connection checked out from pool")
-
-
-@event.listens_for(engine, "checkin")
-def receive_checkin(dbapi_connection, connection_record):
-    """
-    Handle connection checkin to pool
-    """
-    log.debug("Database connection checked in to pool")
+# Event listeners will be set up after engine initialization

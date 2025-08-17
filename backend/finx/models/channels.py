@@ -2,7 +2,7 @@ import time
 import uuid
 from typing import Optional, List
 
-from finx.internal.db import Base, JSONField, get_db
+from finx.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
@@ -12,6 +12,7 @@ from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
 class Channel(Base):
     __tablename__ = "channel"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String, primary_key=True)
     user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
@@ -66,7 +67,7 @@ class ChannelUpdateForm(BaseModel):
 
 class ChannelsTable:
     def insert_new_channel(self, user_id: str, form_data: ChannelForm) -> Optional[ChannelModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             id = str(uuid.uuid4())
             channel = ChannelModel(
                 **{
@@ -93,19 +94,19 @@ class ChannelsTable:
 
     def get_channel_by_id(self, id: str) -> Optional[ChannelModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 channel = db.query(Channel).filter_by(id=id).first()
                 return ChannelModel.model_validate(channel) if channel else None
         except Exception:
             return None
 
     def get_channels_by_user_id(self, user_id: str) -> List[ChannelModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             channels = db.query(Channel).filter_by(user_id=user_id).order_by(Channel.created_at.desc()).all()
             return [ChannelModel.model_validate(channel) for channel in channels]
 
     def get_channels_by_type(self, type: str, user_id: Optional[str] = None) -> List[ChannelModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             query = db.query(Channel).filter_by(type=type)
             if user_id:
                 query = query.filter_by(user_id=user_id)
@@ -114,7 +115,7 @@ class ChannelsTable:
 
     def get_public_channels(self) -> List[ChannelModel]:
         """Get channels that are publicly accessible"""
-        with get_db() as db:
+        with get_db_context() as db:
             channels = db.query(Channel).all()
             public_channels = []
             for channel in channels:
@@ -125,7 +126,7 @@ class ChannelsTable:
 
     def update_channel_by_id(self, id: str, updated: dict) -> Optional[ChannelModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 updated["updated_at"] = int(time.time())
                 db.query(Channel).filter_by(id=id).update(updated)
                 db.commit()
@@ -136,7 +137,7 @@ class ChannelsTable:
 
     def delete_channel_by_id(self, id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Channel).filter_by(id=id).delete()
                 db.commit()
                 return True
@@ -145,7 +146,7 @@ class ChannelsTable:
 
     def delete_channels_by_user_id(self, user_id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Channel).filter_by(user_id=user_id).delete()
                 db.commit()
                 return True

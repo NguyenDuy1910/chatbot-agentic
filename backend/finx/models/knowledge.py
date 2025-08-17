@@ -4,7 +4,7 @@ import time
 from typing import Optional
 import uuid
 
-from finx.internal.db import Base, get_db, JSONField
+from finx.internal.db import Base, JSONField, get_db_context, JSONField
 from finx.constants import SRC_LOG_LEVELS
 
 from pydantic import BaseModel, ConfigDict
@@ -20,6 +20,7 @@ log.setLevel(SRC_LOG_LEVELS["MODELS"])
 
 class Knowledge(Base):
     __tablename__ = "knowledge"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(Text, unique=True, primary_key=True)
     user_id = Column(Text)
@@ -89,7 +90,7 @@ class KnowledgeTable:
     def insert_new_knowledge(
         self, user_id: str, form_data: KnowledgeForm
     ) -> Optional[KnowledgeModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             knowledge = KnowledgeModel(
                 **{
                     **form_data.model_dump(),
@@ -113,18 +114,18 @@ class KnowledgeTable:
                 return None
 
     def get_knowledge_bases(self) -> list[KnowledgeModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             knowledge_bases = db.query(Knowledge).order_by(Knowledge.updated_at.desc()).all()
             return [KnowledgeModel.model_validate(knowledge) for knowledge in knowledge_bases]
 
     def get_knowledge_bases_by_user_id(self, user_id: str) -> list[KnowledgeModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             knowledge_bases = db.query(Knowledge).filter_by(user_id=user_id).order_by(Knowledge.updated_at.desc()).all()
             return [KnowledgeModel.model_validate(knowledge) for knowledge in knowledge_bases]
 
     def get_knowledge_by_id(self, id: str) -> Optional[KnowledgeModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 knowledge = db.query(Knowledge).filter_by(id=id).first()
                 return KnowledgeModel.model_validate(knowledge) if knowledge else None
         except Exception:
@@ -134,7 +135,7 @@ class KnowledgeTable:
         self, id: str, form_data: KnowledgeForm
     ) -> Optional[KnowledgeModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Knowledge).filter_by(id=id).update(
                     {
                         **form_data.model_dump(),
@@ -151,7 +152,7 @@ class KnowledgeTable:
         self, id: str, data: dict
     ) -> Optional[KnowledgeModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Knowledge).filter_by(id=id).update(
                     {
                         "data": data,
@@ -166,7 +167,7 @@ class KnowledgeTable:
 
     def delete_knowledge_by_id(self, id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Knowledge).filter_by(id=id).delete()
                 db.commit()
                 return True
@@ -174,7 +175,7 @@ class KnowledgeTable:
             return False
 
     def delete_all_knowledge(self) -> bool:
-        with get_db() as db:
+        with get_db_context() as db:
             try:
                 db.query(Knowledge).delete()
                 db.commit()

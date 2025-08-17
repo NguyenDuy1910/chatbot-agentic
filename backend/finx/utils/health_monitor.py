@@ -8,7 +8,7 @@ from sqlalchemy import and_
 from backend.finx.internal.db import get_db
 from backend.finx.models.connections import (
     Connection, ConnectionLog, ConnectionStatus,
-    ConnectionCreateForm, ConnectionCredentials, ConnectionConfig, ConnectionHealthCheck
+    ConnectionCreateForm
 )
 from backend.finx.utils.connections import test_connection, create_connection_log
 from backend.finx.utils.security import decrypt_credentials
@@ -122,10 +122,8 @@ class HealthMonitor:
                 test_data = ConnectionCreateForm(
                     name=connection.name,
                     type=connection.type,
-                    provider=connection.provider,
-                    config=ConnectionConfig(**connection.config) if connection.config else ConnectionConfig(),
-                    credentials=ConnectionCredentials(**decrypted_creds),
-                    health_check=ConnectionHealthCheck(**connection.health_check) if connection.health_check else ConnectionHealthCheck()
+                    config=connection.config or {},
+                    credentials=decrypted_creds
                 )
                 
                 # Perform the health check

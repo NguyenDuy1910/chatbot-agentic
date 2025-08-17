@@ -12,32 +12,22 @@ from .memories import Memory, MemoryModel, Memories
 from .feedback import Feedback, FeedbackModel, Feedbacks
 from .knowledge import Knowledge, KnowledgeModel, Knowledges
 from .prompts import Prompt, PromptModel, Prompts
-from .connections import Connection, ConnectionModel, Connections
-from .connection_providers import (
-    ConnectionProviderFactory, ConnectionManager, connection_manager,
-    BaseConnectionProvider, PostgreSQLProvider, AthenaProvider,
-    SnowflakeProvider, BigQueryProvider, S3Provider,
-    ConnectionResult, QueryResult
-)
+from .connections import Connection, ConnectionModel, Connections, ConnectionTemplate, ConnectionTemplateModel, ConnectionLog, ConnectionLogModel
 
 # Export all models and table instances
 __all__ = [
     # SQLAlchemy Models
     "User", "Auth", "Chat", "Folder", "Group", "Channel", "Message", "MessageReaction",
     "File", "Model", "Tag", "Memory", "Feedback", "Knowledge", "Prompt", "Connection",
+    "ConnectionTemplate", "ConnectionLog",
 
     # Pydantic Models
     "UserModel", "AuthModel", "ChatModel", "FolderModel", "GroupModel", "ChannelModel",
     "MessageModel", "MessageReactionModel", "FileModel", "ModelModel", "TagModel",
     "MemoryModel", "FeedbackModel", "KnowledgeModel", "PromptModel", "ConnectionModel",
+    "ConnectionTemplateModel", "ConnectionLogModel",
 
     # Table Instances
     "Users", "Auths", "Chats", "Folders", "Groups", "Channels", "Messages", "MessageReactions",
-    "Files", "Models", "Tags", "Memories", "Feedbacks", "Knowledges", "Prompts", "Connections",
-
-    # Connection Providers
-    "ConnectionProviderFactory", "ConnectionManager", "connection_manager",
-    "BaseConnectionProvider", "PostgreSQLProvider", "AthenaProvider",
-    "SnowflakeProvider", "BigQueryProvider", "S3Provider",
-    "ConnectionResult", "QueryResult"
+    "Files", "Models", "Tags", "Memories", "Feedbacks", "Knowledges", "Prompts", "Connections"
 ]

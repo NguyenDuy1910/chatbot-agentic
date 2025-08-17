@@ -2,7 +2,7 @@ import time
 import uuid
 from typing import Optional, List
 
-from finx.internal.db import Base, JSONField, get_db
+from finx.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
@@ -12,6 +12,7 @@ from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
 class Feedback(Base):
     __tablename__ = "feedback"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String, primary_key=True)
     user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
@@ -70,7 +71,7 @@ class FeedbackResponse(BaseModel):
 
 class FeedbackTable:
     def insert_new_feedback(self, user_id: str, form_data: FeedbackForm) -> Optional[FeedbackModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             id = str(uuid.uuid4())
             feedback = FeedbackModel(
                 **{
@@ -96,14 +97,14 @@ class FeedbackTable:
 
     def get_feedback_by_id(self, id: str) -> Optional[FeedbackModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 feedback = db.query(Feedback).filter_by(id=id).first()
                 return FeedbackModel.model_validate(feedback) if feedback else None
         except Exception:
             return None
 
     def get_feedback_by_user_id(self, user_id: str, skip: int = 0, limit: int = 50) -> List[FeedbackModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             feedback_list = (
                 db.query(Feedback)
                 .filter_by(user_id=user_id)
@@ -115,7 +116,7 @@ class FeedbackTable:
             return [FeedbackModel.model_validate(feedback) for feedback in feedback_list]
 
     def get_feedback_by_type(self, type: str, user_id: Optional[str] = None, skip: int = 0, limit: int = 50) -> List[FeedbackModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             query = db.query(Feedback).filter_by(type=type)
             if user_id:
                 query = query.filter_by(user_id=user_id)
@@ -130,7 +131,7 @@ class FeedbackTable:
 
     def get_recent_feedback(self, days: int = 7, limit: int = 50) -> List[FeedbackModel]:
         """Get recent feedback within specified days"""
-        with get_db() as db:
+        with get_db_context() as db:
             cutoff_time = int(time.time()) - (days * 24 * 60 * 60)
             feedback_list = (
                 db.query(Feedback)
@@ -142,7 +143,7 @@ class FeedbackTable:
             return [FeedbackModel.model_validate(feedback) for feedback in feedback_list]
 
     def get_feedback_by_version(self, version: int, user_id: Optional[str] = None) -> List[FeedbackModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             query = db.query(Feedback).filter_by(version=version)
             if user_id:
                 query = query.filter_by(user_id=user_id)
@@ -151,7 +152,7 @@ class FeedbackTable:
 
     def update_feedback_by_id(self, id: str, updated: dict) -> Optional[FeedbackModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 updated["updated_at"] = int(time.time())
                 db.query(Feedback).filter_by(id=id).update(updated)
                 db.commit()
@@ -162,7 +163,7 @@ class FeedbackTable:
 
     def increment_feedback_version_by_id(self, id: str) -> Optional[FeedbackModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 feedback = db.query(Feedback).filter_by(id=id).first()
                 if feedback:
                     feedback.version += 1
@@ -175,7 +176,7 @@ class FeedbackTable:
 
     def delete_feedback_by_id(self, id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 result = db.query(Feedback).filter_by(id=id).delete()
                 db.commit()
                 return result > 0
@@ -184,7 +185,7 @@ class FeedbackTable:
 
     def delete_feedback_by_user_id(self, user_id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Feedback).filter_by(user_id=user_id).delete()
                 db.commit()
                 return True
@@ -193,7 +194,7 @@ class FeedbackTable:
 
     def delete_feedback_by_type(self, type: str, user_id: Optional[str] = None) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 query = db.query(Feedback).filter_by(type=type)
                 if user_id:
                     query = query.filter_by(user_id=user_id)
@@ -204,29 +205,29 @@ class FeedbackTable:
             return False
 
     def get_feedback_count_by_user_id(self, user_id: str) -> int:
-        with get_db() as db:
+        with get_db_context() as db:
             return db.query(Feedback).filter_by(user_id=user_id).count()
 
     def get_feedback_count_by_type(self, type: str) -> int:
-        with get_db() as db:
+        with get_db_context() as db:
             return db.query(Feedback).filter_by(type=type).count()
 
     def get_feedback_types_by_user_id(self, user_id: str) -> List[str]:
         """Get unique feedback types for a user"""
-        with get_db() as db:
+        with get_db_context() as db:
             types = db.query(Feedback.type).filter_by(user_id=user_id).distinct().all()
             return [type_row.type for type_row in types if type_row.type]
 
     def get_all_feedback_types(self) -> List[str]:
         """Get all unique feedback types"""
-        with get_db() as db:
+        with get_db_context() as db:
             types = db.query(Feedback.type).distinct().all()
             return [type_row.type for type_row in types if type_row.type]
 
     def bulk_delete_feedback(self, user_id: str, feedback_ids: List[str]) -> bool:
         """Delete multiple feedback entries at once"""
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Feedback).filter(
                     Feedback.user_id == user_id,
                     Feedback.id.in_(feedback_ids)

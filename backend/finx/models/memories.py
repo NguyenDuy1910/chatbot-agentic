@@ -2,7 +2,7 @@ import time
 import uuid
 from typing import Optional, List
 
-from finx.internal.db import Base, get_db
+from finx.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
@@ -12,6 +12,7 @@ from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
 class Memory(Base):
     __tablename__ = "memory"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String, primary_key=True)
     user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
@@ -55,7 +56,7 @@ class MemoryResponse(BaseModel):
 
 class MemoriesTable:
     def insert_new_memory(self, user_id: str, form_data: MemoryForm) -> Optional[MemoryModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             id = str(uuid.uuid4())
             memory = MemoryModel(
                 **{
@@ -77,14 +78,14 @@ class MemoriesTable:
 
     def get_memory_by_id(self, id: str) -> Optional[MemoryModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 memory = db.query(Memory).filter_by(id=id).first()
                 return MemoryModel.model_validate(memory) if memory else None
         except Exception:
             return None
 
     def get_memories_by_user_id(self, user_id: str, skip: int = 0, limit: int = 50) -> List[MemoryModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             memories = (
                 db.query(Memory)
                 .filter_by(user_id=user_id)
@@ -97,7 +98,7 @@ class MemoriesTable:
 
     def search_memories_by_content(self, user_id: str, search_term: str, skip: int = 0, limit: int = 50) -> List[MemoryModel]:
         """Search memories by content (case-insensitive)"""
-        with get_db() as db:
+        with get_db_context() as db:
             memories = (
                 db.query(Memory)
                 .filter(
@@ -113,7 +114,7 @@ class MemoriesTable:
 
     def get_recent_memories_by_user_id(self, user_id: str, days: int = 7, limit: int = 10) -> List[MemoryModel]:
         """Get recent memories within specified days"""
-        with get_db() as db:
+        with get_db_context() as db:
             cutoff_time = int(time.time()) - (days * 24 * 60 * 60)
             memories = (
                 db.query(Memory)
@@ -129,7 +130,7 @@ class MemoriesTable:
 
     def update_memory_by_id(self, id: str, updated: dict) -> Optional[MemoryModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 updated["updated_at"] = int(time.time())
                 db.query(Memory).filter_by(id=id).update(updated)
                 db.commit()
@@ -140,7 +141,7 @@ class MemoriesTable:
 
     def update_memory_content_by_id(self, id: str, content: str) -> Optional[MemoryModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Memory).filter_by(id=id).update({
                     "content": content,
                     "updated_at": int(time.time())
@@ -153,7 +154,7 @@ class MemoriesTable:
 
     def delete_memory_by_id(self, id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 result = db.query(Memory).filter_by(id=id).delete()
                 db.commit()
                 return result > 0
@@ -162,7 +163,7 @@ class MemoriesTable:
 
     def delete_memories_by_user_id(self, user_id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Memory).filter_by(user_id=user_id).delete()
                 db.commit()
                 return True
@@ -170,13 +171,13 @@ class MemoriesTable:
             return False
 
     def get_memory_count_by_user_id(self, user_id: str) -> int:
-        with get_db() as db:
+        with get_db_context() as db:
             return db.query(Memory).filter_by(user_id=user_id).count()
 
     def get_oldest_memory_by_user_id(self, user_id: str) -> Optional[MemoryModel]:
         """Get the oldest memory for a user"""
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 memory = (
                     db.query(Memory)
                     .filter_by(user_id=user_id)
@@ -190,7 +191,7 @@ class MemoriesTable:
     def get_latest_memory_by_user_id(self, user_id: str) -> Optional[MemoryModel]:
         """Get the latest memory for a user"""
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 memory = (
                     db.query(Memory)
                     .filter_by(user_id=user_id)
@@ -203,7 +204,7 @@ class MemoriesTable:
 
     def bulk_insert_memories(self, user_id: str, memory_forms: List[MemoryForm]) -> List[MemoryModel]:
         """Insert multiple memories at once"""
-        with get_db() as db:
+        with get_db_context() as db:
             created_memories = []
             for form_data in memory_forms:
                 id = str(uuid.uuid4())
@@ -226,7 +227,7 @@ class MemoriesTable:
     def bulk_delete_memories(self, user_id: str, memory_ids: List[str]) -> bool:
         """Delete multiple memories at once"""
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Memory).filter(
                     Memory.user_id == user_id,
                     Memory.id.in_(memory_ids)

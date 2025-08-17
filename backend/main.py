@@ -11,14 +11,14 @@ from fastapi.responses import JSONResponse
 
 # Import configuration and database
 from finx.constants import (
-    API_CONFIG, 
-    SECURITY_CONFIG, 
+    API_CONFIG,
+    SECURITY_CONFIG,
     validate_config,
     SRC_LOG_LEVELS
 )
 from finx.internal.db import init_database, init_supabase, create_tables, get_db, get_supabase
 from finx.internal.database_factory import get_current_provider, test_current_provider
-from finx.routers import connections
+from finx.routers import connections, users, chats, messages, knowledge, files, prompts, auth
 
 # Setup logging
 logging.basicConfig(
@@ -51,15 +51,15 @@ async def lifespan(app: FastAPI):
         logger.info(f"Using database provider: {provider.__class__.__name__}")
 
         # Initialize database
-        init_database()
+        # init_database()
 
-        # Initialize provider-specific client (if applicable)
-        init_supabase()
+        # # Initialize provider-specific client (if applicable)
+        # init_supabase()
 
-        logger.info("Database initialized successfully")
+        # logger.info("Database initialized successfully")
 
-        # Create tables if they don't exist
-        create_tables()
+        # # Create tables if they don't exist
+        # create_tables()
         logger.info("Database tables ensured")
 
     except Exception as e:
@@ -95,9 +95,51 @@ app.add_middleware(
 
 # Include routers
 app.include_router(
+    auth.router,
+    prefix=f"{API_CONFIG['API_PREFIX']}/auth",
+    tags=["auth"]
+)
+
+app.include_router(
     connections.router,
     prefix=f"{API_CONFIG['API_PREFIX']}/connections",
     tags=["connections"]
+)
+
+app.include_router(
+    users.router,
+    prefix=f"{API_CONFIG['API_PREFIX']}/users",
+    tags=["users"]
+)
+
+app.include_router(
+    chats.router,
+    prefix=f"{API_CONFIG['API_PREFIX']}/chats",
+    tags=["chats"]
+)
+
+app.include_router(
+    messages.router,
+    prefix=f"{API_CONFIG['API_PREFIX']}/messages",
+    tags=["messages"]
+)
+
+app.include_router(
+    knowledge.router,
+    prefix=f"{API_CONFIG['API_PREFIX']}/knowledge",
+    tags=["knowledge"]
+)
+
+app.include_router(
+    files.router,
+    prefix=f"{API_CONFIG['API_PREFIX']}/files",
+    tags=["files"]
+)
+
+app.include_router(
+    prompts.router,
+    prefix=f"{API_CONFIG['API_PREFIX']}/prompts",
+    tags=["prompts"]
 )
 
 

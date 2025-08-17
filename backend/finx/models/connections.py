@@ -3,7 +3,7 @@ import uuid
 from typing import Optional, List, Dict, Any
 from enum import Enum
 
-from finx.internal.db import Base, JSONField, get_db
+from finx.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Boolean, Column, String, Text, ForeignKey
 
@@ -48,6 +48,14 @@ class ConnectionType(str, Enum):
     KAFKA = "kafka"
     KINESIS = "kinesis"
     PUBSUB = "pubsub"
+
+
+class AuthenticationType(str, Enum):
+    API_KEY = "api_key"
+    BEARER_TOKEN = "bearer_token"
+    CUSTOM_HEADER = "custom_header"
+    BASIC_AUTH = "basic_auth"
+    OAUTH2 = "oauth2"
     RABBITMQ = "rabbitmq"
 
     # APIs & External Sources
@@ -102,6 +110,7 @@ class DatabaseDriver(str, Enum):
 
 class Connection(Base):
     __tablename__ = "connection"
+    __table_args__ = {'extend_existing': True}
 
     id = Column(String, primary_key=True)
     user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
@@ -128,7 +137,7 @@ class Connection(Base):
     connection_string = Column(Text, nullable=True)
 
     # Metadata (tags, environment, region, etc.)
-    metadata = Column(JSONField, nullable=True)
+    connection_metadata = Column(JSONField, nullable=True)
 
     # Performance & monitoring
     max_connections = Column(BigInteger, default=10)
@@ -143,6 +152,66 @@ class Connection(Base):
 
     created_at = Column(BigInteger)
     updated_at = Column(BigInteger)
+
+
+class ConnectionTemplate(Base):
+    __tablename__ = "connection_template"
+    __table_args__ = {'extend_existing': True}
+
+    id = Column(String, primary_key=True)
+    name = Column(Text, nullable=False)
+    description = Column(Text)
+    category = Column(String, nullable=False)  # e.g., "database", "api", "cloud"
+    provider = Column(String, nullable=False)  # e.g., "postgresql", "mysql", "aws"
+    type = Column(String, nullable=False)  # ConnectionType enum value
+    driver = Column(String)  # DatabaseDriver enum value
+
+    # Template configuration
+    config_template = Column(JSONField, nullable=True)  # Template for config fields
+    credentials_template = Column(JSONField, nullable=True)  # Template for credential fields
+    connection_string_template = Column(Text, nullable=True)  # Template for connection string
+
+    # Metadata
+    icon = Column(String, nullable=True)  # Icon name or URL
+    documentation_url = Column(String, nullable=True)
+    tags = Column(JSONField, nullable=True)  # Array of tags
+
+    # Template settings
+    is_active = Column(Boolean, default=True)
+    is_featured = Column(Boolean, default=False)
+    sort_order = Column(BigInteger, default=0)
+
+    created_at = Column(BigInteger)
+    updated_at = Column(BigInteger)
+
+
+class ConnectionLog(Base):
+    __tablename__ = "connection_log"
+    __table_args__ = {'extend_existing': True}
+
+    id = Column(String, primary_key=True)
+    connection_id = Column(String, ForeignKey("connection.id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
+
+    # Log details
+    level = Column(String, nullable=False)  # info, warn, error, debug
+    message = Column(Text, nullable=False)
+    details = Column(JSONField, nullable=True)  # Additional log data
+
+    # Context
+    action = Column(String, nullable=True)  # test, connect, query, etc.
+    source = Column(String, nullable=True)  # api, scheduler, manual, etc.
+
+    # Performance metrics
+    duration_ms = Column(BigInteger, nullable=True)
+    response_size = Column(BigInteger, nullable=True)
+
+    # Error information
+    error_code = Column(String, nullable=True)
+    error_type = Column(String, nullable=True)
+    stack_trace = Column(Text, nullable=True)
+
+    timestamp = Column(BigInteger, nullable=False)
 
 
 class ConnectionModel(BaseModel):
@@ -165,7 +234,7 @@ class ConnectionModel(BaseModel):
     config: Optional[Dict[str, Any]] = None
     credentials: Optional[Dict[str, Any]] = None
     connection_string: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    connection_metadata: Optional[Dict[str, Any]] = None
 
     # Performance settings
     max_connections: int = 10
@@ -180,6 +249,64 @@ class ConnectionModel(BaseModel):
 
     created_at: int
     updated_at: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ConnectionTemplateModel(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    category: str
+    provider: str
+    type: str  # ConnectionType
+    driver: Optional[str] = None  # DatabaseDriver
+
+    # Template configuration
+    config_template: Optional[Dict[str, Any]] = None
+    credentials_template: Optional[Dict[str, Any]] = None
+    connection_string_template: Optional[str] = None
+
+    # Metadata
+    icon: Optional[str] = None
+    documentation_url: Optional[str] = None
+    tags: Optional[List[str]] = None
+
+    # Template settings
+    is_active: bool = True
+    is_featured: bool = False
+    sort_order: int = 0
+
+    created_at: int
+    updated_at: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ConnectionLogModel(BaseModel):
+    id: str
+    connection_id: str
+    user_id: str
+
+    # Log details
+    level: str  # info, warn, error, debug
+    message: str
+    details: Optional[Dict[str, Any]] = None
+
+    # Context
+    action: Optional[str] = None
+    source: Optional[str] = None
+
+    # Performance metrics
+    duration_ms: Optional[int] = None
+    response_size: Optional[int] = None
+
+    # Error information
+    error_code: Optional[str] = None
+    error_type: Optional[str] = None
+    stack_trace: Optional[str] = None
+
+    timestamp: int
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -210,11 +337,15 @@ class ConnectionForm(BaseModel):
     connection_string: Optional[str] = None
 
     # Metadata (environment, tags, etc.)
-    metadata: Optional[Dict[str, Any]] = None
+    connection_metadata: Optional[Dict[str, Any]] = None
 
     # Performance settings
     max_connections: Optional[int] = 10
     timeout_seconds: Optional[int] = 30
+
+
+# Alias for backward compatibility
+ConnectionCreateForm = ConnectionForm
 
 
 class ConnectionUpdateForm(BaseModel):
@@ -231,7 +362,7 @@ class ConnectionUpdateForm(BaseModel):
     config: Optional[Dict[str, Any]] = None
     credentials: Optional[Dict[str, Any]] = None
     connection_string: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    connection_metadata: Optional[Dict[str, Any]] = None
 
     max_connections: Optional[int] = None
     timeout_seconds: Optional[int] = None
@@ -254,13 +385,48 @@ class ConnectionResponse(BaseModel):
     updated_at: int
 
 
+class ConnectionListResponse(BaseModel):
+    connections: List[ConnectionResponse]
+    total: int
+    page: int
+    limit: int
+    has_next: bool
+
+
+class ConnectionTemplateResponse(BaseModel):
+    templates: List[ConnectionTemplateModel]
+    categories: List[str]
+    providers: List[str]
+
+
+class ConnectionStatsResponse(BaseModel):
+    total_connections: int
+    active_connections: int
+    inactive_connections: int
+    total_errors: int
+    total_success: int
+    connections_by_status: Dict[str, int]
+    connections_by_type: Dict[str, int]
+
+
+class ConnectionTestResult(BaseModel):
+    success: bool
+    message: str
+    error: Optional[str] = None
+    response_time: Optional[float] = None
+    connection_id: Optional[str] = None
+    connection_type: Optional[str] = None
+    timestamp: int
+    details: Optional[Dict[str, Any]] = None
+
+
 ####################
 # Connections Table
 ####################
 
 class ConnectionsTable:
     def insert_new_connection(self, user_id: str, form_data: ConnectionForm) -> Optional[ConnectionModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             id = str(uuid.uuid4())
             connection = ConnectionModel(
                 **{
@@ -269,10 +435,17 @@ class ConnectionsTable:
                     "name": form_data.name,
                     "description": form_data.description,
                     "type": form_data.type.value,
-                    "provider": form_data.provider,
+                    "driver": form_data.driver.value if form_data.driver else None,
+                    "host": form_data.host,
+                    "port": form_data.port,
+                    "database_name": form_data.database_name,
+                    "username": form_data.username,
                     "config": form_data.config or {},
                     "credentials": form_data.credentials or {},
-                    "metadata": form_data.metadata or {},
+                    "connection_string": form_data.connection_string,
+                    "connection_metadata": form_data.connection_metadata or {},
+                    "max_connections": form_data.max_connections,
+                    "timeout_seconds": form_data.timeout_seconds,
                     "status": ConnectionStatus.PENDING.value,
                     "is_active": True,
                     "error_count": 0,
@@ -292,14 +465,14 @@ class ConnectionsTable:
 
     def get_connection_by_id(self, id: str) -> Optional[ConnectionModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 connection = db.query(Connection).filter_by(id=id).first()
                 return ConnectionModel.model_validate(connection) if connection else None
         except Exception:
             return None
 
     def get_connections_by_user_id(self, user_id: str, skip: int = 0, limit: int = 50) -> List[ConnectionModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             connections = (
                 db.query(Connection)
                 .filter_by(user_id=user_id)
@@ -311,7 +484,7 @@ class ConnectionsTable:
             return [ConnectionModel.model_validate(connection) for connection in connections]
 
     def get_connections_by_type(self, user_id: str, connection_type: ConnectionType) -> List[ConnectionModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             connections = (
                 db.query(Connection)
                 .filter_by(user_id=user_id, type=connection_type.value)
@@ -321,7 +494,7 @@ class ConnectionsTable:
             return [ConnectionModel.model_validate(connection) for connection in connections]
 
     def get_active_connections_by_user_id(self, user_id: str) -> List[ConnectionModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             connections = (
                 db.query(Connection)
                 .filter_by(user_id=user_id, is_active=True)
@@ -331,7 +504,7 @@ class ConnectionsTable:
             return [ConnectionModel.model_validate(connection) for connection in connections]
 
     def get_connections_by_status(self, user_id: str, status: ConnectionStatus) -> List[ConnectionModel]:
-        with get_db() as db:
+        with get_db_context() as db:
             connections = (
                 db.query(Connection)
                 .filter_by(user_id=user_id, status=status.value)
@@ -342,7 +515,7 @@ class ConnectionsTable:
 
     def update_connection_by_id(self, id: str, updated: dict) -> Optional[ConnectionModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 updated["updated_at"] = int(time.time())
                 db.query(Connection).filter_by(id=id).update(updated)
                 db.commit()
@@ -353,7 +526,7 @@ class ConnectionsTable:
 
     def update_connection_status(self, id: str, status: ConnectionStatus, error_message: Optional[str] = None) -> Optional[ConnectionModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 update_data = {
                     "status": status.value,
                     "updated_at": int(time.time())
@@ -401,7 +574,7 @@ class ConnectionsTable:
             # Update connection status and test timestamp
             if test_result["success"]:
                 self.update_connection_status(id, ConnectionStatus.ACTIVE)
-                with get_db() as db:
+                with get_db_context() as db:
                     db.query(Connection).filter_by(id=id).update({
                         "last_tested_at": int(time.time())
                     })
@@ -649,7 +822,7 @@ class ConnectionsTable:
 
     def toggle_connection_active(self, id: str) -> Optional[ConnectionModel]:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 connection = db.query(Connection).filter_by(id=id).first()
                 if connection:
                     connection.is_active = not connection.is_active
@@ -662,7 +835,7 @@ class ConnectionsTable:
 
     def delete_connection_by_id(self, id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 result = db.query(Connection).filter_by(id=id).delete()
                 db.commit()
                 return result > 0
@@ -671,7 +844,7 @@ class ConnectionsTable:
 
     def delete_connections_by_user_id(self, user_id: str) -> bool:
         try:
-            with get_db() as db:
+            with get_db_context() as db:
                 db.query(Connection).filter_by(user_id=user_id).delete()
                 db.commit()
                 return True
@@ -679,12 +852,12 @@ class ConnectionsTable:
             return False
 
     def get_connection_count_by_user_id(self, user_id: str) -> int:
-        with get_db() as db:
+        with get_db_context() as db:
             return db.query(Connection).filter_by(user_id=user_id).count()
 
     def get_connection_stats_by_user_id(self, user_id: str) -> dict:
         """Get connection statistics for a user"""
-        with get_db() as db:
+        with get_db_context() as db:
             connections = db.query(Connection).filter_by(user_id=user_id).all()
 
             total = len(connections)
@@ -719,7 +892,7 @@ class ConnectionsTable:
 
     def search_connections(self, user_id: str, search_term: str) -> List[ConnectionModel]:
         """Search connections by name or description"""
-        with get_db() as db:
+        with get_db_context() as db:
             connections = (
                 db.query(Connection)
                 .filter(
