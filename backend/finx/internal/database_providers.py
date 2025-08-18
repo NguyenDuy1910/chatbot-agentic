@@ -9,7 +9,7 @@ from sqlalchemy import create_engine, Engine
 from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import QueuePool
 
-from backend.finx.constants import (
+from finx.constants import (
     DATABASE_CONFIG,
     SUPABASE_CONFIG,
     POSTGRESQL_CONFIG,

@@ -19,8 +19,8 @@ export const apiConfig = {
       signin: '/api/v1/auth/signin',
       signout: '/api/v1/auth/signout',
       me: '/api/v1/auth/user', // Current user endpoint
-      profile: '/api/v1/auth/update/profile',
-      password: '/api/v1/auth/update/password',
+      profile: '/api/v1/auth/profile',
+      password: '/api/v1/auth/password',
     },
 
     // Chat resource endpoints

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ButtonDemo } from '@/components/demo';
 import { APIIntegrationDemo } from '@/components/demo/APIIntegrationDemo';
-import { LoginDemo } from '@/components/demo/LoginDemo';
+import { AuthDemo } from '@/components/demo/AuthDemo';
 
 /**
  * Demo Page - Showcases UI components and API integration
@@ -58,7 +58,7 @@ export const DemoPage: React.FC = () => {
           </div>
 
           <div className="p-6">
-            {activeTab === 'auth' && <LoginDemo />}
+            {activeTab === 'auth' && <AuthDemo />}
             {activeTab === 'api' && <APIIntegrationDemo />}
             {activeTab === 'ui' && <ButtonDemo />}
           </div>

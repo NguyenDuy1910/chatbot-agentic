@@ -3,8 +3,6 @@ import { AppHeader } from './AppHeader';
 import { AppSidebar } from './AppSidebar';
 import { AppFooter } from './AppFooter';
 import { MainContentRouter } from './MainContentRouter';
-import { useNavigation } from '@/hooks/useNavigation';
-import { navigateToPath } from '@/lib/navigation';
 import '@/styles/components/julius-ai-styles.css';
 
 interface AppShellProps {
@@ -29,7 +27,6 @@ export const AppShell: React.FC<AppShellProps> = ({
   showExtendedFooter = false,
   onUserMenuClick
 }) => {
-  const { navigationState } = useNavigation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -59,32 +56,7 @@ export const AppShell: React.FC<AppShellProps> = ({
     }
   };
 
-  const handleNavigate = (path: string) => {
-    // Close mobile sidebar on navigation
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
 
-    // Get loading text based on path
-    const pageNames: { [key: string]: string } = {
-      '/': 'Loading Home...',
-      '/chat': 'Loading Chat...',
-      '/notebooks': 'Loading Notebooks...',
-      '/files': 'Loading Files...',
-      '/connections': 'Loading Connections...',
-      '/settings': 'Loading Settings...',
-      '/demo': 'Loading Demo...',
-      '/admin': 'Loading Admin...'
-    };
-    
-    const loadingText = pageNames[path] || 'Loading...';
-    
-    navigateToPath(path, {
-      showLoading: true,
-      loadingText,
-      loadingDuration: 500 // Shorter duration since only main content changes
-    });
-  };
 
   return (
     <div className="julius-app-layout">
@@ -107,9 +79,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             />
             <div className="fixed inset-y-0 left-0 z-50">
               <AppSidebar
-                currentPage={navigationState.currentPage}
                 isCollapsed={false}
-                onNavigate={handleNavigate}
                 user={user}
               />
             </div>
@@ -119,9 +89,7 @@ export const AppShell: React.FC<AppShellProps> = ({
         {/* Static Desktop Sidebar */}
         <div className={`hidden lg:block ${sidebarCollapsed ? 'w-16' : 'w-64'} transition-all duration-300`}>
           <AppSidebar
-            currentPage={navigationState.currentPage}
             isCollapsed={sidebarCollapsed}
-            onNavigate={handleNavigate}
             user={user}
           />
         </div>

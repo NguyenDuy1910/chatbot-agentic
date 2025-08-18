@@ -6,8 +6,8 @@ import logging
 from typing import Dict, Any, Optional, Type
 from enum import Enum
 
-from backend.finx.constants import DATABASE_PROVIDER
-from backend.finx.internal.database_providers import (
+from finx.constants import DATABASE_PROVIDER
+from finx.internal.database_providers import (
     DatabaseProvider,
     SupabaseProvider,
     PostgreSQLProvider

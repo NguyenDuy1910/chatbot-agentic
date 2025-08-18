@@ -14,24 +14,24 @@ project_root = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 # Import your models and database configuration
-from backend.finx.internal.db import Base, JSONField
-from backend.finx.constants import DATABASE_PROVIDER, get_database_url
+from finx.internal.db import Base, JSONField
+from finx.constants import DATABASE_PROVIDER, get_database_url
 
 # Import all models to ensure they are registered with SQLAlchemy
-from backend.finx.models.users import User
-from backend.finx.models.auths import Auth
-from backend.finx.models.chats import Chat, Folder
-from backend.finx.models.messages import Message, MessageReaction
-from backend.finx.models.connections import Connection, ConnectionTemplate, ConnectionLog
-from backend.finx.models.files import File
-from backend.finx.models.knowledge import Knowledge
-from backend.finx.models.prompts import Prompt
-from backend.finx.models.tags import Tag
-from backend.finx.models.groups import Group
-from backend.finx.models.memories import Memory
-from backend.finx.models.feedback import Feedback
-from backend.finx.models.models import Model
-from backend.finx.models.channels import Channel
+from finx.models.users import User
+from finx.models.auths import Auth
+from finx.models.chats import Chat, Folder
+from finx.models.messages import Message, MessageReaction
+from finx.models.connections import Connection, ConnectionTemplate, ConnectionLog
+from finx.models.files import File
+from finx.models.knowledge import Knowledge
+from finx.models.prompts import Prompt
+from finx.models.tags import Tag
+from finx.models.groups import Group
+from finx.models.memories import Memory
+from finx.models.feedback import Feedback
+from finx.models.models import Model
+from finx.models.channels import Channel
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -65,7 +65,7 @@ def render_item(type_, obj, autogen_context):
     """Render custom types for Alembic autogenerate"""
     if type_ == "type" and isinstance(obj, JSONField):
         # Import statement will be added to the migration file
-        autogen_context.imports.add("from backend.finx.internal.db import JSONField")
+        autogen_context.imports.add("from finx.internal.db import JSONField")
         return "JSONField()"
 
     # Return None for default rendering

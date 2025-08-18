@@ -7,7 +7,7 @@ Create Date: 2025-08-17 16:28:38.742469
 """
 from alembic import op
 import sqlalchemy as sa
-from backend.finx.internal.db import JSONField
+from finx.internal.db import JSONField
 
 # revision identifiers, used by Alembic.
 revision = '23edda6913b7'

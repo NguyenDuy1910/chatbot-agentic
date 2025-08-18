@@ -6,11 +6,11 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime
 from sqlalchemy.orm import Session
 
-from backend.finx.models.connections import (
+from finx.models.connections import (
     ConnectionCreateForm, ConnectionTestResult, ConnectionTemplateModel,
     ConnectionLog, ConnectionType, AuthenticationType
 )
-from backend.finx.utils.security import (
+from finx.utils.security import (
     encrypt_credentials, decrypt_credentials, mask_credentials,
     validate_credentials, audit_connection_access, SecurityError
 )

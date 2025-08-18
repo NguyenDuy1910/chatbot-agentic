@@ -16,11 +16,11 @@ from typing_extensions import Self
 from supabase import create_client, Client
 
 # Import configuration and providers
-from backend.finx.constants import (
+from finx.constants import (
     SRC_LOG_LEVELS,
     DATABASE_PROVIDER
 )
-from backend.finx.internal.database_providers import (
+from finx.internal.database_providers import (
     get_provider_instance,
     DatabaseProvider
 )
