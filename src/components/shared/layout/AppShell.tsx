@@ -3,6 +3,7 @@ import { AppHeader } from './AppHeader';
 import { AppSidebar } from './AppSidebar';
 import { AppFooter } from './AppFooter';
 import { MainContentRouter } from './MainContentRouter';
+import { useNavigation } from '@/hooks/useNavigation';
 import '@/styles/components/julius-ai-styles.css';
 
 interface AppShellProps {
@@ -27,6 +28,7 @@ export const AppShell: React.FC<AppShellProps> = ({
   showExtendedFooter = false,
   onUserMenuClick
 }) => {
+  const { navigationState } = useNavigation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);

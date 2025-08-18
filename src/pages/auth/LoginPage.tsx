@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { LoginForm } from '@/components/features/auth';
 import { LoginCredentials, RegisterData } from '@/types/features/auth';
 import { useAuth } from '@/contexts/AuthContext';
-import { ROUTES } from '@/router/routes';
+import { ROUTES } from '@/router/constants';
 
 /**
  * Login page component

@@ -5,7 +5,7 @@ import {
   NotebooksPage, FilesPage, SettingsPage, DemoPage
 } from '@/pages';
 import { ProtectedRoute } from '@/components/shared/auth';
-import { ROUTES } from '@/router/routes';
+import { ROUTES } from '@/router/constants';
 
 /**
  * Main Content Router - Only renders the main content area using react-router-dom

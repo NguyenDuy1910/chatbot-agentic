@@ -21,6 +21,7 @@ interface MenuItem {
 interface AppSidebarProps {
   currentPage?: string;
   isCollapsed?: boolean;
+  onNavigate?: (path: string) => void;
   user?: {
     name: string;
     email: string;
@@ -108,13 +109,18 @@ const resourceItems: MenuItem[] = [
 export const AppSidebar: React.FC<AppSidebarProps> = ({
   currentPage = 'main',
   isCollapsed = false,
+  onNavigate,
   user
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleNavigate = (path: string) => {
-    navigate(path);
+    if (onNavigate) {
+      onNavigate(path);
+    } else {
+      navigate(path);
+    }
   };
 
   const isActive = (itemId: string) => {
@@ -129,6 +135,11 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       'demo': '/demo',
       'admin': '/admin'
     };
+
+    // Use currentPage prop if provided, otherwise use location
+    if (currentPage) {
+      return itemId === currentPage;
+    }
 
     const itemPath = pathMap[itemId];
     return location.pathname === itemPath || location.pathname.startsWith(itemPath + '/');
