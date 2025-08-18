@@ -1,11 +1,11 @@
 import React from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, MessageSquare, Settings, Database, BarChart,
   Users, FileText, Grid, Upload, Crown, Sparkles,
   ChevronRight, Plus, Palette
 } from 'lucide-react';
 import { Button } from '@/components/shared/ui/Button';
-import { navigateToPath } from '@/lib/navigation';
 import '@/styles/components/julius-ai-styles.css';
 
 interface MenuItem {
@@ -21,7 +21,6 @@ interface MenuItem {
 interface AppSidebarProps {
   currentPage?: string;
   isCollapsed?: boolean;
-  onNavigate?: (path: string) => void;
   user?: {
     name: string;
     email: string;
@@ -109,37 +108,30 @@ const resourceItems: MenuItem[] = [
 export const AppSidebar: React.FC<AppSidebarProps> = ({
   currentPage = 'main',
   isCollapsed = false,
-  onNavigate,
   user
 }) => {
-  const handleNavigate = (path: string, loadingText?: string) => {
-    if (onNavigate) {
-      onNavigate(path);
-    } else {
-      // Use navigation utility with loading animation
-      const pageNames: { [key: string]: string } = {
-        '/': 'Loading Home...',
-        '/chat': 'Loading Chat...',
-        '/notebooks': 'Loading Notebooks...',
-        '/files': 'Loading Files...',
-        '/connections': 'Loading Connections...',
-        '/settings': 'Loading Settings...',
-        '/demo': 'Loading Demo...',
-        '/admin': 'Loading Admin...'
-      };
+  const navigate = useNavigate();
+  const location = useLocation();
 
-      const defaultLoadingText = pageNames[path] || 'Loading...';
-
-      navigateToPath(path, {
-        showLoading: true,
-        loadingText: loadingText || defaultLoadingText,
-        loadingDuration: 600
-      });
-    }
+  const handleNavigate = (path: string) => {
+    navigate(path);
   };
 
   const isActive = (itemId: string) => {
-    return currentPage === itemId;
+    // Map item IDs to paths for comparison
+    const pathMap: { [key: string]: string } = {
+      'main': '/',
+      'chat': '/chat',
+      'connections': '/connections',
+      'notebooks': '/notebooks',
+      'files': '/files',
+      'settings': '/settings',
+      'demo': '/demo',
+      'admin': '/admin'
+    };
+
+    const itemPath = pathMap[itemId];
+    return location.pathname === itemPath || location.pathname.startsWith(itemPath + '/');
   };
 
   const filteredMenuItems = menuItems.filter(item => 

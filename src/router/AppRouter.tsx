@@ -1,22 +1,18 @@
 import React, { Suspense } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/shared/layout/AppShell';
 import { LoadingSpinner } from '@/components/shared/ui';
-// import { LoginPage } from '@/pages'; // Temporarily disabled
-// import { useAuth } from '@/contexts/AuthContext'; // Temporarily disabled
+import { ProtectedRoute } from '@/components/shared/auth';
+import { useAuth } from '@/contexts/AuthContext';
+import { ROUTES } from './routes';
+import { LoginPage } from '@/pages';
 
 /**
- * Enhanced router with AppShell layout
- * Uses AppShell for static layout with dynamic main content
+ * Enhanced router with authentication and protected routes
+ * Uses AppShell for authenticated users, direct routing for login
  */
 export const AppRouter: React.FC = () => {
-  // const { user, isAuthenticated } = useAuth?.() || { user: null, isAuthenticated: false }; // Temporarily disabled
-
-  // Mock user data - replace with actual user context
-  const user = {
-    name: 'Nguyễn Đình Quốc Duy',
-    email: 'nguyendinhduy@gmail.com',
-    role: 'admin'
-  };
+  const { user, isAuthenticated, loading, logout } = useAuth();
 
   // Loading component for suspense
   const SuspenseLoader = () => (
@@ -25,15 +21,49 @@ export const AppRouter: React.FC = () => {
     </div>
   );
 
+  // Show loading while checking authentication
+  if (loading) {
+    return <SuspenseLoader />;
+  }
+
   return (
-    <Suspense fallback={<SuspenseLoader />}>
-      <AppShell
-        user={user}
-        showFooter={true}
-        showExtendedFooter={false}
-        onUserMenuClick={() => console.log('User menu clicked')}
-      />
-    </Suspense>
+    <BrowserRouter>
+      <Suspense fallback={<SuspenseLoader />}>
+        <Routes>
+          {/* Login route - accessible to all */}
+          <Route
+            path={ROUTES.LOGIN}
+            element={
+              isAuthenticated ? (
+                <Navigate to={ROUTES.HOME} replace />
+              ) : (
+                <LoginPage />
+              )
+            }
+          />
+
+          {/* All other routes wrapped in AppShell for authenticated users */}
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <AppShell
+                  user={user ? {
+                    name: user.name,
+                    email: user.email,
+                    avatar: user.avatar,
+                    role: user.role
+                  } : undefined}
+                  showFooter={true}
+                  showExtendedFooter={false}
+                  onUserMenuClick={() => logout()}
+                />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
   );
 };
 

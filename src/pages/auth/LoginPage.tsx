@@ -1,33 +1,56 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { LoginForm } from '@/components/features/auth';
 import { LoginCredentials, RegisterData } from '@/types/features/auth';
+import { useAuth } from '@/contexts/AuthContext';
+import { ROUTES } from '@/router/routes';
 
 /**
  * Login page component
- * Handles user authentication
+ * Handles user authentication with AuthContext integration
  */
 export const LoginPage: React.FC = () => {
+  const { login, register, loading, error, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get the intended destination from location state, default to home
+  const from = (location.state as any)?.from || ROUTES.HOME;
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
+
   const handleLogin = async (credentials: LoginCredentials) => {
-    // TODO: Implement actual login logic
-    console.log('Login attempt:', credentials);
+    try {
+      await login(credentials);
+      // Navigation will be handled by the useEffect above
+    } catch (error) {
+      // Error is handled by AuthContext and passed via error prop
+      console.error('Login failed:', error);
+    }
   };
 
   const handleRegister = async (data: RegisterData) => {
-    // TODO: Implement actual registration logic
-    console.log('Register attempt:', data);
+    try {
+      await register(data);
+      // Navigation will be handled by the useEffect above
+    } catch (error) {
+      // Error is handled by AuthContext and passed via error prop
+      console.error('Registration failed:', error);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-        </div>
-        <LoginForm onLogin={handleLogin} onRegister={handleRegister} />
-      </div>
-    </div>
+    <LoginForm
+      onLogin={handleLogin}
+      onRegister={handleRegister}
+      loading={loading}
+      error={error}
+    />
   );
 };
 

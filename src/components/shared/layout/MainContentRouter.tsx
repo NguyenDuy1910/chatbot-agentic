@@ -1,93 +1,100 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 import {
   ChatPage, AdminPage, ConnectionsPage, MainPage,
   NotebooksPage, FilesPage, SettingsPage, DemoPage
 } from '@/pages';
-import { PageTransition } from '@/components/shared/ui';
-import { setupNavigationListeners, getCurrentPath, getCurrentPageFromPath } from '@/lib/navigation';
+import { ProtectedRoute } from '@/components/shared/auth';
+import { ROUTES } from '@/router/routes';
 
 /**
- * Main Content Router - Only renders the main content area
+ * Main Content Router - Only renders the main content area using react-router-dom
  * Header, Sidebar, and Footer remain static
  */
 export const MainContentRouter: React.FC = () => {
-  const [currentPath, setCurrentPath] = useState(getCurrentPath());
-  const [isNavigating, setIsNavigating] = useState(false);
-  const [loadingText, setLoadingText] = useState('Loading...');
+  return (
+    <Routes>
+      {/* Home/Main page */}
+      <Route path={ROUTES.HOME} element={<MainPage />} />
 
-  // Listen for navigation changes
-  useEffect(() => {
-    const cleanup = setupNavigationListeners((path: string) => {
-      setCurrentPath(path);
-      // Stop loading after navigation
-      setTimeout(() => setIsNavigating(false), 300);
-    });
+      {/* Protected routes */}
+      <Route
+        path={ROUTES.CHAT}
+        element={
+          <ProtectedRoute>
+            <ChatPage />
+          </ProtectedRoute>
+        }
+      />
 
-    // Listen for loading events
-    const handleLoadingStart = (event: CustomEvent) => {
-      setLoadingText(event.detail.loadingText || 'Loading...');
-      setIsNavigating(true);
-    };
+      <Route
+        path={ROUTES.ADMIN}
+        element={
+          <ProtectedRoute adminOnly>
+            <AdminPage />
+          </ProtectedRoute>
+        }
+      />
 
-    const handleLoadingStop = () => {
-      setIsNavigating(false);
-    };
+      <Route
+        path={ROUTES.CONNECTIONS}
+        element={
+          <ProtectedRoute>
+            <ConnectionsPage />
+          </ProtectedRoute>
+        }
+      />
 
-    window.addEventListener('navigation-loading-start', handleLoadingStart as EventListener);
-    window.addEventListener('navigation-loading-stop', handleLoadingStop);
+      <Route
+        path={ROUTES.NOTEBOOKS}
+        element={
+          <ProtectedRoute>
+            <NotebooksPage />
+          </ProtectedRoute>
+        }
+      />
 
-    return () => {
-      cleanup();
-      window.removeEventListener('navigation-loading-start', handleLoadingStart as EventListener);
-      window.removeEventListener('navigation-loading-stop', handleLoadingStop);
-    };
-  }, []);
+      <Route
+        path={ROUTES.FILES}
+        element={
+          <ProtectedRoute>
+            <FilesPage />
+          </ProtectedRoute>
+        }
+      />
 
-  // Route matching logic
-  const renderMainContent = () => {
-    const currentPage = getCurrentPageFromPath(currentPath);
+      <Route
+        path={ROUTES.SETTINGS}
+        element={
+          <ProtectedRoute>
+            <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
 
-    switch (true) {
-      case currentPath.startsWith('/admin'):
-        return <AdminPage />;
+      {/* Demo page - accessible to all authenticated users */}
+      <Route
+        path={ROUTES.DEMO}
+        element={
+          <ProtectedRoute>
+            <DemoPage />
+          </ProtectedRoute>
+        }
+      />
 
-      case currentPath.startsWith('/connections'):
-        return <ConnectionsPage />;
-
-      case currentPath === '/':
-        return <MainPage />;
-
-      case currentPath.startsWith('/chat'):
-        return <ChatPage />;
-
-      case currentPath.startsWith('/notebooks'):
-        return <NotebooksPage />;
-
-      case currentPath.startsWith('/files'):
-        return <FilesPage />;
-
-      case currentPath.startsWith('/settings'):
-        return <SettingsPage />;
-
-      case currentPath.startsWith('/demo'):
-        return <DemoPage />;
-
-      default:
-        return (
+      {/* 404 page */}
+      <Route
+        path="*"
+        element={
           <div className="min-h-screen flex items-center justify-center">
             <div className="text-center">
               <h1 className="text-2xl font-bold text-gray-800">404 - Page Not Found</h1>
               <p className="text-gray-600">The page you're looking for doesn't exist.</p>
             </div>
           </div>
-        );
-    }
-  };
-
-  return (
-    <PageTransition isLoading={isNavigating} loadingText={loadingText}>
-      {renderMainContent()}
-    </PageTransition>
+        }
+      />
+    </Routes>
   );
 };
 

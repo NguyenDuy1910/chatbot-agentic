@@ -5,13 +5,13 @@ from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
-from backend.finx.internal.db import get_db
-from backend.finx.models.connections import (
+from finx.internal.db import get_db
+from finx.models.connections import (
     Connection, ConnectionLog, ConnectionStatus,
     ConnectionCreateForm
 )
-from backend.finx.utils.connections import test_connection, create_connection_log
-from backend.finx.utils.security import decrypt_credentials
+from finx.utils.connections import test_connection, create_connection_log
+from finx.utils.security import decrypt_credentials
 
 log = logging.getLogger(__name__)
 
