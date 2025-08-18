@@ -4,7 +4,7 @@ import { AppShell } from '@/components/shared/layout/AppShell';
 import { LoadingSpinner } from '@/components/shared/ui';
 import { ProtectedRoute } from '@/components/shared/auth';
 import { useAuth } from '@/contexts/AuthContext';
-import { ROUTES } from './routes';
+import { ROUTES } from './constants';
 import { LoginPage } from '@/pages';
 
 /**
