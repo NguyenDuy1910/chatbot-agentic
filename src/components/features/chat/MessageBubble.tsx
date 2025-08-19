@@ -1,8 +1,15 @@
 import React from 'react';
 import { Message } from '@/types/features/chat';
 import { cn } from '@/lib/utils';
-import { User, Bot, Sparkles, Download, FileText, Image as ImageIcon, File } from 'lucide-react';
-import { Button } from '@/components/shared/ui/Button';
+import { User, Bot, Sparkles, Download, FileText, Image as ImageIcon, File, Copy, ThumbsUp, ThumbsDown } from 'lucide-react';
+import {
+  Card,
+  CardBody,
+  Button,
+  Avatar,
+  Chip,
+  Tooltip,
+} from '@heroui/react';
 
 interface MessageBubbleProps {
   message: Message;
@@ -37,43 +44,91 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
     document.body.removeChild(link);
   };
 
+  const handleCopyMessage = () => {
+    navigator.clipboard.writeText(message.content);
+  };
+
   return (
     <div className={cn(
-      'flex items-start space-x-3 p-4 fade-in',
-      isUser ? 'flex-row-reverse space-x-reverse' : ''
+      'flex items-start gap-3 p-4 group hover:bg-default-50/50 transition-colors duration-200',
+      isUser ? 'flex-row-reverse' : ''
     )}>
-      <div className={cn(
-        'flex h-10 w-10 shrink-0 select-none items-center justify-center rounded-xl shadow-lg transition-all duration-300 hover:scale-110',
-        isUser 
-          ? 'bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-primary/30' 
-          : 'bg-gradient-to-br from-muted to-muted/80 shadow-muted/30'
-      )}>
-        {isUser ? (
-          <User className="h-5 w-5" />
-        ) : (
-          <div className="relative">
-            <Bot className="h-5 w-5" />
-            <Sparkles className="h-2 w-2 absolute -top-1 -right-1 text-primary animate-pulse" />
+      <div className="relative flex-shrink-0">
+        <Avatar
+          icon={isUser ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+          className={cn(
+            isUser
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-secondary text-secondary-foreground'
+          )}
+          size="sm"
+        />
+        {!isUser && (
+          <div className="absolute -top-1 -right-1">
+            <Sparkles className="h-3 w-3 text-primary animate-pulse" />
           </div>
         )}
       </div>
-      
+
       <div className={cn(
-        'flex-1 space-y-2 overflow-hidden max-w-3xl',
-        isUser ? 'text-right' : ''
+        'flex-1 space-y-3 overflow-hidden max-w-3xl',
+        isUser ? 'flex flex-col items-end' : 'flex flex-col items-start'
       )}>
         {/* Message content */}
         {message.content && (
-          <div className={cn(
-            'inline-block rounded-2xl px-4 py-3 text-sm shadow-md transition-all duration-300 hover:shadow-lg hover:scale-102',
-            isUser
-              ? 'bg-gradient-to-br from-primary to-primary/90 text-primary-foreground shadow-primary/20'
-              : 'bg-gradient-to-br from-muted to-muted/80 shadow-muted/30 border border-border/50'
-          )}>
-            <div className="whitespace-pre-wrap break-words leading-relaxed">
-              {message.content}
-            </div>
-          </div>
+          <Card
+            className={cn(
+              'max-w-lg transition-all duration-200 hover:shadow-md',
+              isUser
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-default-100 border border-divider'
+            )}
+          >
+            <CardBody className="p-4">
+              <div className="whitespace-pre-wrap break-words leading-relaxed text-sm">
+                {message.content}
+              </div>
+
+              {/* Message actions - Only for AI messages */}
+              {!isUser && (
+                <div className="flex items-center gap-1 mt-3 pt-2 border-t border-divider/50">
+                  <Tooltip content="Copy message" placement="top">
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      variant="light"
+                      onPress={handleCopyMessage}
+                      className="h-7 w-7 text-default-400 hover:text-default-600 hover:bg-default-100"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                  </Tooltip>
+
+                  <Tooltip content="Good response" placement="top">
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      variant="light"
+                      className="h-7 w-7 text-default-400 hover:text-success hover:bg-success-50"
+                    >
+                      <ThumbsUp className="h-3.5 w-3.5" />
+                    </Button>
+                  </Tooltip>
+
+                  <Tooltip content="Poor response" placement="top">
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      variant="light"
+                      className="h-7 w-7 text-default-400 hover:text-danger hover:bg-danger-50"
+                    >
+                      <ThumbsDown className="h-3.5 w-3.5" />
+                    </Button>
+                  </Tooltip>
+                </div>
+              )}
+            </CardBody>
+          </Card>
         )}
 
         {/* File attachments */}
@@ -161,15 +216,22 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
             })}
           </div>
         )}
-        
+
+        {/* Timestamp */}
         <div className={cn(
-          'text-xs text-muted-foreground/70 font-medium',
-          isUser ? 'text-right' : ''
+          'px-2',
+          isUser ? 'text-right' : 'text-left'
         )}>
-          {message.timestamp.toLocaleTimeString([], { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          })}
+          <Chip
+            size="sm"
+            variant="light"
+            className="text-xs text-default-500"
+          >
+            {message.timestamp.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </Chip>
         </div>
       </div>
     </div>
