@@ -1,12 +1,12 @@
 import React from 'react';
-import { JuliusMainContent } from '@/components/features/main';
+import { LayoutDemo } from '@/components/demo/LayoutDemo';
 
 /**
  * Main page component - content only
  * This is the landing page with analysis templates and search functionality
  */
 const MainPage: React.FC = () => {
-  return <JuliusMainContent activeSection="notebooks" />;
+  return <LayoutDemo />;
 };
 
 export default MainPage;
