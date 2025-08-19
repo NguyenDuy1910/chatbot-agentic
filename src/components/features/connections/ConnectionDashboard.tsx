@@ -8,14 +8,24 @@ import {
 import { ConnectionForm } from './ConnectionForm';
 import { ConnectionTemplateGrid } from './ConnectionTemplateGrid';
 import { ConnectionStatsGrid } from './ConnectionStatsGrid';
-import '@/styles/components/julius-ai-styles.css';
+import {
+  Button,
+  Input,
+  Card,
+  CardBody,
+  Chip,
+  Tabs,
+  Tab,
+  useDisclosure,
+  Spinner,
+} from '@heroui/react';
 import {
   Plus,
   Search,
   RefreshCw,
-  Grid,
+  Grid3X3,
+  List,
   Settings,
-  Activity,
   AlertCircle,
   CheckCircle,
   Clock,
@@ -32,9 +42,9 @@ import {
   Share2,
   Users,
   Building,
-  Plug
+  Plug,
+  TrendingUp,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { connectionAPI } from '@/lib/connectionAPI';
 
 interface ConnectionDashboardProps {
@@ -66,12 +76,15 @@ export const ConnectionDashboard: React.FC<ConnectionDashboardProps> = ({
   const [selectedTemplate, setSelectedTemplate] = useState<ConnectionTemplate | null>(null);
   const [activeTab, setActiveTab] = useState<'connections' | 'templates' | 'stats'>('connections');
   const [searchTerm, setSearchTerm] = useState('');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [selectedType, setSelectedType] = useState<string>('all');
+  const { isOpen: isFormOpen, onOpen: onFormOpen, onClose: onFormClose } = useDisclosure();
 
   useEffect(() => {
     loadConnections();
     loadTemplates();
     loadStats();
-  }, [state.pagination.page, state.pagination.limit, state.filters]);
+  }, []);
 
   const loadConnections = async () => {
     try {
@@ -179,7 +192,7 @@ export const ConnectionDashboard: React.FC<ConnectionDashboardProps> = ({
   const handleTestConnection = async (connectionId: string) => {
     try {
       await connectionAPI.testExistingConnection(connectionId);
-      await loadConnections(); // Refresh to get updated status
+      await loadConnections();
     } catch (error) {
       console.error('Connection test failed:', error);
     }
@@ -202,16 +215,8 @@ export const ConnectionDashboard: React.FC<ConnectionDashboardProps> = ({
     loadStats();
   };
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    setState(prev => ({
-      ...prev,
-      pagination: { ...prev.pagination, page: 1 }
-    }));
-  };
-
   const getTypeIcon = (type: string) => {
-    const iconClass = "h-4 w-4 text-blue-600";
+    const iconClass = "h-5 w-5";
     switch (type) {
       case 'api':
         return <Globe className={iconClass} />;
@@ -246,240 +251,240 @@ export const ConnectionDashboard: React.FC<ConnectionDashboardProps> = ({
     }
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'success';
+      case 'error':
+        return 'danger';
+      case 'pending':
+        return 'warning';
+      default:
+        return 'default';
+    }
+  };
 
+  const connectionTypes = ['all', 'api', 'database', 'webhook', 'oauth', 'file_storage', 'messaging', 'analytics'];
 
-  if (showForm) {
+  const filteredConnections = state.connections.filter(connection => {
+    const matchesSearch = connection.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         connection.provider.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesType = selectedType === 'all' || connection.type === selectedType;
+    return matchesSearch && matchesType;
+  });
+
+  if (showForm || isFormOpen) {
     return (
-      <ConnectionForm
-        connection={editingConnection || undefined}
-        template={selectedTemplate || undefined}
-        onSave={editingConnection ? handleUpdateConnection : handleCreateConnection}
-        onCancel={() => {
-          setShowForm(false);
-          setEditingConnection(null);
-          setSelectedTemplate(null);
-        }}
-        onTest={async (connectionData) => {
-          return await connectionAPI.testConnection({
-            connectionData,
-            testEndpoint: undefined,
-            testMethod: 'GET'
-          });
-        }}
-        isLoading={state.isLoading}
-      />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+        <div className="p-6">
+          <div className="max-w-4xl mx-auto">
+            <ConnectionForm
+              connection={editingConnection || undefined}
+              template={selectedTemplate || undefined}
+              onSave={editingConnection ? handleUpdateConnection : handleCreateConnection}
+              onCancel={() => {
+                setShowForm(false);
+                onFormClose();
+                setEditingConnection(null);
+                setSelectedTemplate(null);
+              }}
+              onTest={async (connectionData) => {
+                return await connectionAPI.testConnection({
+                  connectionData,
+                  testEndpoint: undefined,
+                  testMethod: 'GET'
+                });
+              }}
+              isLoading={state.isLoading}
+            />
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="h-full flex julius-main-content">
-      {/* Sidebar - Julius AI Style */}
-      <div className="julius-sidebar">
-        {/* Sidebar Header */}
-        <div className="julius-sidebar-header">
-          <div className="flex items-center space-x-3">
-            <div className="julius-logo">
-              <Settings className="h-4 w-4" />
-            </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="font-semibold text-gray-900 text-sm">Data Connectors & MCPs</h2>
-            </div>
-          </div>
-          <p className="text-xs text-gray-600 mt-2">
-            You can connect Julius to your data stores and business tools here.
-          </p>
-        </div>
-
-        {/* Navigation */}
-        <div className="flex-1 p-4">
-          <nav className="space-y-1">
-            <button
-              onClick={() => setActiveTab('connections')}
-              className={cn(
-                "julius-nav-item",
-                activeTab === 'connections' && "active"
-              )}
-            >
-              <Settings className="h-4 w-4" />
-              My Connections
-            </button>
-            <button
-              onClick={() => setActiveTab('templates')}
-              className={cn(
-                "julius-nav-item",
-                activeTab === 'templates' && "active"
-              )}
-            >
-              <Grid className="h-4 w-4" />
-              Add connectors
-            </button>
-            <button
-              onClick={() => setActiveTab('stats')}
-              className={cn(
-                "julius-nav-item",
-                activeTab === 'stats' && "active"
-              )}
-            >
-              <Activity className="h-4 w-4" />
-              Statistics
-            </button>
-          </nav>
-        </div>
-
-        {/* Sidebar Footer */}
-        <div className="p-4 border-t border-gray-200">
-          <div className="text-xs text-gray-500 space-y-2">
-            <div className="font-medium">Resources</div>
-            <div className="space-y-1">
-              <a href="#" className="block text-gray-600 hover:text-gray-900 text-xs">📚 Documentation</a>
-              <a href="#" className="block text-gray-600 hover:text-gray-900 text-xs">💬 Community Slack</a>
-              <a href="#" className="block text-gray-600 hover:text-gray-900 text-xs">🧪 Models Lab</a>
-              <a href="#" className="block text-gray-600 hover:text-gray-900 text-xs">⬆️ Upgrade Subscription</a>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Header */}
-        <div className="julius-header">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-gray-900">
-                {activeTab === 'connections' && 'My Connections'}
-                {activeTab === 'templates' && 'Add connectors'}
-                {activeTab === 'stats' && 'Statistics'}
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Connections
               </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                {activeTab === 'connections' && 'Manage your active connections'}
-                {activeTab === 'templates' && 'Choose from available connectors'}
-                {activeTab === 'stats' && 'View connection analytics and performance'}
-              </p>
+              <p className="text-default-600 mt-2 text-lg">Connect and manage your data sources and integrations</p>
             </div>
-
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={handleRefresh}
-                className="julius-btn julius-btn-secondary"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh
-              </button>
-              {activeTab === 'connections' && (
-                <button
-                  onClick={() => setShowForm(true)}
-                  className="julius-btn julius-btn-primary"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  New
-                </button>
-              )}
-            </div>
+            <Button 
+              color="primary" 
+              size="lg"
+              startContent={<Plus className="h-5 w-5" />}
+              onPress={() => {
+                setShowForm(true);
+                onFormOpen();
+              }}
+              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              New Connection
+            </Button>
           </div>
-        </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-hidden julius-content">
-          {activeTab === 'connections' && (
-            <div className="p-6">
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">My Connections</h2>
-
-                {/* Connections Table - Julius AI Style */}
-                {state.connections.length > 0 ? (
-                  <div className="julius-connections-table">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Connector</th>
-                          <th>Type</th>
-                          <th>Created</th>
-                          <th>Status</th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {state.connections.map((connection) => (
-                          <tr key={connection.id}>
-                            <td>
-                              <div className="flex items-center">
-                                <div className="julius-connection-icon mr-3">
-                                  {getTypeIcon(connection.type)}
-                                </div>
-                                <div>
-                                  <div className="text-sm font-medium text-gray-900">
-                                    {connection.name}
-                                  </div>
-                                  <div className="text-sm text-gray-500">
-                                    {connection.provider}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td>
-                              <span className="julius-badge julius-badge-gray">
-                                {connection.type === 'api' ? 'MCP' : connection.type.toUpperCase()}
-                              </span>
-                            </td>
-                            <td className="text-sm text-gray-500">
-                              {connection.createdAt ? new Date(connection.createdAt).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                year: 'numeric'
-                              }) : 'N/A'}
-                            </td>
-                            <td>
-                              <span className={cn(
-                                "julius-badge",
-                                connection.status === 'active' ? "julius-badge-green" :
-                                connection.status === 'error' ? "julius-badge-red" :
-                                "julius-badge-yellow"
-                              )}>
-                                {connection.status}
-                              </span>
-                            </td>
-                            <td className="text-right">
-                              <button className="text-gray-400 hover:text-gray-600 p-1">
-                                <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                                  <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                                </svg>
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="group hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:scale-[1.02]">
+              <CardBody className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg">
+                    <Plug className="h-6 w-6" />
                   </div>
-                ) : (
-                  <div className="julius-empty-state">
-                    <Settings className="julius-empty-icon" />
-                    <h3 className="julius-empty-title">No connections yet</h3>
-                    <p className="julius-empty-description">
-                      Get started by adding your first connection
+                  <div>
+                    <p className="text-sm text-default-500 font-medium">Total Connections</p>
+                    <p className="text-2xl font-bold text-foreground">{state.connections.length}</p>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+
+            <Card className="group hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:scale-[1.02]">
+              <CardBody className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 text-white shadow-lg">
+                    <CheckCircle className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-default-500 font-medium">Active</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {state.connections.filter(c => c.status === 'active').length}
                     </p>
-                    <button
-                      onClick={() => setShowForm(true)}
-                      className="julius-btn julius-btn-primary"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Connection
-                    </button>
                   </div>
-                )}
-              </div>
+                </div>
+              </CardBody>
+            </Card>
+
+            <Card className="group hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:scale-[1.02]">
+              <CardBody className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-lg">
+                    <Clock className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-default-500 font-medium">Pending</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {state.connections.filter(c => c.status === 'pending').length}
+                    </p>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+
+            <Card className="group hover:shadow-xl transition-all duration-300 bg-white/80 backdrop-blur-sm border-0 shadow-lg hover:scale-[1.02]">
+              <CardBody className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 text-white shadow-lg">
+                    <AlertCircle className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-default-500 font-medium">Errors</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {state.connections.filter(c => c.status === 'error').length}
+                    </p>
+                  </div>
+                </div>
+              </CardBody>
+            </Card>
+          </div>
+
+          {/* Tabs */}
+          <div className="mb-8">
+            <Tabs
+              selectedKey={activeTab}
+              onSelectionChange={(key) => setActiveTab(key as 'connections' | 'templates' | 'stats')}
+              variant="underlined"
+              color="primary"
+              size="lg"
+              classNames={{
+                tabList: "bg-white/50 backdrop-blur-sm rounded-xl p-2 shadow-lg border border-white/20",
+                tab: "data-[selected=true]:text-primary-600 font-semibold",
+                cursor: "bg-gradient-to-r from-blue-500 to-purple-600",
+              }}
+            >
+              <Tab
+                key="connections"
+                title={
+                  <div className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    My Connections
+                  </div>
+                }
+              />
+              <Tab
+                key="templates"
+                title={
+                  <div className="flex items-center gap-2">
+                    <Grid3X3 className="h-4 w-4" />
+                    Templates
+                  </div>
+                }
+              />
+              <Tab
+                key="stats"
+                title={
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4" />
+                    Analytics
+                  </div>
+                }
+              />
+            </Tabs>
+          </div>
+
+          {/* Content Area */}
+          {activeTab === 'connections' && (
+            <div>
+              {state.isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Spinner size="lg" color="primary" />
+                </div>
+              ) : (
+                <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg">
+                  <CardBody className="p-12 text-center">
+                    <div className="w-20 h-20 bg-gradient-to-br from-blue-500/10 to-purple-600/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <Plug className="h-10 w-10 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2 text-foreground">No connections found</h3>
+                    <p className="text-default-600 mb-6 max-w-md mx-auto">
+                      Get started by creating your first connection to integrate with external services and data sources.
+                    </p>
+                    <Button
+                      color="primary"
+                      size="lg"
+                      startContent={<Plus className="h-5 w-5" />}
+                      onPress={() => {
+                        setShowForm(true);
+                        onFormOpen();
+                      }}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      Create Connection
+                    </Button>
+                  </CardBody>
+                </Card>
+              )}
             </div>
           )}
 
           {activeTab === 'templates' && (
-            <ConnectionTemplateGrid
-              templates={state.templates}
-              onSelectTemplate={handleSelectTemplate}
-            />
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+              <ConnectionTemplateGrid
+                templates={state.templates}
+                onSelectTemplate={handleSelectTemplate}
+              />
+            </div>
           )}
 
           {activeTab === 'stats' && (
-            <ConnectionStatsGrid stats={stats} />
+            <div className="bg-white/70 backdrop-blur-sm rounded-xl p-6 shadow-lg">
+              <ConnectionStatsGrid stats={stats} />
+            </div>
           )}
         </div>
       </div>
