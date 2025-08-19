@@ -7,11 +7,9 @@ import {
 } from 'lucide-react';
 import {
   Button,
-  Chip,
   Divider,
   Listbox,
   ListboxItem,
-  Badge,
 } from '@heroui/react';
 
 interface MenuItem {
@@ -19,7 +17,6 @@ interface MenuItem {
   label: string;
   icon: React.ReactNode;
   path: string;
-  count?: number;
   adminOnly?: boolean;
   children?: MenuItem[];
 }
@@ -47,15 +44,13 @@ const menuItems: MenuItem[] = [
     id: 'chat',
     label: 'Chat Threads',
     icon: <MessageSquare className="h-4 w-4" />,
-    path: '/chat',
-    count: 2
+    path: '/chat'
   },
   {
     id: 'notebooks',
     label: 'Notebooks',
     icon: <Grid className="h-4 w-4" />,
-    path: '/notebooks',
-    count: 4
+    path: '/notebooks'
   },
   {
     id: 'files',
@@ -67,8 +62,7 @@ const menuItems: MenuItem[] = [
     id: 'connections',
     label: 'Data Connectors',
     icon: <Database className="h-4 w-4" />,
-    path: '/connections',
-    count: 5
+    path: '/connections'
   },
   {
     id: 'demo',
@@ -198,16 +192,21 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       'files': '/files',
       'settings': '/settings',
       'demo': '/demo',
-      'admin': '/admin'
+      'admin': '/admin',
+      'docs': '/docs',
+      'community': '/community',
+      'analytics': '/analytics',
+      'reports': '/reports'
     };
 
-    // Use currentPage prop if provided, otherwise use location
-    if (currentPage) {
-      return itemId === currentPage;
-    }
-
     const itemPath = pathMap[itemId];
-    return location.pathname === itemPath || location.pathname.startsWith(itemPath + '/');
+    if (!itemPath) return false;
+
+    // Check exact match or starts with path
+    const isMatch = location.pathname === itemPath ||
+                   (itemPath !== '/' && location.pathname.startsWith(itemPath + '/'));
+
+    return isMatch;
   };
 
   const filteredMenuItems = menuItems.filter(item =>
@@ -236,21 +235,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                 variant={isActive(item.id) ? "flat" : "light"}
                 color={isActive(item.id) ? "primary" : "default"}
                 size="sm"
-                className="w-full"
+                className={`w-full transition-all duration-200 ${isActive(item.id) ? 'bg-blue-100 border-blue-300' : ''}`}
                 onPress={() => handleNavigate(item.path)}
               >
                 {item.icon}
               </Button>
-              {item.count && (
-                <Badge
-                  content={item.count}
-                  color="danger"
-                  size="sm"
-                  className="absolute -top-1 -right-1"
-                >
-                  <div></div>
-                </Badge>
-              )}
+
             </div>
           ))}
         </div>
@@ -281,22 +271,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           <Listbox
             aria-label="Workspace navigation"
             variant="flat"
-            selectionMode="single"
-            selectedKeys={[filteredMenuItems.find(item => isActive(item.id))?.id || '']}
+            selectionMode="none"
           >
             {filteredMenuItems.map((item) => (
               <ListboxItem
                 key={item.id}
                 startContent={item.icon}
-                endContent={
-                  item.count ? (
-                    <Chip size="sm" variant="flat" color="default">
-                      {item.count}
-                    </Chip>
-                  ) : null
-                }
                 onPress={() => handleNavigate(item.path)}
-                className="mb-1"
+                className={`mb-1 transition-all duration-200 ${isActive(item.id) ? 'bg-blue-50 text-blue-600 font-semibold border-r-2 border-blue-500' : 'hover:bg-gray-50'}`}
               >
                 {item.label}
               </ListboxItem>
@@ -313,14 +295,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           <Listbox
             aria-label="Resources navigation"
             variant="flat"
-            selectionMode="single"
+            selectionMode="none"
           >
             {resourceItems.map((item) => (
               <ListboxItem
                 key={item.id}
                 startContent={item.icon}
                 onPress={() => handleNavigate(item.path)}
-                className="mb-1"
+                className={`mb-1 transition-all duration-200 ${isActive(item.id) ? 'bg-blue-50 text-blue-600 font-semibold border-r-2 border-blue-500' : 'hover:bg-gray-50'}`}
               >
                 {item.label}
               </ListboxItem>
@@ -337,14 +319,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           <Listbox
             aria-label="Tools navigation"
             variant="flat"
-            selectionMode="single"
+            selectionMode="none"
           >
             {additionalItems.map((item) => (
               <ListboxItem
                 key={item.id}
                 startContent={item.icon}
                 onPress={() => handleNavigate(item.path)}
-                className="mb-1"
+                className={`mb-1 transition-all duration-200 ${isActive(item.id) ? 'bg-blue-50 text-blue-600 font-semibold border-r-2 border-blue-500' : 'hover:bg-gray-50'}`}
               >
                 {item.label}
               </ListboxItem>
