@@ -1,6 +1,28 @@
 import React, { useState } from 'react';
-import { Upload, Search, File, FileText, Image, Archive, Download, Trash2, Eye, MoreHorizontal } from 'lucide-react';
-import { Button } from '@/components/shared/ui/Button';
+import {
+  Button,
+  Input,
+  Card,
+  CardBody,
+  Chip,
+  Tabs,
+  Tab,
+  useDisclosure,
+  Spinner,
+} from '@heroui/react';
+import {
+  Upload,
+  Search,
+  File,
+  FileText,
+  Image,
+  Archive,
+  Filter,
+  Grid3X3,
+  List,
+  Plus,
+} from 'lucide-react';
+import { FileUploadModal, FileCard, FileListItem } from '@/components/features/files';
 
 interface FileItem {
   id: string;
@@ -64,7 +86,9 @@ export const FilesPage: React.FC = () => {
   const [files, setFiles] = useState<FileItem[]>(mockFiles);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<string>('all');
-  const [dragOver, setDragOver] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [isLoading, setIsLoading] = useState(false);
+  const { isOpen: isUploadOpen, onOpen: onUploadOpen, onClose: onUploadClose } = useDisclosure();
 
   const user = {
     name: 'Nguyễn Đình Quốc Duy',
@@ -88,193 +112,272 @@ export const FilesPage: React.FC = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const getFileIcon = (type: string) => {
-    switch (type) {
-      case 'document':
-        return <FileText className="h-8 w-8 text-blue-600" />;
-      case 'image':
-        return <Image className="h-8 w-8 text-green-600" />;
-      case 'archive':
-        return <Archive className="h-8 w-8 text-purple-600" />;
-      default:
-        return <File className="h-8 w-8 text-gray-600" />;
-    }
+
+
+  const handleUploadComplete = (uploadedFiles: File[]) => {
+    // Convert uploaded files to FileItem format
+    const newFiles: FileItem[] = uploadedFiles.map(file => ({
+      id: Math.random().toString(36).substring(2, 11),
+      name: file.name,
+      type: getFileType(file.type),
+      size: file.size,
+      uploadDate: new Date(),
+      lastAccessed: new Date(),
+      status: 'ready',
+    }));
+
+    setFiles(prev => [...newFiles, ...prev]);
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusStyles = {
-      ready: 'julius-badge julius-badge-green',
-      processing: 'julius-badge julius-badge-yellow',
-      error: 'julius-badge julius-badge-red'
-    };
-    return statusStyles[status as keyof typeof statusStyles] || 'julius-badge julius-badge-gray';
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    // Handle file drop logic here
-    console.log('Files dropped:', e.dataTransfer.files);
+  const getFileType = (mimeType: string): 'document' | 'image' | 'archive' | 'other' => {
+    if (mimeType.startsWith('image/')) return 'image';
+    if (mimeType.includes('text') || mimeType.includes('document') || mimeType.includes('pdf')) return 'document';
+    if (mimeType.includes('zip') || mimeType.includes('rar') || mimeType.includes('archive')) return 'archive';
+    return 'other';
   };
 
   const handleDelete = (id: string) => {
     setFiles(prev => prev.filter(file => file.id !== id));
   };
 
+  const handleRename = (id: string, newName: string) => {
+    setFiles(prev => prev.map(file =>
+      file.id === id ? { ...file, name: newName } : file
+    ));
+  };
+
+  const handleDownload = (id: string) => {
+    const file = files.find(f => f.id === id);
+    if (file) {
+      console.log('Downloading file:', file.name);
+      // Implement download logic here
+    }
+  };
+
+  const handleView = (id: string) => {
+    const file = files.find(f => f.id === id);
+    if (file) {
+      console.log('Viewing file:', file.name);
+      // Implement view logic here
+      setFiles(prev => prev.map(f =>
+        f.id === id ? { ...f, lastAccessed: new Date() } : f
+      ));
+    }
+  };
+
   return (
-    <div className="p-6">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Files</h1>
-              <p className="text-gray-600 mt-1">Upload and manage your data files</p>
-            </div>
-            <Button className="julius-btn julius-btn-primary">
-              <Upload className="h-4 w-4 mr-2" />
-              Upload Files
-            </Button>
-          </div>
-
-          {/* Upload Area */}
-          <div
-            className={`border-2 border-dashed rounded-lg p-8 mb-6 text-center transition-colors ${
-              dragOver 
-                ? 'border-blue-400 bg-blue-50' 
-                : 'border-gray-300 hover:border-gray-400'
-            }`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Drop files here or click to upload
-            </h3>
-            <p className="text-gray-600 mb-4">
-              Support for CSV, Excel, PDF, images and more
+    <div className="h-full bg-gradient-to-br from-background via-background to-default-50/50">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+              File Management
+            </h1>
+            <p className="text-default-600 mt-2">
+              Upload, organize, and manage your data files with ease
             </p>
-            <Button className="julius-btn julius-btn-secondary">
-              Choose Files
-            </Button>
           </div>
+          <Button
+            color="primary"
+            size="lg"
+            startContent={<Plus className="h-5 w-5" />}
+            onPress={onUploadOpen}
+            className="shadow-lg"
+          >
+            Upload Files
+          </Button>
+        </div>
 
-          {/* Search and Filters */}
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="flex-1 julius-search-container">
-              <Search className="julius-search-icon" />
-              <input
-                type="text"
-                placeholder="Search files..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="julius-search-input"
-              />
-            </div>
-            <div className="flex gap-2">
-              {fileTypes.map(type => (
-                <button
-                  key={type}
-                  onClick={() => setSelectedType(type)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    selectedType === type
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  {type.charAt(0).toUpperCase() + type.slice(1)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Files Grid */}
-          <div className="julius-grid">
-            {filteredFiles.map((file) => (
-              <div key={file.id} className="julius-template-card">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="julius-template-icon">
-                    {getFileIcon(file.type)}
-                  </div>
-                  <button className="p-1 rounded text-gray-400 hover:text-gray-600">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </button>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Card className="shadow-sm">
+            <CardBody className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <File className="h-5 w-5 text-primary" />
                 </div>
+                <div>
+                  <p className="text-sm text-default-500">Total Files</p>
+                  <p className="text-xl font-semibold">{files.length}</p>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
 
-                <div className="mb-4">
-                  <h3 className="julius-template-title truncate" title={file.name}>
-                    {file.name}
-                  </h3>
-                  <p className="julius-template-description">
-                    Size: {formatFileSize(file.size)}
+          <Card className="shadow-sm">
+            <CardBody className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-success/10">
+                  <FileText className="h-5 w-5 text-success" />
+                </div>
+                <div>
+                  <p className="text-sm text-default-500">Documents</p>
+                  <p className="text-xl font-semibold">
+                    {files.filter(f => f.type === 'document').length}
                   </p>
                 </div>
+              </div>
+            </CardBody>
+          </Card>
 
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2">
-                    <span className="julius-badge julius-badge-blue">
-                      {file.type.charAt(0).toUpperCase() + file.type.slice(1)}
-                    </span>
-                    <span className={getStatusBadge(file.status)}>
-                      {file.status.charAt(0).toUpperCase() + file.status.slice(1)}
-                    </span>
-                  </div>
+          <Card className="shadow-sm">
+            <CardBody className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-secondary/10">
+                  <Image className="h-5 w-5 text-secondary" />
                 </div>
-
-                <div className="text-xs text-gray-500 mb-4">
-                  <div>Uploaded: {file.uploadDate.toLocaleDateString()}</div>
-                  <div>Last accessed: {file.lastAccessed.toLocaleDateString()}</div>
+                <div>
+                  <p className="text-sm text-default-500">Images</p>
+                  <p className="text-xl font-semibold">
+                    {files.filter(f => f.type === 'image').length}
+                  </p>
                 </div>
+              </div>
+            </CardBody>
+          </Card>
 
-                <div className="flex items-center space-x-2">
-                  <Button size="sm" className="julius-btn julius-btn-primary flex-1">
-                    <Eye className="h-3 w-3 mr-1" />
-                    View
-                  </Button>
-                  <Button size="sm" variant="ghost" className="p-2">
-                    <Download className="h-3 w-3" />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    className="p-2 text-red-600 hover:text-red-700"
-                    onClick={() => handleDelete(file.id)}
+          <Card className="shadow-sm">
+            <CardBody className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-warning/10">
+                  <Archive className="h-5 w-5 text-warning" />
+                </div>
+                <div>
+                  <p className="text-sm text-default-500">Archives</p>
+                  <p className="text-xl font-semibold">
+                    {files.filter(f => f.type === 'archive').length}
+                  </p>
+                </div>
+              </div>
+            </CardBody>
+          </Card>
+        </div>
+
+        {/* Search and Filters */}
+        <Card className="shadow-sm mb-6">
+          <CardBody className="p-4">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1">
+                <Input
+                  placeholder="Search files..."
+                  value={searchTerm}
+                  onValueChange={setSearchTerm}
+                  startContent={<Search className="h-4 w-4 text-default-400" />}
+                  variant="bordered"
+                  classNames={{
+                    input: "text-sm",
+                    inputWrapper: "h-10"
+                  }}
+                />
+              </div>
+
+              {/* Filters */}
+              <div className="flex items-center gap-3">
+                <Tabs
+                  selectedKey={selectedType}
+                  onSelectionChange={(key) => setSelectedType(key as string)}
+                  variant="bordered"
+                  size="sm"
+                >
+                  {fileTypes.map(type => (
+                    <Tab key={type} title={type.charAt(0).toUpperCase() + type.slice(1)} />
+                  ))}
+                </Tabs>
+
+                <div className="flex items-center gap-1 border-l border-divider pl-3">
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    variant={viewMode === 'grid' ? 'solid' : 'light'}
+                    color={viewMode === 'grid' ? 'primary' : 'default'}
+                    onPress={() => setViewMode('grid')}
                   >
-                    <Trash2 className="h-3 w-3" />
+                    <Grid3X3 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    isIconOnly
+                    size="sm"
+                    variant={viewMode === 'list' ? 'solid' : 'light'}
+                    color={viewMode === 'list' ? 'primary' : 'default'}
+                    onPress={() => setViewMode('list')}
+                  >
+                    <List className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* Files Display */}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Spinner size="lg" color="primary" />
+          </div>
+        ) : viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredFiles.map((file) => (
+              <FileCard
+                key={file.id}
+                file={file}
+                onDelete={handleDelete}
+                onRename={handleRename}
+                onDownload={handleDownload}
+                onView={handleView}
+              />
             ))}
           </div>
+        ) : (
+          <div className="space-y-3">
+            {filteredFiles.map((file) => (
+              <FileListItem
+                key={file.id}
+                file={file}
+                onDelete={handleDelete}
+                onRename={handleRename}
+                onDownload={handleDownload}
+                onView={handleView}
+              />
+            ))}
+          </div>
+        )}
 
-          {filteredFiles.length === 0 && (
-            <div className="text-center py-12">
-              <File className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No files found</h3>
-              <p className="text-gray-600 mb-6">
-                {searchTerm || selectedType !== 'all' 
-                  ? 'Try adjusting your search or filters'
-                  : 'Upload your first file to get started'
+        {/* Empty State */}
+        {filteredFiles.length === 0 && !isLoading && (
+          <Card className="shadow-sm">
+            <CardBody className="p-12 text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <File className="h-10 w-10 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">No files found</h3>
+              <p className="text-default-500 mb-6 max-w-md mx-auto">
+                {searchTerm || selectedType !== 'all'
+                  ? 'Try adjusting your search criteria or filters to find what you\'re looking for.'
+                  : 'Get started by uploading your first file. We support various formats including documents, images, and archives.'
                 }
               </p>
-              <Button className="julius-btn julius-btn-primary">
-                <Upload className="h-4 w-4 mr-2" />
+              <Button
+                color="primary"
+                size="lg"
+                startContent={<Upload className="h-5 w-5" />}
+                onPress={onUploadOpen}
+              >
                 Upload Files
               </Button>
-            </div>
-          )}
-        </div>
+            </CardBody>
+          </Card>
+        )}
       </div>
+
+      {/* Upload Modal */}
+      <FileUploadModal
+        isOpen={isUploadOpen}
+        onClose={onUploadClose}
+        onUploadComplete={handleUploadComplete}
+      />
+    </div>
   );
 };
 
