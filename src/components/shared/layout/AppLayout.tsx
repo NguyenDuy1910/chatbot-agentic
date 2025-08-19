@@ -3,7 +3,6 @@ import { AppHeader } from './AppHeader';
 import { AppSidebar } from './AppSidebar';
 import { AppFooter } from './AppFooter';
 import { useNavigation } from '@/hooks/useNavigation';
-import '@/styles/components/julius-ai-styles.css';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -76,7 +75,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   };
 
   return (
-    <div className="julius-app-layout">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <AppHeader
         currentPage={activePage}
@@ -86,15 +85,15 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       />
 
       {/* Main Container */}
-      <div className="julius-main-container">
+      <div className="flex flex-1 overflow-hidden">
         {/* Mobile Sidebar Overlay */}
         {isMobile && sidebarOpen && (
           <div className="fixed inset-0 z-40 lg:hidden">
-            <div 
-              className="fixed inset-0 bg-black/50" 
-              onClick={() => setSidebarOpen(false)} 
+            <div
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setSidebarOpen(false)}
             />
-            <div className="fixed inset-y-0 left-0 z-50">
+            <div className="fixed inset-y-0 left-0 z-50 shadow-xl">
               <AppSidebar
                 currentPage={activePage}
                 isCollapsed={false}
@@ -106,7 +105,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
         )}
 
         {/* Desktop Sidebar */}
-        <div className={`hidden lg:block ${sidebarCollapsed ? 'w-16' : 'w-64'} transition-all duration-300`}>
+        <div className={`hidden lg:block ${sidebarCollapsed ? 'w-16' : 'w-64'} transition-all duration-300 ease-in-out`}>
           <AppSidebar
             currentPage={activePage}
             isCollapsed={sidebarCollapsed}
@@ -117,15 +116,17 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          <main className="flex-1 overflow-auto bg-gray-50">
-            {children}
+          <main className="flex-1 overflow-auto bg-default-50/50">
+            <div className="h-full">
+              {children}
+            </div>
           </main>
         </div>
       </div>
 
       {/* Footer */}
       {showFooter && (
-        <AppFooter 
+        <AppFooter
           showExtended={showExtendedFooter}
           companyName="Vikki ChatBot"
           version="1.0.0"

@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Home, MessageSquare, Settings, Database, BarChart,
-  Users, FileText, Grid, Upload, Crown, Sparkles,
-  ChevronRight, Plus, Palette
+  Users, FileText, Grid, Upload, Crown,
+  Plus, Palette, ChevronDown
 } from 'lucide-react';
-import { Button } from '@/components/shared/ui/Button';
-import '@/styles/components/julius-ai-styles.css';
+import {
+  Button,
+  Chip,
+  Divider,
+  Listbox,
+  ListboxItem,
+  Badge,
+} from '@heroui/react';
 
 interface MenuItem {
   id: string;
@@ -106,14 +112,73 @@ const resourceItems: MenuItem[] = [
   }
 ];
 
+// Additional menu items for testing scroll
+const additionalItems = [
+  {
+    id: 'reports',
+    label: 'Reports',
+    icon: <FileText className="h-4 w-4" />,
+    path: '/reports'
+  },
+  {
+    id: 'integrations',
+    label: 'Integrations',
+    icon: <Grid className="h-4 w-4" />,
+    path: '/integrations'
+  },
+  {
+    id: 'api-keys',
+    label: 'API Keys',
+    icon: <Database className="h-4 w-4" />,
+    path: '/api-keys'
+  },
+  {
+    id: 'billing',
+    label: 'Billing',
+    icon: <Palette className="h-4 w-4" />,
+    path: '/billing'
+  },
+  {
+    id: 'security',
+    label: 'Security',
+    icon: <Settings className="h-4 w-4" />,
+    path: '/security'
+  },
+  {
+    id: 'logs',
+    label: 'System Logs',
+    icon: <FileText className="h-4 w-4" />,
+    path: '/logs'
+  }
+];
+
 export const AppSidebar: React.FC<AppSidebarProps> = ({
   currentPage = 'main',
   isCollapsed = false,
   onNavigate,
-  user
+  user = {
+    name: 'Nguyễn Đình Quốc Duy',
+    email: 'nguyendinhduy@gmail.com',
+    role: 'admin'
+  }
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+
+  useEffect(() => {
+    const checkScrollable = () => {
+      if (scrollRef.current) {
+        const { scrollHeight, clientHeight } = scrollRef.current;
+        setShowScrollIndicator(scrollHeight > clientHeight);
+      }
+    };
+
+    checkScrollable();
+    window.addEventListener('resize', checkScrollable);
+    return () => window.removeEventListener('resize', checkScrollable);
+  }, []);
 
   const handleNavigate = (path: string) => {
     if (onNavigate) {
@@ -145,140 +210,157 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     return location.pathname === itemPath || location.pathname.startsWith(itemPath + '/');
   };
 
-  const filteredMenuItems = menuItems.filter(item => 
+  const filteredMenuItems = menuItems.filter(item =>
     !item.adminOnly || (item.adminOnly && user?.role === 'admin')
   );
 
   if (isCollapsed) {
     return (
-      <div className="julius-sidebar julius-sidebar-collapsed">
-        <div className="julius-sidebar-header">
-          <div className="julius-logo">
-            <Sparkles className="h-4 w-4" />
-          </div>
-        </div>
-        
-        <div className="julius-nav-menu">
-          <div className="px-2 py-2">
-            <Button size="sm" className="w-full p-2">
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="space-y-1 px-2">
-            {filteredMenuItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => handleNavigate(item.path)}
-                className={`julius-nav-item-collapsed ${isActive(item.id) ? 'active' : ''}`}
-                title={item.label}
+      <div className="w-16 h-full bg-background border-r border-divider flex flex-col">
+        {/* Collapsed Menu */}
+        <div className="flex-1 p-2 space-y-2 overflow-y-auto scroll-smooth">
+          <Button
+            isIconOnly
+            color="primary"
+            variant="flat"
+            size="sm"
+            className="w-full"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+
+          {filteredMenuItems.map((item) => (
+            <div key={item.id} className="relative">
+              <Button
+                isIconOnly
+                variant={isActive(item.id) ? "flat" : "light"}
+                color={isActive(item.id) ? "primary" : "default"}
+                size="sm"
+                className="w-full"
+                onPress={() => handleNavigate(item.path)}
               >
                 {item.icon}
-                {item.count && (
-                  <span className="julius-nav-count-collapsed">{item.count}</span>
-                )}
-              </button>
-            ))}
-          </div>
+              </Button>
+              {item.count && (
+                <Badge
+                  content={item.count}
+                  color="danger"
+                  size="sm"
+                  className="absolute -top-1 -right-1"
+                >
+                  {item.count}
+                </Badge>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="julius-sidebar">
-      {/* Sidebar Header */}
-      <div className="julius-sidebar-header">
-        <div className="flex items-center space-x-3">
-          <div className="julius-logo">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div>
-            <h2 className="font-semibold text-gray-900 text-sm">Vikki ChatBot</h2>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2 mt-3">
-          <div className="flex items-center space-x-1 text-xs text-green-600">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span>Connected</span>
-          </div>
-          <div className="flex items-center space-x-1 text-xs text-blue-600">
-            <Sparkles className="h-3 w-3" />
-            <span>AI</span>
-          </div>
-        </div>
-      </div>
-
+    <div className="w-64 h-full bg-background border-r border-divider flex flex-col">
       {/* Navigation Menu */}
-      <div className="julius-nav-menu">
-        <div className="px-3 py-2">
-          <Button className="julius-btn julius-btn-primary w-full">
-            <Plus className="h-4 w-4 mr-2" />
-            New
-          </Button>
-        </div>
+      <div
+        ref={scrollRef}
+        className="flex-1 p-4 space-y-4 overflow-y-auto scroll-smooth relative"
+      >
+        <Button
+          color="primary"
+          variant="flat"
+          startContent={<Plus className="h-4 w-4" />}
+          className="w-full justify-start"
+        >
+          New
+        </Button>
 
-        <div className="px-3 py-2">
-          <div className="text-xs font-medium text-gray-500 mb-2">Workspace</div>
-          <div className="space-y-1">
+        <div>
+          <h3 className="text-xs font-medium text-default-500 mb-3 uppercase tracking-wider">
+            Workspace
+          </h3>
+          <Listbox
+            aria-label="Workspace navigation"
+            variant="flat"
+            selectionMode="single"
+            selectedKeys={[filteredMenuItems.find(item => isActive(item.id))?.id || '']}
+          >
             {filteredMenuItems.map((item) => (
-              <button
+              <ListboxItem
                 key={item.id}
-                onClick={() => handleNavigate(item.path)}
-                className={`julius-nav-item ${isActive(item.id) ? 'active' : ''}`}
+                startContent={item.icon}
+                endContent={
+                  item.count ? (
+                    <Chip size="sm" variant="flat" color="default">
+                      {item.count}
+                    </Chip>
+                  ) : null
+                }
+                onPress={() => handleNavigate(item.path)}
+                className="mb-1"
               >
-                {item.icon}
-                <span className="ml-3">{item.label}</span>
-                {item.count && (
-                  <span className="ml-auto text-xs text-gray-500">{item.count}</span>
-                )}
-                <ChevronRight className="julius-nav-arrow" />
-              </button>
+                {item.label}
+              </ListboxItem>
             ))}
-          </div>
+          </Listbox>
         </div>
 
-        <div className="px-3 py-2">
-          <div className="text-xs font-medium text-gray-500 mb-2">Resources</div>
-          <div className="space-y-1">
+        <Divider />
+
+        <div>
+          <h3 className="text-xs font-medium text-default-500 mb-3 uppercase tracking-wider">
+            Resources
+          </h3>
+          <Listbox
+            aria-label="Resources navigation"
+            variant="flat"
+            selectionMode="single"
+          >
             {resourceItems.map((item) => (
-              <button
+              <ListboxItem
                 key={item.id}
-                onClick={() => handleNavigate(item.path)}
-                className="julius-nav-item"
+                startContent={item.icon}
+                onPress={() => handleNavigate(item.path)}
+                className="mb-1"
               >
-                {item.icon}
-                <span className="ml-3">{item.label}</span>
-              </button>
+                {item.label}
+              </ListboxItem>
             ))}
-          </div>
+          </Listbox>
         </div>
+
+        <Divider />
+
+        <div>
+          <h3 className="text-xs font-medium text-default-500 mb-3 uppercase tracking-wider">
+            Tools & Settings
+          </h3>
+          <Listbox
+            aria-label="Tools navigation"
+            variant="flat"
+            selectionMode="single"
+          >
+            {additionalItems.map((item) => (
+              <ListboxItem
+                key={item.id}
+                startContent={item.icon}
+                onPress={() => handleNavigate(item.path)}
+                className="mb-1"
+              >
+                {item.label}
+              </ListboxItem>
+            ))}
+          </Listbox>
+        </div>
+
+        {/* Scroll Indicator */}
+        {showScrollIndicator && (
+          <div className="absolute bottom-2 right-2 opacity-50 animate-bounce">
+            <ChevronDown className="h-4 w-4 text-default-400" />
+          </div>
+        )}
       </div>
 
-      {/* Sidebar Footer */}
-      <div className="julius-sidebar-footer">
-        <div className="flex items-center space-x-3">
-          {user?.avatar ? (
-            <img
-              src={user.avatar}
-              alt={user.name}
-              className="w-8 h-8 rounded-full"
-            />
-          ) : (
-            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-medium">
-              {user?.name?.charAt(0) || 'U'}
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-gray-900 truncate">
-              {user?.name || 'User'}
-            </div>
-            <div className="text-xs text-gray-500 truncate">
-              {user?.email || 'user@example.com'}
-            </div>
-          </div>
-        </div>
-      </div>
+
     </div>
   );
 };
