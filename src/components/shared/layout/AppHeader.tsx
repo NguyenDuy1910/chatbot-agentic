@@ -13,8 +13,8 @@ import {
   Badge,
   Chip,
 } from '@heroui/react';
-import { Menu, Bell, Settings, User, Crown, Sparkles, LogOut, Sun, Moon } from 'lucide-react';
-import { useTheme } from '@/contexts/ThemeContext';
+import { Menu, Bell, Settings, User, Crown, Sparkles, LogOut } from 'lucide-react';
+
 
 interface AppHeaderProps {
   currentPage?: string;
@@ -38,7 +38,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   },
   onUserMenuClick
 }) => {
-  const { theme, setTheme, actualTheme } = useTheme();
+
   const getPageTitle = () => {
     switch (currentPage) {
       case 'main':
@@ -134,22 +134,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
               <Bell className="h-5 w-5" />
             </Button>
           </Badge>
-        </NavbarItem>
-
-        {/* Theme Toggle */}
-        <NavbarItem>
-          <Button
-            isIconOnly
-            variant="light"
-            className="text-default-500"
-            onPress={() => setTheme(actualTheme === 'dark' ? 'light' : 'dark')}
-          >
-            {actualTheme === 'dark' ? (
-              <Sun className="h-5 w-5" />
-            ) : (
-              <Moon className="h-5 w-5" />
-            )}
-          </Button>
         </NavbarItem>
 
         {/* Settings */}
