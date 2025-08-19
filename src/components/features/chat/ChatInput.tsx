@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/shared/ui/Button';
-import { Input } from '@/components/shared/ui/Input';
-import { Send, Sparkles, Database } from 'lucide-react';
+import {
+  Button,
+  Textarea,
+  Card,
+  CardBody,
+  Chip,
+  Tooltip,
+  Dropdown,
+  DropdownTrigger,
+  DropdownMenu,
+  DropdownItem,
+} from '@heroui/react';
+import { Send, Sparkles, Database, Paperclip, Mic, MoreHorizontal } from 'lucide-react';
 import { Prompt } from '@/types/features/prompt';
 import { DatabaseConnection } from '@/types/features/database';
 import { PromptManager } from '@/components/features/prompts/PromptManager';
@@ -58,118 +68,153 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   };
 
   return (
-    <div className="relative">
+    <div className="p-4 border-t border-divider bg-background/80 backdrop-blur-sm">
       {/* Prompt Manager Modal */}
       {showPrompts && (
-        <div className="absolute bottom-full left-0 right-0 mb-2 bg-background border rounded-xl shadow-2xl max-h-96 overflow-hidden z-50 backdrop-blur-sm border-border/50">
-          <div className="p-4 border-b bg-gradient-to-r from-primary/5 to-primary/10">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Select a Prompt
-              </h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowPrompts(false)}
-                className="hover:bg-muted/80 h-8 w-8 p-0 rounded-full"
-              >
-                ×
-              </Button>
+        <Card className="absolute bottom-full left-4 right-4 mb-2 shadow-2xl max-h-96 overflow-hidden z-50">
+          <CardBody className="p-0">
+            <div className="p-4 border-b border-divider bg-gradient-to-r from-primary/5 to-primary/10">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  Select a Prompt
+                </h3>
+                <Button
+                  isIconOnly
+                  variant="light"
+                  size="sm"
+                  onPress={() => setShowPrompts(false)}
+                >
+                  ×
+                </Button>
+              </div>
             </div>
-          </div>
-          <div className="max-h-80 overflow-y-auto custom-scrollbar">
-            <PromptManager compact onSelectPrompt={handlePromptSelect} />
-          </div>
-        </div>
+            <div className="max-h-80 overflow-y-auto">
+              <PromptManager compact onSelectPrompt={handlePromptSelect} />
+            </div>
+          </CardBody>
+        </Card>
       )}
 
 
 
-          {/* SQL Mode Indicator */}
-          {activeConnection && (
-            <div className="flex items-center gap-2 text-xs">
-              <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-muted/50">
-                <Database className="h-3 w-3" />
-                <span className="text-muted-foreground">Database:</span>
-                <span className="font-medium">{activeConnection.name}</span>
-              </div>
+      {/* SQL Mode Indicator */}
+      {activeConnection && (
+        <div className="flex items-center gap-2 mb-3">
+          <Chip
+            startContent={<Database className="h-3 w-3" />}
+            variant="flat"
+            color="default"
+            size="sm"
+          >
+            Database: {activeConnection.name}
+          </Chip>
+          <Button
+            variant={isSQL ? "solid" : "bordered"}
+            color="primary"
+            size="sm"
+            onPress={() => setIsSQL(!isSQL)}
+          >
+            {isSQL ? "SQL Mode" : "Text Mode"}
+          </Button>
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="flex items-end gap-3">
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          <Tooltip content="Use prompt template">
+            <Button
+              isIconOnly
+              variant={showPrompts ? "flat" : "light"}
+              color={showPrompts ? "primary" : "default"}
+              onPress={() => setShowPrompts(!showPrompts)}
+            >
+              <Sparkles className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+
+          <Tooltip content="Attach file">
+            <Button
+              isIconOnly
+              variant="light"
+              color="default"
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
+          </Tooltip>
+
+          <Dropdown>
+            <DropdownTrigger>
               <Button
-                variant={isSQL ? "default" : "outline"}
-                size="sm"
-                onClick={() => setIsSQL(!isSQL)}
-                className="h-6 px-2 text-xs"
+                isIconOnly
+                variant="light"
+                color="default"
               >
-                {isSQL ? "SQL Mode" : "Text Mode"}
+                <MoreHorizontal className="h-4 w-4" />
               </Button>
-            </div>
-          )}
+            </DropdownTrigger>
+            <DropdownMenu>
+              <DropdownItem startContent={<Mic className="h-4 w-4" />}>
+                Voice input
+              </DropdownItem>
+              <DropdownItem startContent={<Database className="h-4 w-4" />}>
+                SQL mode
+              </DropdownItem>
+            </DropdownMenu>
+          </Dropdown>
+        </div>
 
-          <form onSubmit={handleSubmit} className="flex items-end gap-3">
+        {/* Main Input */}
+        <div className="flex-1">
+          <Textarea
+            value={message}
+            onValueChange={setMessage}
+            onKeyDown={handleKeyPress}
+            placeholder={
+              isSQL && activeConnection
+                ? "Ask in natural language for SQL query..."
+                : placeholder
+            }
+            disabled={disabled}
+            minRows={1}
+            maxRows={4}
+            variant="bordered"
+            classNames={{
+              input: "resize-none",
+              inputWrapper: cn(
+                "transition-all duration-200",
+                isSQL && "border-primary/50 bg-primary/5"
+              )
+            }}
+            endContent={
+              isSQL && (
+                <Chip
+                  size="sm"
+                  variant="flat"
+                  color="primary"
+                  startContent={<Database className="h-3 w-3" />}
+                >
+                  SQL
+                </Chip>
+              )
+            }
+          />
+        </div>
 
-            {/* Prompt Button */}
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={() => setShowPrompts(!showPrompts)}
-              className={cn(
-                'shrink-0 h-12 w-12 rounded-xl border-2 transition-all duration-200 hover:scale-105',
-                showPrompts 
-                  ? 'bg-primary/10 text-primary border-primary/30 shadow-lg shadow-primary/20' 
-                  : 'hover:bg-primary/5 hover:border-primary/20'
-              )}
-              title="Use prompt template"
-            >
-              <Sparkles className="h-5 w-5" />
-            </Button>
-
-            {/* Main Input */}
-            <div className="flex-1 relative">
-              <Input
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={
-                  isSQL && activeConnection 
-                    ? "Ask in natural language for SQL query..." 
-                    : placeholder
-                }
-                disabled={disabled}
-                className={cn(
-                  "min-h-12 pr-14 rounded-xl border-2 transition-all duration-200 resize-none",
-                  "focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:ring-offset-0",
-                  "hover:border-primary/30",
-                  isSQL && "border-blue-200 bg-blue-50/30 placeholder:text-blue-600/70"
-                )}
-              />
-              
-              {/* Message Type Indicator */}
-              {isSQL && (
-                <div className="absolute right-14 top-1/2 -translate-y-1/2">
-                  <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs">
-                    <Database className="h-3 w-3" />
-                    SQL
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Send Button */}
-            <Button
-              type="submit"
-              size="icon"
-              disabled={disabled || !message.trim()}
-              className={cn(
-                'shrink-0 h-12 w-12 rounded-xl transition-all duration-200',
-                message.trim() && !disabled 
-                  ? 'bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg shadow-primary/30 hover:scale-105' 
-                  : 'bg-muted hover:bg-muted/80'
-              )}
-            >
-              <Send className="h-5 w-5" />
-            </Button>
-          </form>
+        {/* Send Button */}
+        <Button
+          type="submit"
+          isIconOnly
+          color="primary"
+          variant={message.trim() && !disabled ? "solid" : "flat"}
+          isDisabled={disabled || !message.trim()}
+          className="transition-all duration-200"
+        >
+          <Send className="h-4 w-4" />
+        </Button>
+      </form>
     </div>
   );
 };

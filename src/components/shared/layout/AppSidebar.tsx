@@ -248,7 +248,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   size="sm"
                   className="absolute -top-1 -right-1"
                 >
-                  {item.count}
+                  <div></div>
                 </Badge>
               )}
             </div>
