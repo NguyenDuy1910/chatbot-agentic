@@ -34,7 +34,7 @@ const pageLoggerPlugin = () => {
 
         // Log server requests (page loads, refreshes)
         if (method === 'GET' && !url.includes('.') && !url.startsWith('/@') && !url.startsWith('/node_modules') && url !== '/dev-log') {
-          console.log(`\x1b[36m[${timestamp}]\x1b[0m \x1b[34m[SERVER]\x1b[0m \x1b[32mGET\x1b[0m \x1b[33mhttp://localhost:3001${url}\x1b[0m \x1b[32m200 OK\x1b[0m`);
+          console.log(`\x1b[36m[${timestamp}]\x1b[0m \x1b[34m[SERVER]\x1b[0m \x1b[32mGET\x1b[0m \x1b[33mhttp://localhost:3000${url}\x1b[0m \x1b[32m200 OK\x1b[0m`);
         }
 
         next();

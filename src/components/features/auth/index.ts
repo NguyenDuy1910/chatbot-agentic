@@ -1,5 +1,6 @@
 // Authentication Components
 export { LoginForm } from './LoginForm';
+export { ModernLoginForm } from './ModernLoginForm';
 export { UserProfileComponent } from './UserProfile';
 export { UserMenu } from './UserMenu';
 

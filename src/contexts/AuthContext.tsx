@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AuthState, LoginCredentials, RegisterData, PasswordUpdate, ProfileUpdate } from '@/types/features/auth';
 import { authAPI } from '@/lib/authAPI';
+import { env } from '@/config/env';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -40,15 +41,97 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const initializeAuth = async () => {
     try {
-      if (authAPI.isAuthenticated()) {
-        const user = await authAPI.getCurrentUser();
+      console.log('🔍 Auth Debug:', {
+        ENABLE_MOCK_AUTH: env.ENABLE_MOCK_AUTH,
+        NODE_ENV: env.NODE_ENV,
+        shouldUseMock: env.ENABLE_MOCK_AUTH
+      });
+
+      // Development bypass - auto login with mock user
+      if (env.ENABLE_MOCK_AUTH) {
+        const mockUser = {
+          id: 'dev-user-1',
+          name: env.MOCK_USER_NAME,
+          email: env.MOCK_USER_EMAIL,
+          role: env.MOCK_USER_ROLE as 'admin' | 'user',
+          avatar: '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          profile_image_url: '',
+          status: 'active' as const,
+          lastActive: new Date(),
+          totalChats: 0,
+          totalMessages: 0,
+          preferences: {
+            theme: 'light' as const,
+            language: 'en',
+            notifications: {
+              email: true,
+              push: true,
+              chat: true
+            },
+            privacy: {
+              showProfile: true,
+              showActivity: true
+            }
+          }
+        };
+
+        console.log('🚀 Development Mode: Auto-login with mock user:', mockUser);
+
         setAuthState({
           isAuthenticated: true,
-          user,
+          user: mockUser,
           loading: false,
           error: null
         });
+        return;
+      }
+
+      // Real API mode - clear any mock data first
+      console.log('🔓 Real API mode - clearing any existing auth data');
+
+      // Clear localStorage and tokens to start fresh
+      localStorage.removeItem('user');
+      authAPI.setToken(null);
+
+      // Start with unauthenticated state
+      setAuthState({
+        isAuthenticated: false,
+        user: null,
+        loading: false,
+        error: null
+      });
+
+      console.log('✅ Auth initialized - ready for login');
+
+      // If no stored user but have token, try to get user from API
+      if (authAPI.isAuthenticated()) {
+        try {
+          console.log('🔍 Token exists, fetching user from API...');
+          const user = await authAPI.getCurrentUser();
+          localStorage.setItem('user', JSON.stringify(user));
+          setAuthState({
+            isAuthenticated: true,
+            user,
+            loading: false,
+            error: null
+          });
+        } catch (apiError) {
+          // API failed but token exists - clear token and show login
+          console.warn('Token exists but API failed, clearing auth:', apiError);
+          authAPI.setToken(null);
+          localStorage.removeItem('user');
+          setAuthState({
+            isAuthenticated: false,
+            user: null,
+            loading: false,
+            error: null
+          });
+        }
       } else {
+        // No token, show login
+        console.log('🔓 No token found, showing login');
         setAuthState({
           isAuthenticated: false,
           user: null,
@@ -57,11 +140,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         });
       }
     } catch (error) {
+      console.error('Auth initialization failed:', error);
       setAuthState({
         isAuthenticated: false,
         user: null,
         loading: false,
-        error: error instanceof Error ? error.message : 'Authentication failed'
+        error: null // Don't show error on init, just go to login
       });
     }
   };
@@ -69,12 +153,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (credentials: LoginCredentials) => {
     try {
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
-      
+
+      // Use real API login
+
+      // Real API login (fallback)
       const response = await authAPI.login(credentials);
-      
+
       // Store user data in localStorage for persistence
       localStorage.setItem('user', JSON.stringify(response.user));
-      
+
       setAuthState({
         isAuthenticated: true,
         user: response.user,

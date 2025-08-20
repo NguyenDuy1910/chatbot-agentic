@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LoginForm } from '@/components/features/auth';
+import { ModernLoginForm } from '@/components/features/auth/ModernLoginForm';
 import { LoginCredentials, RegisterData } from '@/types/features/auth';
 import { useAuth } from '@/contexts/AuthContext';
 import { ROUTES } from '@/router/constants';
@@ -45,7 +45,7 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <LoginForm
+    <ModernLoginForm
       onLogin={handleLogin}
       onRegister={handleRegister}
       loading={loading}
