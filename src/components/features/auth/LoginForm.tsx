@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Button, Input, Checkbox } from '@heroui/react';
-import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Sparkles, Bot, MessageCircle } from 'lucide-react';
+import { Button, Input, Checkbox, Card, CardBody } from '@heroui/react';
+import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Sparkles, Bot, MessageCircle, Crown } from 'lucide-react';
 import { LoginCredentials, RegisterData } from '@/types/features/auth';
 import { cn } from '@/lib/utils';
 
@@ -79,19 +79,18 @@ export const LoginForm: React.FC<LoginFormProps> = ({
 
         {/* Login/Register Card */}
         <Card className="shadow-xl border-0 bg-background/80 backdrop-blur-sm">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-2xl font-semibold text-center">
-              {isRegistering ? 'Sign Up' : 'Sign In'}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground text-center">
-              {isRegistering 
-                ? 'Enter your details to create an account'
-                : 'Enter your credentials to access your account'
-              }
-            </p>
-          </CardHeader>
-
-          <CardContent className="space-y-4">
+          <CardBody className="space-y-4">
+            <div className="space-y-1 pb-4">
+              <h2 className="text-2xl font-semibold text-center">
+                {isRegistering ? 'Sign Up' : 'Sign In'}
+              </h2>
+              <p className="text-sm text-muted-foreground text-center">
+                {isRegistering
+                  ? 'Enter your details to create an account'
+                  : 'Enter your credentials to access your account'
+                }
+              </p>
+            </div>
             {/* Error Message */}
             {error && (
               <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm">
@@ -270,7 +269,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
                 </button>
               </p>
             </div>
-          </CardContent>
+          </CardBody>
         </Card>
 
         {/* Footer */}

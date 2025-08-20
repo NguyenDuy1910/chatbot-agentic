@@ -156,10 +156,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               </Button>
             </DropdownTrigger>
             <DropdownMenu>
-              <DropdownItem startContent={<Mic className="h-4 w-4" />}>
+              <DropdownItem key="voice-input" startContent={<Mic className="h-4 w-4" />}>
                 Voice input
               </DropdownItem>
-              <DropdownItem startContent={<Database className="h-4 w-4" />}>
+              <DropdownItem key="sql-mode" startContent={<Database className="h-4 w-4" />}>
                 SQL mode
               </DropdownItem>
             </DropdownMenu>

@@ -161,7 +161,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
                       <div className="absolute top-2 right-2">
                         <Button
                           size="sm"
-                          variant="default"
+                          variant="flat"
                           onClick={() => handleFileDownload(attachment)}
                           className="h-8 w-8 p-0 bg-black/50 hover:bg-black/70 text-white border-none"
                         >
