@@ -187,8 +187,8 @@ export const ModernLoginForm: React.FC<ModernLoginFormProps> = ({
             {!isRegistering && (
               <div className="mb-6 p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-800 text-sm">
                 <p className="font-medium mb-1">Test Credentials:</p>
-                <p>Email: admin@vikki.vn</p>
-                <p>Password: 123456</p>
+                <p>Email: nguyenduy@gmail.com</p>
+                <p>Password: 19102003</p>
               </div>
             )}
 
