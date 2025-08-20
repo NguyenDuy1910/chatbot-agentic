@@ -10,4 +10,5 @@ export const ROUTES = {
   SETTINGS: '/settings',
   DEMO: '/demo',
   LOGIN: '/login',
+  LOGIN_TEST: '/login-test', // For testing login page without redirect
 } as const;

@@ -20,10 +20,16 @@ export const env = {
   // Features flags
   ENABLE_ADMIN_FEATURES: import.meta.env.VITE_ENABLE_ADMIN_FEATURES === 'true',
   ENABLE_DEBUG_MODE: import.meta.env.VITE_ENABLE_DEBUG_MODE === 'true',
-  
+
   // UI Configuration
   DEFAULT_THEME: import.meta.env.VITE_DEFAULT_THEME || 'light',
   ENABLE_DARK_MODE: import.meta.env.VITE_ENABLE_DARK_MODE !== 'false',
+
+  // Development Authentication
+  ENABLE_MOCK_AUTH: import.meta.env.VITE_ENABLE_MOCK_AUTH === 'true',
+  MOCK_USER_NAME: import.meta.env.VITE_MOCK_USER_NAME || 'Development User',
+  MOCK_USER_EMAIL: import.meta.env.VITE_MOCK_USER_EMAIL || 'dev@vikki.vn',
+  MOCK_USER_ROLE: import.meta.env.VITE_MOCK_USER_ROLE || 'admin',
 } as const;
 
 // Validation

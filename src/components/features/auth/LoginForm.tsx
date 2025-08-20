@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/shared/ui/Button';
-import { Input } from '@/components/shared/ui/Input';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/shared/ui/Card';
-import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Crown } from 'lucide-react';
+import { Button, Input, Checkbox } from '@heroui/react';
+import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Sparkles, Bot, MessageCircle } from 'lucide-react';
 import { LoginCredentials, RegisterData } from '@/types/features/auth';
 import { cn } from '@/lib/utils';
 

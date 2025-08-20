@@ -42,6 +42,12 @@ export const AppRouter: React.FC = () => {
             }
           />
 
+          {/* Login test route - always shows login page */}
+          <Route
+            path={ROUTES.LOGIN_TEST}
+            element={<LoginPage />}
+          />
+
           {/* All other routes wrapped in AppShell for authenticated users */}
           <Route
             path="/*"
