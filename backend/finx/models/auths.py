@@ -14,7 +14,6 @@ log.setLevel(SRC_LOG_LEVELS["MODELS"])
 
 # Simple password verification function
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Simple password verification - in production, use proper hashing like bcrypt"""
     if not hashed_password:
         return False
     # For now, using simple SHA256 - replace with bcrypt in production

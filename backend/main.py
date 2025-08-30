@@ -85,10 +85,33 @@ app = FastAPI(
 )
 
 # Add CORS middleware
+# Configure CORS origins based on environment
+cors_origins = API_CONFIG["CORS_ORIGINS"]
+
+# If CORS_ORIGINS is ["*"], allow all origins in development but restrict in production
+if cors_origins == ["*"]:
+    if API_CONFIG["DEBUG"]:
+        # Development: Allow common local development URLs
+        cors_origins = [
+            "http://localhost:3000",
+            "http://localhost:5173",
+            "http://127.0.0.1:3000",
+            "http://127.0.0.1:5173",
+            "https://chatbot-agentic.vercel.app"
+        ]
+    else:
+        # Production: Only allow specific production URLs
+        cors_origins = [
+            "https://chatbot-agentic.vercel.app"
+        ]
+
+# Log CORS configuration for debugging
+logger.info(f"CORS Origins configured: {cors_origins}")
+logger.info(f"Debug mode: {API_CONFIG['DEBUG']}")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins = ["*"],
-    # allow_origins=API_CONFIG["CORS_ORIGINS"],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
@@ -204,8 +227,28 @@ async def get_config():
             "debug": API_CONFIG["DEBUG"],
             "api_prefix": API_CONFIG["API_PREFIX"]
         },
-        "cors_origins": API_CONFIG["CORS_ORIGINS"],
+        "cors_origins": cors_origins,  # Show actual configured CORS origins
         "environment": "development"  # You might want to get this from config
+    }
+
+
+@app.options("/{path:path}")
+async def options_handler(path: str):
+    """
+    Handle preflight OPTIONS requests for CORS
+    """
+    return {"message": "OK"}
+
+
+@app.get("/cors-test")
+async def cors_test():
+    """
+    Simple endpoint to test CORS configuration
+    """
+    return {
+        "message": "CORS test successful",
+        "cors_origins": cors_origins,
+        "debug_mode": API_CONFIG["DEBUG"]
     }
 
 
