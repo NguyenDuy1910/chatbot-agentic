@@ -1,16 +1,16 @@
-# Vikki ChatBot - AI Agentic Chatbot
+# ChatBot - AI Agentic Chatbot
 
-Một ứng dụng chatbot hiện đại được xây dựng với React, TypeScript, và Tailwind CSS, tích hợp quản lý prompt và kết nối database.
+A modern chatbot application built with React, TypeScript, and Tailwind CSS, featuring integrated prompt management and database connections.
 
-## 🚀 Tính năng chính
+## 🚀 Key Features
 
-- 🤖 **Giao diện chat hiện đại** - Thiết kế sạch sẽ, trực quan
-- 💬 **Tin nhắn thời gian thực** - Trải nghiệm chat mượt mà
-- 📱 **Responsive Design** - Hoạt động tốt trên mọi thiết bị
-- 🧠 **Quản lý Prompt** - Tạo và quản lý prompt templates
-- 🔗 **Kết nối Database** - Quản lý nhiều kết nối database
-- 👤 **Xác thực người dùng** - Hệ thống đăng nhập/đăng ký
-- ⚙️ **Quản trị hệ thống** - Panel admin cho quản lý
+- 🤖 **Modern Chat Interface** - Clean, intuitive design
+- 💬 **Real-time Messaging** - Smooth chat experience
+- 📱 **Responsive Design** - Works great on all devices
+- 🧠 **Prompt Management** - Create and manage prompt templates
+- 🔗 **Database Connections** - Manage multiple database connections
+- 👤 **User Authentication** - Login/registration system
+- ⚙️ **System Administration** - Admin panel for management
 
 ## 🛠️ Tech Stack
 
@@ -23,10 +23,10 @@ Một ứng dụng chatbot hiện đại được xây dựng với React, TypeS
 
 ### Quick Deploy
 ```bash
-# Deploy backend với Docker
+# Deploy backend with Docker
 ./deploy.sh production
 
-# Kiểm tra health
+# Check health
 curl http://localhost:8000/health
 
 # API docs
@@ -35,7 +35,7 @@ open http://localhost:8000/docs
 
 ### Commands
 ```bash
-# Xem logs
+# View logs
 docker-compose logs -f backend
 
 # Restart backend
@@ -50,10 +50,10 @@ git pull && ./deploy.sh production
 - **Health**: `http://localhost:8000/health`
 - **Docs**: `http://localhost:8000/docs`
 
-📚 **Chi tiết deployment**: Xem `README-DEPLOYMENT.md`
+📚 **Deployment details**: See `README-DEPLOYMENT.md`
 - **Authentication**: JWT
 
-## 📁 Cấu trúc Project
+## 📁 Project Structure
 
 ```
 ├── src/
@@ -78,11 +78,12 @@ git pull && ./deploy.sh production
 └── package.json           # Dependencies
 ```
 
-## 🚀 Cài đặt và Chạy
+## 🚀 Installation and Setup
 
 ### Prerequisites
 - Node.js (v16+)
 - Python (v3.8+)
+- uv (Python package manager)
 - PostgreSQL/MySQL
 
 ### Frontend
@@ -94,11 +95,11 @@ npm run dev
 ### Backend
 ```bash
 cd backend
-pip install -r requirements.txt
-python -m uvicorn finx.main:app --reload
+uv pip sync requirements.txt
+uv run run.py
 ```
 
-## 🔧 Cấu hình
+## 🔧 Configuration
 
 ### Environment Variables
 ```env
@@ -111,60 +112,60 @@ DATABASE_URL=postgresql://user:pass@localhost/db
 JWT_SECRET=your-secret-key
 ```
 
-## 📖 Hướng dẫn sử dụng
+## 📖 Usage Guide
 
-### 1. Đăng nhập/Đăng ký
-- Truy cập `/auth/login` để đăng nhập
-- Tạo tài khoản mới tại `/auth/register`
+### 1. Login/Registration
+- Access `/auth/login` to log in
+- Create a new account at `/auth/register`
 
-### 2. Chat với AI
-- Sử dụng giao diện chat chính
-- Chọn prompt có sẵn hoặc tạo prompt mới
-- Gửi tin nhắn và nhận phản hồi từ AI
+### 2. Chat with AI
+- Use the main chat interface
+- Select existing prompts or create new ones
+- Send messages and receive AI responses
 
-### 3. Quản lý Prompt
-- Truy cập tab "Prompts" trong sidebar
-- Tạo, chỉnh sửa, và tổ chức prompt templates
-- Sử dụng biến động `{variable_name}` trong prompt
+### 3. Prompt Management
+- Access the "Prompts" tab in the sidebar
+- Create, edit, and organize prompt templates
+- Use dynamic variables `{variable_name}` in prompts
 
-### 4. Kết nối Database
-- Cấu hình kết nối database trong settings
-- Quản lý nhiều kết nối cùng lúc
-- Test kết nối trước khi sử dụng
+### 4. Database Connections
+- Configure database connections in settings
+- Manage multiple connections simultaneously
+- Test connections before use
 
 ## 🔗 API Endpoints
 
 ### Authentication
-- `POST /auth/login` - Đăng nhập
-- `POST /auth/register` - Đăng ký
-- `POST /auth/logout` - Đăng xuất
+- `POST /auth/login` - Login
+- `POST /auth/register` - Registration
+- `POST /auth/logout` - Logout
 
 ### Chat
-- `POST /chat` - Gửi tin nhắn
-- `GET /sessions` - Lấy danh sách phiên chat
+- `POST /chat` - Send message
+- `GET /sessions` - Get chat session list
 
 ### Prompts
-- `GET /prompts` - Lấy danh sách prompt
-- `POST /prompts` - Tạo prompt mới
-- `PUT /prompts/:id` - Cập nhật prompt
+- `GET /prompts` - Get prompt list
+- `POST /prompts` - Create new prompt
+- `PUT /prompts/:id` - Update prompt
 
 ### Connections
-- `GET /connections` - Lấy danh sách kết nối
-- `POST /connections` - Tạo kết nối mới
-- `POST /connections/:id/test` - Test kết nối
+- `GET /connections` - Get connection list
+- `POST /connections` - Create new connection
+- `POST /connections/:id/test` - Test connection
 
 ## 🎨 Customization
 
 ### Themes
 - Light/Dark mode support
-- Tùy chỉnh màu sắc trong `tailwind.config.js`
-- CSS variables trong `src/styles/`
+- Customize colors in `tailwind.config.js`
+- CSS variables in `src/styles/`
 
 ### Components
-- Tất cả components đều modular
-- Dễ dàng tùy chỉnh và mở rộng
-- TypeScript support đầy đủ
+- All components are modular
+- Easy to customize and extend
+- Full TypeScript support
 
 ## 📝 License
 
-MIT License - xem file [LICENSE](LICENSE) để biết thêm chi tiết.
+MIT License - see [LICENSE](LICENSE) file for more details.
