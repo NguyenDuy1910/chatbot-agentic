@@ -28,7 +28,7 @@ from finx.utils.health_monitor import force_health_check, get_health_summary
 
 log = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/connections", tags=["connections"])
+router = APIRouter()
 
 ####################
 # CONNECTION CRUD

@@ -26,11 +26,11 @@ log.setLevel(SRC_LOG_LEVELS["API"])
 router = APIRouter()
 
 ############################
-# SignUp
+# User Registration
 ############################
 
-@router.post("/signup", response_model=SigninResponse)
-async def signup(response: Response, form_data: SignupForm):
+@router.post("/register", response_model=SigninResponse)
+async def register_user(response: Response, form_data: SignupForm):
     """
     User registration endpoint
     """
@@ -90,11 +90,11 @@ async def signup(response: Response, form_data: SignupForm):
 
 
 ############################
-# SignIn
+# User Login
 ############################
 
-@router.post("/signin", response_model=SigninResponse)
-async def signin(response: Response, form_data: SigninForm):
+@router.post("/login", response_model=SigninResponse)
+async def login_user(response: Response, form_data: SigninForm):
     """
     User login endpoint
     """
@@ -132,11 +132,11 @@ async def signin(response: Response, form_data: SigninForm):
 
 
 ############################
-# SignOut
+# User Logout
 ############################
 
-@router.post("/signout")
-async def signout(response: Response, user=Depends(get_current_user)):
+@router.post("/logout")
+async def logout_user(response: Response, user=Depends(get_current_user)):
     """
     User logout endpoint
     """
@@ -145,11 +145,11 @@ async def signout(response: Response, user=Depends(get_current_user)):
 
 
 ############################
-# GetSessionUser
+# Get Current User Session
 ############################
 
-@router.get("/user", response_model=UserResponse)
-async def get_session_user(user=Depends(get_authenticated_user)):
+@router.get("/me", response_model=UserResponse)
+async def get_current_user_session(user=Depends(get_authenticated_user)):
     """
     Get current authenticated user
     """
@@ -163,11 +163,11 @@ async def get_session_user(user=Depends(get_authenticated_user)):
 
 
 ############################
-# UpdateProfile
+# Update User Profile
 ############################
 
-@router.put("/profile", response_model=UserResponse)
-async def update_profile(form_data: UpdateProfileForm, user=Depends(get_authenticated_user)):
+@router.put("/me/profile", response_model=UserResponse)
+async def update_user_profile(form_data: UpdateProfileForm, user=Depends(get_authenticated_user)):
     """
     Update user profile
     """
@@ -195,11 +195,11 @@ async def update_profile(form_data: UpdateProfileForm, user=Depends(get_authenti
 
 
 ############################
-# UpdatePassword
+# Update User Password
 ############################
 
-@router.put("/password", response_model=bool)
-async def update_password(form_data: UpdatePasswordForm, user=Depends(get_authenticated_user)):
+@router.put("/me/password", response_model=bool)
+async def update_user_password(form_data: UpdatePasswordForm, user=Depends(get_authenticated_user)):
     """
     Update user password
     """

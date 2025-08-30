@@ -1,7 +1,3 @@
-"""
-Quick run script for development
-"""
-
 import os
 import sys
 from dotenv import load_dotenv

@@ -19,7 +19,7 @@ router = APIRouter()
 ############################
 
 @router.get("/", response_model=List[MessageModel])
-async def get_messages(
+async def get_user_messages(
     channel_id: Optional[str] = Query(None),
     user_id: Optional[str] = Query(None),
     skip: int = Query(0, ge=0),
@@ -50,11 +50,11 @@ async def get_messages(
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-@router.get("/{id}", response_model=MessageModel)
-async def get_message(id: str, current_user=Depends(get_verified_user)):
+@router.get("/{message_id}", response_model=MessageModel)
+async def get_message_by_id(message_id: str, current_user=Depends(get_verified_user)):
     """Get a specific message by ID"""
     try:
-        message = Messages.get_message_by_id(id)
+        message = Messages.get_message_by_id(message_id)
         if not message:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -72,7 +72,7 @@ async def get_message(id: str, current_user=Depends(get_verified_user)):
     except HTTPException:
         raise
     except Exception as e:
-        log.error(f"Error fetching message {id}: {str(e)}")
+        log.error(f"Error fetching message {message_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
@@ -100,7 +100,7 @@ async def create_message(
         )
 
 @router.put("/{message_id}", response_model=MessageModel)
-async def update_message(
+async def update_message_by_id(
     message_id: str,
     message_data: MessageUpdateForm,
     current_user=Depends(get_verified_user)
@@ -142,7 +142,7 @@ async def update_message(
         )
 
 @router.delete("/{message_id}")
-async def delete_message(message_id: str, current_user=Depends(get_verified_user)):
+async def delete_message_by_id(message_id: str, current_user=Depends(get_verified_user)):
     """Delete a message"""
     try:
         # Check if message exists and user owns it

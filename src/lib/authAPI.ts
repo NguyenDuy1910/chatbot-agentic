@@ -80,7 +80,7 @@ class AuthAPI {
     try {
       const signinForm = this.convertToSigninForm(credentials);
       const response = await api.post<SigninResponse>(
-        apiConfig.endpoints.auth.signin,
+        apiConfig.endpoints.auth.login,
         signinForm
       );
 
@@ -113,7 +113,7 @@ class AuthAPI {
 
       const signupForm = this.convertToSignupForm(data);
       const response = await api.post<SigninResponse>(
-        apiConfig.endpoints.auth.signup,
+        apiConfig.endpoints.auth.register,
         signupForm
       );
 
@@ -141,7 +141,7 @@ class AuthAPI {
   async logout(): Promise<void> {
     try {
       // Call backend signout endpoint
-      await api.post(apiConfig.endpoints.auth.signout);
+      await api.post(apiConfig.endpoints.auth.logout);
     } catch (error) {
       console.error('Logout API call failed:', error);
       // Continue with local cleanup even if API call fails

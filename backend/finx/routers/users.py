@@ -22,12 +22,12 @@ log.setLevel(SRC_LOG_LEVELS["API"])
 router = APIRouter()
 
 ############################
-# GetUsers
+# Get All Users
 ############################
 
 
 @router.get("/", response_model=list[UserModel])
-async def get_users(
+async def get_all_users(
     skip: Optional[int] = None,
     limit: Optional[int] = None,
     user=Depends(get_admin_user),
@@ -36,22 +36,22 @@ async def get_users(
 
 
 ############################
-# User Groups
+# Get User Groups
 ############################
 
 
-@router.get("/groups")
-async def get_user_groups(user=Depends(get_verified_user)):
+@router.get("/me/groups")
+async def get_current_user_groups(user=Depends(get_verified_user)):
     return Users.get_user_groups(user.id)
 
 
 ############################
-# User Permissions
+# Get User Permissions
 ############################
 
 
-@router.get("/permissions")
-async def get_user_permissisions(user=Depends(get_verified_user)):
+@router.get("/me/permissions")
+async def get_current_user_permissions(user=Depends(get_verified_user)):
     return Users.get_user_groups(user.id)
 
 
@@ -86,7 +86,7 @@ class UserPermissions(BaseModel):
 
 
 @router.get("/me/permissions", response_model=UserPermissions)
-async def get_user_permissions(request: Request, user=Depends(get_admin_user)):
+async def get_current_user_permissions_detailed(request: Request, user=Depends(get_admin_user)):
     return {
         "workspace": WorkspacePermissions(
             **request.app.state.config.USER_PERMISSIONS.get("workspace", {})
@@ -101,7 +101,7 @@ async def get_user_permissions(request: Request, user=Depends(get_admin_user)):
 
 
 @router.put("/me/permissions")
-async def update_user_permissions(
+async def update_current_user_permissions(
     request: Request, form_data: UserPermissions, user=Depends(get_admin_user)
 ):
     request.app.state.config.USER_PERMISSIONS = form_data.model_dump()
@@ -109,14 +109,14 @@ async def update_user_permissions(
 
 
 ############################
-# UpdateUserRole
+# Update User Role
 ############################
 
 
-@router.put("/{id}/role", response_model=Optional[UserModel])
-async def update_user_role(id: str, form_data: UserRoleUpdateForm, user=Depends(get_admin_user)):
-    if user.id != id and id != Users.get_first_user().id:
-        return Users.update_user_role_by_id(id, form_data.role)
+@router.put("/{user_id}/role", response_model=Optional[UserModel])
+async def update_user_role_by_id(user_id: str, form_data: UserRoleUpdateForm, user=Depends(get_admin_user)):
+    if user.id != user_id and user_id != Users.get_first_user().id:
+        return Users.update_user_role_by_id(user_id, form_data.role)
 
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
@@ -125,12 +125,12 @@ async def update_user_role(id: str, form_data: UserRoleUpdateForm, user=Depends(
 
 
 ############################
-# GetUserSettingsBySessionUser
+# Get Current User Settings
 ############################
 
 
 @router.get("/me/settings", response_model=Optional[UserSettings])
-async def get_user_settings_by_session_user(user=Depends(get_verified_user)):
+async def get_current_user_settings(user=Depends(get_verified_user)):
     user = Users.get_user_by_id(user.id)
     if user:
         return user.settings
@@ -142,12 +142,12 @@ async def get_user_settings_by_session_user(user=Depends(get_verified_user)):
 
 
 ############################
-# UpdateUserSettingsBySessionUser
+# Update Current User Settings
 ############################
 
 
 @router.put("/me/settings", response_model=UserSettings)
-async def update_user_settings_by_session_user(
+async def update_current_user_settings(
     form_data: UserSettings, user=Depends(get_verified_user)
 ):
     user = Users.update_user_by_id(user.id, {"settings": form_data.model_dump()})
@@ -161,12 +161,12 @@ async def update_user_settings_by_session_user(
 
 
 ############################
-# GetUserInfoBySessionUser
+# Get Current User Info
 ############################
 
 
 @router.get("/me", response_model=Optional[dict])
-async def get_user_info_by_session_user(user=Depends(get_verified_user)):
+async def get_current_user_info(user=Depends(get_verified_user)):
     user = Users.get_user_by_id(user.id)
     if user:
         return user.info
@@ -178,12 +178,12 @@ async def get_user_info_by_session_user(user=Depends(get_verified_user)):
 
 
 ############################
-# UpdateUserInfoBySessionUser
+# Update Current User Info
 ############################
 
 
 @router.put("/me", response_model=Optional[dict])
-async def update_user_info_by_session_user(
+async def update_current_user_info(
     form_data: dict, user=Depends(get_verified_user)
 ):
     user = Users.get_user_by_id(user.id)
@@ -215,6 +215,11 @@ class UserResponse(BaseModel):
     name: str
     profile_image_url: str
     active: Optional[bool] = None
+
+
+############################
+# Get User By ID
+############################
 
 
 @router.get("/{user_id}", response_model=UserResponse)
@@ -250,17 +255,17 @@ async def get_user_by_id(user_id: str, current_user=Depends(get_verified_user)):
 
 
 ############################
-# UpdateUserById
+# Update User By ID
 ############################
 
 
-@router.put("/{id}", response_model=Optional[UserModel])
+@router.put("/{user_id}", response_model=Optional[UserModel])
 async def update_user_by_id(
-    id: str,
+    user_id: str,
     form_data: UserUpdateForm,
     session_user=Depends(get_admin_user),
 ):
-    user = Users.get_user_by_id(id)
+    user = Users.get_user_by_id(user_id)
 
     if user:
         if form_data.email.lower() != user.email:
@@ -274,11 +279,11 @@ async def update_user_by_id(
         if form_data.password:
             hashed = get_password_hash(form_data.password)
             log.debug(f"hashed: {hashed}")
-            Auths.update_user_password_by_id(id, hashed)
+            Auths.update_user_password_by_id(user_id, hashed)
 
-        Auths.update_email_by_id(id, form_data.email.lower())
+        Auths.update_email_by_id(user_id, form_data.email.lower())
         updated_user = Users.update_user_by_id(
-            id,
+            user_id,
             {
                 "name": form_data.name,
                 "email": form_data.email.lower(),
@@ -301,7 +306,7 @@ async def update_user_by_id(
 
 
 ############################
-# DeleteUserById
+# Delete User By ID
 ############################
 
 
