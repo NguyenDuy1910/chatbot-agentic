@@ -4,10 +4,6 @@ from src.web.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Column, String, ForeignKey
 
-####################
-# Tag DB Schema
-####################
-
 class Tag(Base):
     __tablename__ = "tag"
     __table_args__ = {'extend_existing': True}
@@ -17,7 +13,6 @@ class Tag(Base):
     user_id = Column(String, ForeignKey("user.id", ondelete="CASCADE"), nullable=False)
     meta = Column(JSONField, nullable=True)
 
-
 class TagModel(BaseModel):
     id: str
     name: str
@@ -26,31 +21,19 @@ class TagModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-####################
-# Forms
-####################
-
 class TagForm(BaseModel):
     id: str
     name: str
     meta: Optional[dict] = None
 
-
 class TagUpdateForm(BaseModel):
     name: Optional[str] = None
     meta: Optional[dict] = None
-
 
 class TagResponse(BaseModel):
     id: str
     name: str
     meta: Optional[dict] = None
-
-
-####################
-# Tags Table
-####################
 
 class TagsTable:
     def insert_new_tag(self, user_id: str, form_data: TagForm) -> Optional[TagModel]:
@@ -177,6 +160,5 @@ class TagsTable:
                 return True
         except Exception:
             return False
-
 
 Tags = TagsTable()

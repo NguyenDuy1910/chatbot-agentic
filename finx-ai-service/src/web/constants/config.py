@@ -5,6 +5,7 @@ from typing import Dict, Any
 # Logging levels configuration
 SRC_LOG_LEVELS = {
     "DB": logging.INFO,
+    "CORE": logging.INFO,
     "API": logging.INFO,
     "AUTH": logging.INFO,
     "CONNECTIONS": logging.INFO,

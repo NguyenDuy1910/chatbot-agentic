@@ -14,27 +14,19 @@ from passlib.context import CryptContext
 
 logging.getLogger("passlib").setLevel(logging.ERROR)
 
-
 SESSION_SECRET = SECURITY_CONFIG["SECRET_KEY"]
 ALGORITHM = SECURITY_CONFIG["ALGORITHM"]
 
-##############
-# Auth Utils
-##############
-
 bearer_security = HTTPBearer(auto_error=False)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 
 def verify_password(plain_password, hashed_password):
     return (
         pwd_context.verify(plain_password, hashed_password) if hashed_password else None
     )
 
-
 def get_password_hash(password):
     return pwd_context.hash(password)
-
 
 def create_token(data: dict, expires_delta: Union[timedelta, None] = None) -> str:
     payload = data.copy()
@@ -46,7 +38,6 @@ def create_token(data: dict, expires_delta: Union[timedelta, None] = None) -> st
     encoded_jwt = jwt.encode(payload, SESSION_SECRET, algorithm=ALGORITHM)
     return encoded_jwt
 
-
 def decode_token(token: str) -> Optional[dict]:
     try:
         decoded = jwt.decode(token, SESSION_SECRET, algorithms=[ALGORITHM])
@@ -54,15 +45,12 @@ def decode_token(token: str) -> Optional[dict]:
     except Exception:
         return None
 
-
 def extract_token_from_auth_header(auth_header: str):
     return auth_header[len("Bearer ") :]
-
 
 def create_api_key():
     key = str(uuid.uuid4()).replace("-", "")
     return f"sk-{key}"
-
 
 def get_http_authorization_cred(auth_header: str):
     try:
@@ -70,7 +58,6 @@ def get_http_authorization_cred(auth_header: str):
         return HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials)
     except Exception:
         raise ValueError(ERROR_MESSAGES.INVALID_TOKEN)
-
 
 def get_current_user(
     request: Request,
@@ -135,7 +122,6 @@ def get_current_user(
             detail=ERROR_MESSAGES.UNAUTHORIZED,
         )
 
-
 def get_current_user_by_api_key(api_key: str):
     user = Users.get_user_by_api_key(api_key)
 
@@ -149,7 +135,6 @@ def get_current_user_by_api_key(api_key: str):
 
     return user
 
-
 def get_verified_user(user=Depends(get_current_user)):
     if user.role not in {"user", "admin"}:
         raise HTTPException(
@@ -157,7 +142,6 @@ def get_verified_user(user=Depends(get_current_user)):
             detail=ERROR_MESSAGES.ACCESS_PROHIBITED,
         )
     return user
-
 
 def get_authenticated_user(user=Depends(get_current_user)):
     """Get any authenticated user (including pending users)"""
@@ -167,7 +151,6 @@ def get_authenticated_user(user=Depends(get_current_user)):
             detail=ERROR_MESSAGES.ACCESS_PROHIBITED,
         )
     return user
-
 
 def get_admin_user(user=Depends(get_current_user)):
     if user.role != "admin":

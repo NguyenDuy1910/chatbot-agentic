@@ -6,10 +6,6 @@ from src.web.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Boolean, Column, String, Text, ForeignKey
 
-####################
-# Model DB Schema
-####################
-
 class Model(Base):
     __tablename__ = "model"
     __table_args__ = {'extend_existing': True}
@@ -25,7 +21,6 @@ class Model(Base):
     updated_at = Column(BigInteger)
     created_at = Column(BigInteger)
 
-
 class ModelModel(BaseModel):
     id: str
     user_id: str
@@ -40,17 +35,11 @@ class ModelModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-####################
-# Forms
-####################
-
 class ModelForm(BaseModel):
     name: str
     base_model_id: Optional[str] = None
     params: Optional[dict] = None
     access_control: Optional[dict] = None
-
 
 class ModelUpdateForm(BaseModel):
     name: Optional[str] = None
@@ -60,7 +49,6 @@ class ModelUpdateForm(BaseModel):
     access_control: Optional[dict] = None
     is_active: Optional[bool] = None
 
-
 class ModelResponse(BaseModel):
     id: str
     name: str
@@ -68,11 +56,6 @@ class ModelResponse(BaseModel):
     is_active: bool
     created_at: int
     updated_at: int
-
-
-####################
-# Models Table
-####################
 
 class ModelsTable:
     def insert_new_model(self, user_id: str, form_data: ModelForm) -> Optional[ModelModel]:
@@ -202,6 +185,5 @@ class ModelsTable:
     def get_active_model_count_by_user_id(self, user_id: str) -> int:
         with get_db_context() as db:
             return db.query(Model).filter_by(user_id=user_id, is_active=True).count()
-
 
 Models = ModelsTable()

@@ -28,8 +28,8 @@ ENV PATH="/root/.cargo/bin:$PATH"
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies using uv
-RUN uv pip install --system --no-cache-dir -r requirements.txt
+# Install Python dependencies using uv pip sync
+RUN uv pip sync --system requirements.txt
 
 # Copy application code
 COPY . .

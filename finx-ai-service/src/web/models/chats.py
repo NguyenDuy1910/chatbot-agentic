@@ -6,10 +6,6 @@ from src.web.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Boolean, Column, String, Text, ForeignKey
 
-####################
-# Folder DB Schema
-####################
-
 class Folder(Base):
     __tablename__ = "folder"
     __table_args__ = {'extend_existing': True}
@@ -24,7 +20,6 @@ class Folder(Base):
     created_at = Column(BigInteger)
     updated_at = Column(BigInteger)
 
-
 class FolderModel(BaseModel):
     id: str
     parent_id: Optional[str] = None
@@ -37,11 +32,6 @@ class FolderModel(BaseModel):
     updated_at: int
 
     model_config = ConfigDict(from_attributes=True)
-
-
-####################
-# Chat DB Schema
-####################
 
 class Chat(Base):
     __tablename__ = "chat"
@@ -59,7 +49,6 @@ class Chat(Base):
     meta = Column(JSONField, default={})
     folder_id = Column(String, ForeignKey("folder.id", ondelete="SET NULL"), nullable=True)
 
-
 class ChatModel(BaseModel):
     id: str
     user_id: str
@@ -75,27 +64,19 @@ class ChatModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-####################
-# Forms
-####################
-
 class FolderForm(BaseModel):
     name: str
     parent_id: Optional[str] = None
-
 
 class FolderUpdateForm(BaseModel):
     name: Optional[str] = None
     is_expanded: Optional[bool] = None
     meta: Optional[dict] = None
 
-
 class ChatForm(BaseModel):
     title: str
     chat: Optional[dict] = None
     folder_id: Optional[str] = None
-
 
 class ChatUpdateForm(BaseModel):
     title: Optional[str] = None
@@ -105,14 +86,8 @@ class ChatUpdateForm(BaseModel):
     meta: Optional[dict] = None
     folder_id: Optional[str] = None
 
-
 class ChatTitleForm(BaseModel):
     title: str
-
-
-####################
-# Folder Table
-####################
 
 class FoldersTable:
     def insert_new_folder(
@@ -189,11 +164,6 @@ class FoldersTable:
         for subfolder in subfolders:
             self._delete_subfolders_recursive(db, subfolder.id)
             db.query(Folder).filter_by(id=subfolder.id).delete()
-
-
-####################
-# Chat Table
-####################
 
 class ChatsTable:
     def insert_new_chat(self, user_id: str, form_data: ChatForm) -> Optional[ChatModel]:
@@ -344,7 +314,6 @@ class ChatsTable:
                 return True
         except Exception:
             return False
-
 
 Folders = FoldersTable()
 Chats = ChatsTable()

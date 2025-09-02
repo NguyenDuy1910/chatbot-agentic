@@ -6,10 +6,6 @@ from src.web.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
-####################
-# Memory DB Schema
-####################
-
 class Memory(Base):
     __tablename__ = "memory"
     __table_args__ = {'extend_existing': True}
@@ -20,7 +16,6 @@ class Memory(Base):
     updated_at = Column(BigInteger)
     created_at = Column(BigInteger)
 
-
 class MemoryModel(BaseModel):
     id: str
     user_id: str
@@ -30,29 +25,17 @@ class MemoryModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-####################
-# Forms
-####################
-
 class MemoryForm(BaseModel):
     content: str
 
-
 class MemoryUpdateForm(BaseModel):
     content: str
-
 
 class MemoryResponse(BaseModel):
     id: str
     content: str
     created_at: int
     updated_at: int
-
-
-####################
-# Memories Table
-####################
 
 class MemoriesTable:
     def insert_new_memory(self, user_id: str, form_data: MemoryForm) -> Optional[MemoryModel]:
@@ -236,6 +219,5 @@ class MemoriesTable:
                 return True
         except Exception:
             return False
-
 
 Memories = MemoriesTable()

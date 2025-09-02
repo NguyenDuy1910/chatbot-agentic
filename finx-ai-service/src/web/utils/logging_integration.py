@@ -8,10 +8,6 @@ import functools
 from typing import Any, Dict, Optional, Callable
 from src.web.utils.logging import DatabaseLogger, APILogger, SecurityLogger, get_logger
 
-####################
-# Database Logging Integration
-####################
-
 class DatabaseLoggingMixin:
     """Mixin to add logging to database operations"""
     
@@ -92,10 +88,6 @@ def log_database_operation(operation_type: str):
         return wrapper
     return decorator
 
-####################
-# Connection Logging Integration
-####################
-
 class ConnectionLoggingMixin:
     """Mixin to add logging to connection operations"""
     
@@ -175,10 +167,6 @@ def log_connection_operation(operation_type: str):
         return wrapper
     return decorator
 
-####################
-# API Logging Integration
-####################
-
 class APILoggingMixin:
     """Mixin to add logging to API operations"""
     
@@ -196,10 +184,6 @@ class APILoggingMixin:
         # Log response if status code provided
         if status_code is not None:
             self._api_logger.log_response(status_code, response_time, request_id)
-
-####################
-# Security Logging Integration
-####################
 
 class SecurityLoggingMixin:
     """Mixin to add security logging"""
@@ -233,10 +217,6 @@ class SecurityLoggingMixin:
         """Log permission check event"""
         self._security_logger.log_permission_check(user_id, resource, action, granted)
 
-####################
-# Enhanced Table Classes
-####################
-
 def enhance_table_with_logging(table_class):
     """Enhance existing table class with logging capabilities"""
     
@@ -267,10 +247,6 @@ def enhance_table_with_logging(table_class):
             return super().delete_record_by_id(*args, **kwargs) if hasattr(super(), 'delete_record_by_id') else None
     
     return LoggingEnhancedTable
-
-####################
-# Utility Functions
-####################
 
 def log_model_operation(model_name: str, operation: str, record_id: str = None,
                        user_id: str = None, success: bool = True, 
@@ -311,10 +287,6 @@ def setup_model_logging():
         "component": "models",
         "status": "ready"
     })
-
-####################
-# Context Managers
-####################
 
 class LoggedOperation:
     """Context manager for logging operations"""

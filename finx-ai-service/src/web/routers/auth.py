@@ -25,22 +25,15 @@ log.setLevel(SRC_LOG_LEVELS["API"])
 
 router = APIRouter()
 
-############################
-# User Registration
-############################
 
 @router.post("/register", response_model=SigninResponse)
 async def register_user(response: Response, form_data: SignupForm):
-    """
-    User registration endpoint
-    """
     # Check if user already exists
     if Users.get_user_by_email(form_data.email.lower()):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=ERROR_MESSAGES.EMAIL_TAKEN,
         )
-
     try:
         # Create new user
         role = "admin" if Users.get_num_users() == 0 else "pending"
@@ -89,15 +82,9 @@ async def register_user(response: Response, form_data: SignupForm):
         )
 
 
-############################
-# User Login
-############################
 
 @router.post("/login", response_model=SigninResponse)
 async def login_user(response: Response, form_data: SigninForm):
-    """
-    User login endpoint
-    """
     user = Auths.authenticate_user(form_data.email.lower(), form_data.password)
     if user:
         # Create access token
@@ -131,10 +118,6 @@ async def login_user(response: Response, form_data: SigninForm):
         )
 
 
-############################
-# User Logout
-############################
-
 @router.post("/logout")
 async def logout_user(response: Response, user=Depends(get_current_user)):
     """
@@ -144,15 +127,8 @@ async def logout_user(response: Response, user=Depends(get_current_user)):
     return {"message": "Successfully signed out"}
 
 
-############################
-# Get Current User Session
-############################
-
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_session(user=Depends(get_authenticated_user)):
-    """
-    Get current authenticated user
-    """
     return UserResponse(
         id=user.id,
         email=user.email,
@@ -162,15 +138,8 @@ async def get_current_user_session(user=Depends(get_authenticated_user)):
     )
 
 
-############################
-# Update User Profile
-############################
-
 @router.put("/me/profile", response_model=UserResponse)
 async def update_user_profile(form_data: UpdateProfileForm, user=Depends(get_authenticated_user)):
-    """
-    Update user profile
-    """
     updated_user = Users.update_user_by_id(
         user.id,
         {
@@ -193,10 +162,6 @@ async def update_user_profile(form_data: UpdateProfileForm, user=Depends(get_aut
             detail=ERROR_MESSAGES.DEFAULT(),
         )
 
-
-############################
-# Update User Password
-############################
 
 @router.put("/me/password", response_model=bool)
 async def update_user_password(form_data: UpdatePasswordForm, user=Depends(get_authenticated_user)):

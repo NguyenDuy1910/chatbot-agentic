@@ -14,10 +14,6 @@ log.setLevel(SRC_LOG_LEVELS["API"])
 
 router = APIRouter()
 
-############################
-# Chat CRUD Operations
-############################
-
 @router.get("/", response_model=List[ChatModel])
 async def get_user_chats(
     skip: int = Query(0, ge=0),
@@ -171,10 +167,6 @@ async def delete_chat_by_id(chat_id: str, current_user=Depends(get_verified_user
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-############################
-# Chat Actions
-############################
-
 @router.put("/{chat_id}/archive", response_model=ChatModel)
 async def toggle_chat_archive_status(chat_id: str, current_user=Depends(get_verified_user)):
     """Toggle chat archive status"""
@@ -244,10 +236,6 @@ async def toggle_chat_pin_status(chat_id: str, current_user=Depends(get_verified
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
-
-############################
-# Shared Chats
-############################
 
 @router.get("/shared/{share_id}", response_model=ChatModel)
 async def get_shared_chat(share_id: str):

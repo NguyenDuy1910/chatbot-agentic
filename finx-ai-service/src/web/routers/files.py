@@ -13,10 +13,6 @@ log.setLevel(SRC_LOG_LEVELS["API"])
 
 router = APIRouter()
 
-############################
-# File CRUD Operations
-############################
-
 @router.get("/", response_model=List[FileModel])
 async def get_files(
     skip: int = Query(0, ge=0),
@@ -200,10 +196,6 @@ async def delete_file(file_id: str, current_user=Depends(get_verified_user)):
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-############################
-# File Search Operations
-############################
-
 @router.get("/search/by-hash/{file_hash}", response_model=List[FileModel])
 async def get_files_by_hash(file_hash: str, current_user=Depends(get_verified_user)):
     """Get files by hash"""
@@ -243,10 +235,6 @@ async def get_files_by_filename(filename: str, current_user=Depends(get_verified
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-############################
-# Admin Operations
-############################
-
 @router.delete("/admin/all")
 async def delete_all_files(current_user=Depends(get_admin_user)):
     """Delete all files (admin only)"""
@@ -263,10 +251,6 @@ async def delete_all_files(current_user=Depends(get_admin_user)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
-
-############################
-# Helper Functions
-############################
 
 def _check_file_access(file: FileModel, user, access_type: str = "read") -> bool:
     """

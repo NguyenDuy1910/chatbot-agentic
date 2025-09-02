@@ -6,11 +6,6 @@ from src.web.internal.db import Base, JSONField, get_db_context, JSONField
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text
 
-####################
-# Prompts DB Schema
-####################
-
-
 class Prompt(Base):
     __tablename__ = "prompt"
     __table_args__ = {'extend_existing': True}
@@ -38,7 +33,6 @@ class Prompt(Base):
     #      }
     #   }
 
-
 class PromptModel(BaseModel):
     command: str
     user_id: str
@@ -49,22 +43,14 @@ class PromptModel(BaseModel):
     access_control: Optional[dict] = None
     model_config = ConfigDict(from_attributes=True)
 
-
-####################
-# Forms
-####################
-
-
 class PromptResponse(PromptModel):
     pass
-
 
 class PromptForm(BaseModel):
     command: str
     title: str
     content: str
     access_control: Optional[dict] = None
-
 
 class PromptsTable:
     def insert_new_prompt(
@@ -133,6 +119,5 @@ class PromptsTable:
                 return True
         except Exception:
             return False
-
 
 Prompts = PromptsTable()

@@ -17,10 +17,6 @@ from src.web.utils.security import (
 
 log = logging.getLogger(__name__)
 
-####################
-# CONNECTION TESTING
-####################
-
 async def test_connection(
     connection_data: ConnectionCreateForm,
     test_endpoint: Optional[str] = None,
@@ -703,10 +699,6 @@ async def test_email_connection(connection_data: ConnectionCreateForm) -> Connec
             timestamp=datetime.utcnow()
         )
 
-####################
-# CONNECTION TEMPLATES
-####################
-
 def get_connection_templates() -> List[ConnectionTemplateModel]:
     """Get predefined connection templates"""
     templates = [
@@ -769,10 +761,6 @@ def get_connection_templates() -> List[ConnectionTemplateModel]:
     ]
     
     return templates
-
-####################
-# LOGGING
-####################
 
 async def create_connection_log(
     db: Session,

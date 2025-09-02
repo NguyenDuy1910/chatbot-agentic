@@ -6,10 +6,6 @@ from src.web.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
-####################
-# File DB Schema
-####################
-
 class File(Base):
     __tablename__ = "file"
     __table_args__ = {'extend_existing': True}
@@ -25,7 +21,6 @@ class File(Base):
     created_at = Column(BigInteger)
     updated_at = Column(BigInteger)
 
-
 class FileModel(BaseModel):
     id: str
     user_id: str
@@ -40,18 +35,12 @@ class FileModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-####################
-# Forms
-####################
-
 class FileForm(BaseModel):
     filename: str
     hash: Optional[str] = None
     path: Optional[str] = None
     data: Optional[dict] = None
     access_control: Optional[dict] = None
-
 
 class FileUpdateForm(BaseModel):
     filename: Optional[str] = None
@@ -60,7 +49,6 @@ class FileUpdateForm(BaseModel):
     data: Optional[dict] = None
     meta: Optional[dict] = None
     access_control: Optional[dict] = None
-
 
 class FileResponse(BaseModel):
     id: str
@@ -71,11 +59,6 @@ class FileResponse(BaseModel):
     content_type: Optional[str] = None
     created_at: int
     updated_at: int
-
-
-####################
-# Files Table
-####################
 
 class FilesTable:
     def insert_new_file(self, user_id: str, form_data: FileForm) -> Optional[FileModel]:
@@ -228,6 +211,5 @@ class FilesTable:
                 if file.meta and "size" in file.meta:
                     total_size += file.meta.get("size", 0)
             return total_size
-
 
 Files = FilesTable()

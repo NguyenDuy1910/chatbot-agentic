@@ -1,0 +1,280 @@
+name: Backend CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - feature/*
+    paths:
+      - 'finx-ai-service/**'
+      - 'deployment/**'
+      - '.github/workflows/deploy-vps.yml'
+  pull_request:
+    branches: 
+      - main
+    paths:
+      - 'finx-ai-service/**'
+      - 'deployment/**'
+
+env:
+  BACKEND_PATH: finx-ai-service
+  DOCKER_IMAGE_NAME: finx-backend
+  DOCKER_TAG: ${{ github.sha }}
+
+jobs:
+  # Test job - runs for all PRs and pushes
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install uv
+        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        working-directory: ${{ env.BACKEND_PATH }}
+        run: |
+          uv pip sync requirements.txt
+          uv pip install pytest pytest-asyncio pytest-cov
+
+      - name: Run linting
+        working-directory: ${{ env.BACKEND_PATH }}
+        run: |
+          # Install linting tools
+          uv pip install flake8 black isort mypy
+          
+          # Run black formatting check
+          black --check .
+          
+          # Run isort import sorting check
+          isort --check-only .
+          
+          # Run flake8 linting
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=88 --statistics
+
+      - name: Run security scan
+        working-directory: ${{ env.BACKEND_PATH }}
+        run: |
+          uv pip install safety bandit
+          # Check for known security vulnerabilities
+          safety check
+          # Run security linting
+          bandit -r src/ -f json
+
+      - name: Run tests with coverage
+        working-directory: ${{ env.BACKEND_PATH }}
+        env:
+          ENVIRONMENT: test
+          DATABASE_PROVIDER: supabase
+        run: |
+          # Run tests with coverage
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./finx-ai-service/coverage.xml
+          flags: backend
+          name: backend-coverage
+
+  # Build job - runs only on pushes to main/develop
+  build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        working-directory: deployment
+        run: |
+          # Copy backend files to deployment context
+          cp -r ../${{ env.BACKEND_PATH }}/* ./
+          
+          # Build the image
+          docker build \
+            --tag ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG }} \
+            --tag ${{ env.DOCKER_IMAGE_NAME }}:latest \
+            --file Dockerfile \
+            .
+
+      - name: Test Docker image
+        run: |
+          # Test that the image can start
+          docker run --rm -d \
+            --name test-container \
+            -p 8000:8000 \
+            -e ENVIRONMENT=test \
+            ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG }}
+          
+          # Wait for container to be ready
+          sleep 30
+          
+          # Test health endpoint
+          curl -f http://localhost:8000/health || exit 1
+          
+          # Stop test container
+          docker stop test-container
+
+      - name: Save Docker image
+        run: |
+          docker save ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG }} | gzip > backend-image.tar.gz
+
+      - name: Upload Docker image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-docker-image
+          path: backend-image.tar.gz
+          retention-days: 7
+
+  # Deploy job - runs only on pushes to main
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-docker-image
+
+      - name: Setup SSH
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: ${{ secrets.KNOWN_HOSTS }}
+
+      - name: Add VPS to known hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Create deployment directory on VPS
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "mkdir -p ${{ secrets.VPS_PATH }}/deployment"
+
+      - name: Copy deployment files to VPS
+        run: |
+          # Copy docker-compose and deployment scripts
+          scp -r deployment/* ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_PATH }}/deployment/
+          
+          # Copy Docker image
+          scp backend-image.tar.gz ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_PATH }}/
+
+      - name: Deploy to VPS
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            set -e
+            
+            cd ${{ secrets.VPS_PATH }}
+            
+            echo "Starting deployment process..."
+            
+            # Load Docker image
+            echo "Loading Docker image..."
+            docker load < backend-image.tar.gz
+            
+            # Tag the image
+            docker tag ${{ env.DOCKER_IMAGE_NAME }}:${{ env.DOCKER_TAG }} ${{ env.DOCKER_IMAGE_NAME }}:latest
+            
+            # Navigate to deployment directory
+            cd deployment
+            
+            # Stop existing services
+            echo "Stopping existing services..."
+            docker-compose down || true
+            
+            # Remove old containers and images
+            docker-compose rm -f || true
+            docker image prune -f || true
+            
+            # Start new services
+            echo "Starting new services..."
+            docker-compose up -d backend
+            
+            # Wait for service to be ready
+            echo "Waiting for backend to be ready..."
+            sleep 30
+            
+            # Health check
+            max_attempts=10
+            attempt=1
+            
+            while [ $attempt -le $max_attempts ]; do
+              if curl -f http://localhost:8000/health > /dev/null 2>&1; then
+                echo "Backend is healthy!"
+                break
+              else
+                echo "Attempt $attempt/$max_attempts: Backend not ready yet..."
+                sleep 10
+                ((attempt++))
+              fi
+            done
+            
+            if [ $attempt -gt $max_attempts ]; then
+              echo "Backend failed to start properly"
+              docker-compose logs backend
+              exit 1
+            fi
+            
+            # Show status
+            echo "Service status:"
+            docker-compose ps
+            
+            # Cleanup
+            rm -f ../backend-image.tar.gz
+            
+            echo "Deployment completed successfully!"
+          EOF
+
+      - name: Run post-deployment tests
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            echo "Running post-deployment tests..."
+            
+            # Test health endpoint
+            curl -f http://localhost:8000/health
+            
+            # Test API documentation endpoint
+            curl -f http://localhost:8000/docs > /dev/null
+            
+            echo "All post-deployment tests passed!"
+          EOF
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "Deployment successful!"
+            echo "Backend URL: http://${{ secrets.VPS_HOST }}:8000"
+            echo "API Docs: http://${{ secrets.VPS_HOST }}:8000/docs"
+          else
+            echo "Deployment failed!"
+          fi

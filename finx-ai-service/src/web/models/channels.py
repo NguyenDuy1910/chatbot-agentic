@@ -6,9 +6,6 @@ from src.web.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
-####################
-# Channel DB Schema
-####################
 
 class Channel(Base):
     __tablename__ = "channel"
@@ -41,10 +38,6 @@ class ChannelModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-####################
-# Forms
-####################
-
 class ChannelForm(BaseModel):
     name: str
     type: Optional[str] = "general"
@@ -59,11 +52,6 @@ class ChannelUpdateForm(BaseModel):
     data: Optional[dict] = None
     meta: Optional[dict] = None
     access_control: Optional[dict] = None
-
-
-####################
-# Channels Table
-####################
 
 class ChannelsTable:
     def insert_new_channel(self, user_id: str, form_data: ChannelForm) -> Optional[ChannelModel]:

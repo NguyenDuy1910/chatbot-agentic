@@ -13,10 +13,6 @@ log.setLevel(SRC_LOG_LEVELS["API"])
 
 router = APIRouter()
 
-############################
-# Prompt CRUD Operations
-############################
-
 @router.get("/", response_model=List[PromptModel])
 async def get_prompts(
     user_only: bool = Query(False, description="Get only current user's prompts"),
@@ -179,10 +175,6 @@ async def delete_prompt(command: str, current_user=Depends(get_verified_user)):
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-############################
-# User-specific Operations
-############################
-
 @router.get("/user/my-prompts", response_model=List[PromptModel])
 async def get_my_prompts(current_user=Depends(get_verified_user)):
     """Get current user's prompts"""
@@ -194,10 +186,6 @@ async def get_my_prompts(current_user=Depends(get_verified_user)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
-
-############################
-# Helper Functions
-############################
 
 def _check_prompt_access(prompt: PromptModel, user, access_type: str = "read") -> bool:
     """

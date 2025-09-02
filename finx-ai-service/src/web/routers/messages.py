@@ -14,10 +14,6 @@ log.setLevel(SRC_LOG_LEVELS["API"])
 
 router = APIRouter()
 
-############################
-# Message CRUD Operations
-############################
-
 @router.get("/", response_model=List[MessageModel])
 async def get_user_messages(
     channel_id: Optional[str] = Query(None),
@@ -177,10 +173,6 @@ async def delete_message_by_id(message_id: str, current_user=Depends(get_verifie
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-############################
-# Message Replies
-############################
-
 @router.get("/{message_id}/replies", response_model=List[MessageModel])
 async def get_message_replies(message_id: str, current_user=Depends(get_verified_user)):
     """Get replies to a specific message"""
@@ -202,10 +194,6 @@ async def get_message_replies(message_id: str, current_user=Depends(get_verified
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
-
-############################
-# Message Reactions
-############################
 
 @router.get("/{message_id}/reactions", response_model=List[MessageReactionModel])
 async def get_message_reactions(message_id: str, current_user=Depends(get_verified_user)):

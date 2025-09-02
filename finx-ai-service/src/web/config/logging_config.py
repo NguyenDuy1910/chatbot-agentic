@@ -7,10 +7,6 @@ import os
 from typing import Dict, Any
 from src.web.utils.logging import LogLevel, LogFormat, LoggerConfig
 
-####################
-# Environment Configurations
-####################
-
 class DevelopmentLoggingConfig(LoggerConfig):
     """Development environment logging configuration"""
     
@@ -48,10 +44,6 @@ class TestingLoggingConfig(LoggerConfig):
         self.file_enabled = True
         self.json_enabled = False
         self.log_dir = "logs/test"
-
-####################
-# Component-Specific Configurations
-####################
 
 class DatabaseLoggingConfig:
     """Database-specific logging configuration"""
@@ -113,10 +105,6 @@ class ConnectionLoggingConfig:
             "mask_credentials": True,  # Security: mask credentials in logs
         }
 
-####################
-# Configuration Factory
-####################
-
 class LoggingConfigFactory:
     """Factory to create logging configurations based on environment"""
     
@@ -149,10 +137,6 @@ class LoggingConfigFactory:
         }
         
         return component_configs.get(component, {})
-
-####################
-# Logging Setup Functions
-####################
 
 def setup_development_logging():
     """Setup logging for development environment"""
@@ -209,10 +193,6 @@ def auto_setup_logging():
     setup_function = setup_functions.get(environment, setup_development_logging)
     setup_function()
 
-####################
-# Logging Utilities
-####################
-
 def get_logger_for_module(module_name: str):
     """Get logger configured for specific module"""
     from src.web.utils.logging import get_logger
@@ -254,10 +234,6 @@ def mask_sensitive_data(data: Dict[str, Any], sensitive_keys: list = None) -> Di
             masked_data[key] = mask_sensitive_data(value, sensitive_keys)
     
     return masked_data
-
-####################
-# Performance Monitoring
-####################
 
 class PerformanceLogger:
     """Logger for performance monitoring"""

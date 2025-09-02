@@ -13,10 +13,6 @@ from src.web.models.connections import ConnectionModel, ConnectionType, Database
 
 log = logging.getLogger(__name__)
 
-####################
-# Base Classes
-####################
-
 @dataclass
 class ConnectionResult:
     """Result of a connection operation"""
@@ -76,10 +72,6 @@ class BaseConnectionProvider(ABC):
             "database": self.connection.database_name,
             "is_connected": self._is_connected
         }
-
-####################
-# PostgreSQL Provider
-####################
 
 class PostgreSQLProvider(BaseConnectionProvider):
     """PostgreSQL connection provider"""
@@ -224,10 +216,6 @@ class PostgreSQLProvider(BaseConnectionProvider):
         
         return conn_str
 
-####################
-# AWS Athena Provider
-####################
-
 class AthenaProvider(BaseConnectionProvider):
     """AWS Athena connection provider"""
     
@@ -336,10 +324,6 @@ class AthenaProvider(BaseConnectionProvider):
                 error=str(e),
                 execution_time=time.time() - start_time
             )
-
-####################
-# Snowflake Provider
-####################
 
 class SnowflakeProvider(BaseConnectionProvider):
     """Snowflake connection provider"""
@@ -455,10 +439,6 @@ class SnowflakeProvider(BaseConnectionProvider):
                 execution_time=time.time() - start_time
             )
 
-####################
-# BigQuery Provider
-####################
-
 class BigQueryProvider(BaseConnectionProvider):
     """Google BigQuery connection provider"""
 
@@ -566,10 +546,6 @@ class BigQueryProvider(BaseConnectionProvider):
                 error=str(e),
                 execution_time=time.time() - start_time
             )
-
-####################
-# S3 Provider
-####################
 
 class S3Provider(BaseConnectionProvider):
     """AWS S3 connection provider"""
@@ -680,10 +656,6 @@ class S3Provider(BaseConnectionProvider):
                 execution_time=time.time() - start_time
             )
 
-####################
-# Provider Factory
-####################
-
 class ConnectionProviderFactory:
     """Factory to create connection providers"""
 
@@ -722,10 +694,6 @@ class ConnectionProviderFactory:
     def register_provider(cls, connection_type: ConnectionType, provider_class: type):
         """Register a new provider"""
         cls._providers[connection_type] = provider_class
-
-####################
-# Connection Manager
-####################
 
 class ConnectionManager:
     """Manages multiple connections and their providers"""

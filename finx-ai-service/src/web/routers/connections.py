@@ -30,9 +30,6 @@ log = logging.getLogger(__name__)
 
 router = APIRouter()
 
-####################
-# CONNECTION CRUD
-####################
 
 @router.get("/", response_model=ConnectionListResponse)
 async def get_connections(
@@ -406,9 +403,6 @@ async def delete_connection(
             detail="Failed to delete connection"
         )
 
-####################
-# CONNECTION TESTING
-####################
 
 @router.post("/test", response_model=ConnectionTestResult)
 async def test_connection_configuration(
@@ -501,9 +495,6 @@ async def test_existing_connection(
             detail="Failed to test connection"
         )
 
-####################
-# TEMPLATES & STATS
-####################
 
 @router.get("/templates", response_model=ConnectionTemplateResponse)
 async def get_connection_templates(
@@ -630,10 +621,6 @@ async def get_connection_logs(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to fetch connection logs"
         )
-
-####################
-# HEALTH MONITORING
-####################
 
 @router.post("/{connection_id}/health-check")
 async def force_connection_health_check(

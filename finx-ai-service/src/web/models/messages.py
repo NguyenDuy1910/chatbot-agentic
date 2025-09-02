@@ -6,9 +6,6 @@ from src.web.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
-####################
-# Message DB Schema
-####################
 
 class Message(Base):
     __tablename__ = "message"
@@ -39,10 +36,6 @@ class MessageModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-####################
-# Message Reaction DB Schema
-####################
-
 class MessageReaction(Base):
     __tablename__ = "message_reaction"
     __table_args__ = {'extend_existing': True}
@@ -64,10 +57,6 @@ class MessageReactionModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-####################
-# Forms
-####################
-
 class MessageForm(BaseModel):
     content: str
     channel_id: Optional[str] = None
@@ -86,9 +75,6 @@ class MessageReactionForm(BaseModel):
 
 
 ####################
-# Messages Table
-####################
-
 class MessagesTable:
     def insert_new_message(self, user_id: str, form_data: MessageForm) -> Optional[MessageModel]:
         with get_db_context() as db:
@@ -198,10 +184,6 @@ class MessagesTable:
         except Exception:
             return False
 
-
-####################
-# Message Reactions Table
-####################
 
 class MessageReactionsTable:
     def insert_new_reaction(self, user_id: str, message_id: str, form_data: MessageReactionForm) -> Optional[MessageReactionModel]:
