@@ -13,10 +13,6 @@ log.setLevel(SRC_LOG_LEVELS["API"])
 
 router = APIRouter()
 
-############################
-# Knowledge CRUD Operations
-############################
-
 @router.get("/", response_model=List[KnowledgeModel])
 async def get_knowledge_bases(
     user_only: bool = Query(False, description="Get only current user's knowledge bases"),
@@ -163,10 +159,6 @@ async def delete_knowledge_base(knowledge_id: str, current_user=Depends(get_veri
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-############################
-# Knowledge Data Operations
-############################
-
 @router.put("/{knowledge_id}/data")
 async def update_knowledge_data(
     knowledge_id: str,
@@ -208,10 +200,6 @@ async def update_knowledge_data(
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
 
-############################
-# Admin Operations
-############################
-
 @router.delete("/admin/all")
 async def delete_all_knowledge_bases(current_user=Depends(get_admin_user)):
     """Delete all knowledge bases (admin only)"""
@@ -232,10 +220,6 @@ async def delete_all_knowledge_bases(current_user=Depends(get_admin_user)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=ERROR_MESSAGES.INTERNAL_SERVER_ERROR
         )
-
-############################
-# Helper Functions
-############################
 
 def _check_knowledge_access(knowledge: KnowledgeModel, user, access_type: str = "read") -> bool:
     """

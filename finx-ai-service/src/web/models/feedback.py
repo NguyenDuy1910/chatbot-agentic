@@ -6,10 +6,6 @@ from src.web.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
-####################
-# Feedback DB Schema
-####################
-
 class Feedback(Base):
     __tablename__ = "feedback"
     __table_args__ = {'extend_existing': True}
@@ -24,7 +20,6 @@ class Feedback(Base):
     created_at = Column(BigInteger)
     updated_at = Column(BigInteger)
 
-
 class FeedbackModel(BaseModel):
     id: str
     user_id: str
@@ -38,16 +33,10 @@ class FeedbackModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-####################
-# Forms
-####################
-
 class FeedbackForm(BaseModel):
     type: str
     data: Optional[dict] = None
     snapshot: Optional[dict] = None
-
 
 class FeedbackUpdateForm(BaseModel):
     type: Optional[str] = None
@@ -56,18 +45,12 @@ class FeedbackUpdateForm(BaseModel):
     snapshot: Optional[dict] = None
     version: Optional[int] = None
 
-
 class FeedbackResponse(BaseModel):
     id: str
     type: Optional[str] = None
     version: int
     created_at: int
     updated_at: int
-
-
-####################
-# Feedback Table
-####################
 
 class FeedbackTable:
     def insert_new_feedback(self, user_id: str, form_data: FeedbackForm) -> Optional[FeedbackModel]:
@@ -236,6 +219,5 @@ class FeedbackTable:
                 return True
         except Exception:
             return False
-
 
 Feedbacks = FeedbackTable()

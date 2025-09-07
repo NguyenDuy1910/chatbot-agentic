@@ -1,16 +1,30 @@
 # ChatBot - AI Agentic Chatbot
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Build Status](https://travis-ci.org/your-repo/chatbot.svg?branch=master)](https://travis-ci.org/your-repo/chatbot)
+
 A modern chatbot application built with React, TypeScript, and Tailwind CSS, featuring integrated prompt management and database connections.
+
+**[Live Demo](https://your-demo-link.com)**
+
+## Table of Contents
+
+- [Features](#-key-features)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [Getting Started](#-getting-started)
+- [Usage](#-usage)
+- [Deployment](#-deployment)
+- [Contributing](#-contributing)
+- [License](#-license)
 
 ## 🚀 Key Features
 
-- 🤖 **Modern Chat Interface** - Clean, intuitive design
-- 💬 **Real-time Messaging** - Smooth chat experience
-- 📱 **Responsive Design** - Works great on all devices
-- 🧠 **Prompt Management** - Create and manage prompt templates
-- 🔗 **Database Connections** - Manage multiple database connections
-- 👤 **User Authentication** - Login/registration system
-- ⚙️ **System Administration** - Admin panel for management
+- 🤖 **Modern Chat Interface**: Clean, intuitive, and responsive design.
+- [object Object] Easily create, manage, and use prompt templates.
+- 🔗 **Database Connections**: Manage multiple database connections securely.
+- 👤 **User Authentication**: Standard login/registration system.
+- ⚙️ **System Administration**: An admin panel for user and system management.
 
 ## 🛠️ Tech Stack
 
@@ -56,116 +70,74 @@ git pull && ./deploy.sh production
 ## 📁 Project Structure
 
 ```
-├── src/
-│   ├── components/          # React components
-│   │   ├── shared/         # Shared components
-│   │   │   ├── ui/        # UI components (Button, Input, etc.)
-│   │   │   └── AppWithAuth.tsx
-│   │   └── features/      # Feature-specific components
-│   │       ├── admin/     # Admin components
-│   │       ├── auth/      # Authentication
-│   │       ├── chat/      # Chat interface
-│   │       ├── connections/ # Database connections
-│   │       └── prompts/   # Prompt management
-│   ├── pages/              # Page components
-│   ├── hooks/              # Custom React hooks
-│   ├── lib/                # Utilities & API
-│   ├── types/              # TypeScript definitions
-│   ├── contexts/           # React contexts
-│   └── styles/             # Styling files
-├── backend/                # Python backend
-│   └── finx/              # FastAPI application
-└── package.json           # Dependencies
+.
+├── finx-ai-service/ # Backend (FastAPI)
+├── finx-ui/         # Frontend (React)
+├── deployment/      # Deployment scripts
+└── docs/            # Documentation
 ```
 
-## 🚀 Installation and Setup
+## 🚀 Getting Started
 
 ### Prerequisites
+
 - Node.js (v16+)
 - Python (v3.8+)
-- uv (Python package manager)
-- PostgreSQL/MySQL
+- Docker and Docker Compose
+- `uv` (Python package manager)
 
-### Frontend
+### Installation
+
+1.  **Clone the repository:**
+
+    ```bash
+    git clone https://github.com/your-repo/chatbot.git
+    cd chatbot
+    ```
+
+2.  **Setup the Backend:**
+
+    ```bash
+    cd finx-ai-service
+    uv pip sync requirements.txt
+    cp .env.example .env # and update with your database credentials
+    uv run migrate.py # to run database migrations
+    uv run run.py # to start the server
+    ```
+
+3.  **Setup the Frontend:**
+
+    ```bash
+    cd finx-ui
+    npm install
+    cp .env.example .env # and update with your backend API URL
+    npm run dev
+    ```
+
+## 📖 Usage
+
+- Access the application at `http://localhost:5173`
+- Register a new account or log in with existing credentials.
+- Start chatting with the AI, manage prompts, and configure database connections through the UI.
+
+## 🚀 Deployment
+
+For a production deployment, it is recommended to use the provided Docker setup.
+
 ```bash
-npm install
-npm run dev
+# Build and deploy the services
+./deployment/deploy.sh production
+
+# Check the health of the backend
+cURL http://localhost:8000/health
 ```
 
-### Backend
-```bash
-cd backend
-uv pip sync requirements.txt
-uv run run.py
-```
+For more detailed deployment instructions, see the [Deployment Guide](docs/DEPLOYMENT_GUIDE.md).
 
-## 🔧 Configuration
+## 🤝 Contributing
 
-### Environment Variables
-```env
-# Frontend (.env)
-VITE_API_BASE_URL=http://localhost:8000
-VITE_JWT_SECRET=your-secret-key
-
-# Backend
-DATABASE_URL=postgresql://user:pass@localhost/db
-JWT_SECRET=your-secret-key
-```
-
-## 📖 Usage Guide
-
-### 1. Login/Registration
-- Access `/auth/login` to log in
-- Create a new account at `/auth/register`
-
-### 2. Chat with AI
-- Use the main chat interface
-- Select existing prompts or create new ones
-- Send messages and receive AI responses
-
-### 3. Prompt Management
-- Access the "Prompts" tab in the sidebar
-- Create, edit, and organize prompt templates
-- Use dynamic variables `{variable_name}` in prompts
-
-### 4. Database Connections
-- Configure database connections in settings
-- Manage multiple connections simultaneously
-- Test connections before use
-
-## 🔗 API Endpoints
-
-### Authentication
-- `POST /auth/login` - Login
-- `POST /auth/register` - Registration
-- `POST /auth/logout` - Logout
-
-### Chat
-- `POST /chat` - Send message
-- `GET /sessions` - Get chat session list
-
-### Prompts
-- `GET /prompts` - Get prompt list
-- `POST /prompts` - Create new prompt
-- `PUT /prompts/:id` - Update prompt
-
-### Connections
-- `GET /connections` - Get connection list
-- `POST /connections` - Create new connection
-- `POST /connections/:id/test` - Test connection
-
-## 🎨 Customization
-
-### Themes
-- Light/Dark mode support
-- Customize colors in `tailwind.config.js`
-- CSS variables in `src/styles/`
-
-### Components
-- All components are modular
-- Easy to customize and extend
-- Full TypeScript support
+Contributions are welcome! Please read our [Contributing Guidelines](CONTRIBUTING.md) to get started. Also, please read our [Code of Conduct](CODE_OF_CONDUCT.md) to understand our community standards.
 
 ## 📝 License
 
-MIT License - see [LICENSE](LICENSE) file for more details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -21,10 +21,6 @@ log.setLevel(SRC_LOG_LEVELS["API"])
 
 router = APIRouter()
 
-############################
-# Get All Users
-############################
-
 
 @router.get("/", response_model=list[UserModel])
 async def get_all_users(
@@ -35,19 +31,9 @@ async def get_all_users(
     return Users.get_users(skip, limit)
 
 
-############################
-# Get User Groups
-############################
-
-
 @router.get("/me/groups")
 async def get_current_user_groups(user=Depends(get_verified_user)):
     return Users.get_user_groups(user.id)
-
-
-############################
-# Get User Permissions
-############################
 
 
 @router.get("/me/permissions")
@@ -55,9 +41,6 @@ async def get_current_user_permissions(user=Depends(get_verified_user)):
     return Users.get_user_groups(user.id)
 
 
-############################
-# User Default Permissions
-############################
 class WorkspacePermissions(BaseModel):
     models: bool = False
     knowledge: bool = False
@@ -108,11 +91,6 @@ async def update_current_user_permissions(
     return request.app.state.config.USER_PERMISSIONS
 
 
-############################
-# Update User Role
-############################
-
-
 @router.put("/{user_id}/role", response_model=Optional[UserModel])
 async def update_user_role_by_id(user_id: str, form_data: UserRoleUpdateForm, user=Depends(get_admin_user)):
     if user.id != user_id and user_id != Users.get_first_user().id:
@@ -122,11 +100,6 @@ async def update_user_role_by_id(user_id: str, form_data: UserRoleUpdateForm, us
         status_code=status.HTTP_403_FORBIDDEN,
         detail=ERROR_MESSAGES.ACTION_PROHIBITED,
     )
-
-
-############################
-# Get Current User Settings
-############################
 
 
 @router.get("/me/settings", response_model=Optional[UserSettings])
@@ -139,11 +112,6 @@ async def get_current_user_settings(user=Depends(get_verified_user)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=ERROR_MESSAGES.USER_NOT_FOUND,
         )
-
-
-############################
-# Update Current User Settings
-############################
 
 
 @router.put("/me/settings", response_model=UserSettings)
@@ -160,11 +128,6 @@ async def update_current_user_settings(
         )
 
 
-############################
-# Get Current User Info
-############################
-
-
 @router.get("/me", response_model=Optional[dict])
 async def get_current_user_info(user=Depends(get_verified_user)):
     user = Users.get_user_by_id(user.id)
@@ -175,11 +138,6 @@ async def get_current_user_info(user=Depends(get_verified_user)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=ERROR_MESSAGES.USER_NOT_FOUND,
         )
-
-
-############################
-# Update Current User Info
-############################
 
 
 @router.put("/me", response_model=Optional[dict])
@@ -206,20 +164,10 @@ async def update_current_user_info(
         )
 
 
-############################
-# GetUserById
-############################
-
-
 class UserResponse(BaseModel):
     name: str
     profile_image_url: str
     active: Optional[bool] = None
-
-
-############################
-# Get User By ID
-############################
 
 
 @router.get("/{user_id}", response_model=UserResponse)
@@ -252,11 +200,6 @@ async def get_user_by_id(user_id: str, current_user=Depends(get_verified_user)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=ERROR_MESSAGES.USER_NOT_FOUND,
         )
-
-
-############################
-# Update User By ID
-############################
 
 
 @router.put("/{user_id}", response_model=Optional[UserModel])
@@ -303,11 +246,6 @@ async def update_user_by_id(
         status_code=status.HTTP_400_BAD_REQUEST,
         detail=ERROR_MESSAGES.USER_NOT_FOUND,
     )
-
-
-############################
-# Delete User By ID
-############################
 
 
 @router.delete("/{user_id}", response_model=bool)

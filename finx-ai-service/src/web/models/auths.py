@@ -23,10 +23,6 @@ def hash_password(password: str) -> str:
     """Simple password hashing - in production, use proper hashing like bcrypt"""
     return hashlib.sha256(password.encode()).hexdigest()
 
-####################
-# DB MODEL
-####################
-
 
 class Auth(Base):
     __tablename__ = "auth"
@@ -43,11 +39,6 @@ class AuthModel(BaseModel):
     email: str
     password: str
     active: bool = True
-
-
-####################
-# Forms
-####################
 
 
 class Token(BaseModel):

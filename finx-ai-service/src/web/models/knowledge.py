@@ -13,10 +13,6 @@ from sqlalchemy import BigInteger, Column, String, Text
 log = logging.getLogger(__name__)
 log.setLevel(SRC_LOG_LEVELS["MODELS"])
 
-####################
-# Knowledge DB Schema
-####################
-
 
 class Knowledge(Base):
     __tablename__ = "knowledge"
@@ -68,11 +64,6 @@ class KnowledgeModel(BaseModel):
 
     created_at: int  # timestamp in epoch
     updated_at: int  # timestamp in epoch
-
-
-####################
-# Forms
-####################
 
 
 class KnowledgeResponse(KnowledgeModel):

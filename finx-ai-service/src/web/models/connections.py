@@ -7,10 +7,6 @@ from src.web.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Boolean, Column, String, Text, ForeignKey
 
-####################
-# Enums
-####################
-
 class ConnectionType(str, Enum):
     # Relational Databases
     POSTGRESQL = "postgresql"
@@ -48,7 +44,6 @@ class ConnectionType(str, Enum):
     KAFKA = "kafka"
     KINESIS = "kinesis"
     PUBSUB = "pubsub"
-
 
 class AuthenticationType(str, Enum):
     API_KEY = "api_key"
@@ -104,10 +99,6 @@ class DatabaseDriver(str, Enum):
     PYODBC_GENERIC = "pyodbc"
     JDBC = "jdbc"
 
-####################
-# Connection DB Schema
-####################
-
 class Connection(Base):
     __tablename__ = "connection"
     __table_args__ = {'extend_existing': True}
@@ -153,7 +144,6 @@ class Connection(Base):
     created_at = Column(BigInteger)
     updated_at = Column(BigInteger)
 
-
 class ConnectionTemplate(Base):
     __tablename__ = "connection_template"
     __table_args__ = {'extend_existing': True}
@@ -184,7 +174,6 @@ class ConnectionTemplate(Base):
     created_at = Column(BigInteger)
     updated_at = Column(BigInteger)
 
-
 class ConnectionLog(Base):
     __tablename__ = "connection_log"
     __table_args__ = {'extend_existing': True}
@@ -212,7 +201,6 @@ class ConnectionLog(Base):
     stack_trace = Column(Text, nullable=True)
 
     timestamp = Column(BigInteger, nullable=False)
-
 
 class ConnectionModel(BaseModel):
     id: str
@@ -252,7 +240,6 @@ class ConnectionModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 class ConnectionTemplateModel(BaseModel):
     id: str
     name: str
@@ -282,7 +269,6 @@ class ConnectionTemplateModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
 class ConnectionLogModel(BaseModel):
     id: str
     connection_id: str
@@ -309,11 +295,6 @@ class ConnectionLogModel(BaseModel):
     timestamp: int
 
     model_config = ConfigDict(from_attributes=True)
-
-
-####################
-# Forms
-####################
 
 class ConnectionForm(BaseModel):
     name: str
@@ -343,10 +324,8 @@ class ConnectionForm(BaseModel):
     max_connections: Optional[int] = 10
     timeout_seconds: Optional[int] = 30
 
-
 # Alias for backward compatibility
 ConnectionCreateForm = ConnectionForm
-
 
 class ConnectionUpdateForm(BaseModel):
     name: Optional[str] = None
@@ -368,11 +347,9 @@ class ConnectionUpdateForm(BaseModel):
     timeout_seconds: Optional[int] = None
     is_active: Optional[bool] = None
 
-
 class ConnectionTestForm(BaseModel):
     test_query: Optional[str] = None  # SQL query or test command
     test_timeout: Optional[int] = 10  # Test timeout in seconds
-
 
 class ConnectionResponse(BaseModel):
     id: str
@@ -384,7 +361,6 @@ class ConnectionResponse(BaseModel):
     created_at: int
     updated_at: int
 
-
 class ConnectionListResponse(BaseModel):
     connections: List[ConnectionResponse]
     total: int
@@ -392,12 +368,10 @@ class ConnectionListResponse(BaseModel):
     limit: int
     has_next: bool
 
-
 class ConnectionTemplateResponse(BaseModel):
     templates: List[ConnectionTemplateModel]
     categories: List[str]
     providers: List[str]
-
 
 class ConnectionStatsResponse(BaseModel):
     total_connections: int
@@ -408,7 +382,6 @@ class ConnectionStatsResponse(BaseModel):
     connections_by_status: Dict[str, int]
     connections_by_type: Dict[str, int]
 
-
 class ConnectionTestResult(BaseModel):
     success: bool
     message: str
@@ -418,11 +391,6 @@ class ConnectionTestResult(BaseModel):
     connection_type: Optional[str] = None
     timestamp: int
     details: Optional[Dict[str, Any]] = None
-
-
-####################
-# Connections Table
-####################
 
 class ConnectionsTable:
     def insert_new_connection(self, user_id: str, form_data: ConnectionForm) -> Optional[ConnectionModel]:
@@ -904,6 +872,5 @@ class ConnectionsTable:
                 .all()
             )
             return [ConnectionModel.model_validate(connection) for connection in connections]
-
 
 Connections = ConnectionsTable()

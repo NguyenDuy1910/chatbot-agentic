@@ -7,10 +7,6 @@ from src.web.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text
 
-####################
-# User DB Schema
-####################
-
 
 class User(Base):
     __tablename__ = "user"
@@ -57,11 +53,6 @@ class UserModel(BaseModel):
     oauth_sub: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
-
-
-####################
-# Forms
-####################
 
 
 class UserResponse(BaseModel):

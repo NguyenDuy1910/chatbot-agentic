@@ -4,7 +4,7 @@ services:
   # Backend API Service
   backend:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
     container_name: finx-backend
     ports:
@@ -17,10 +17,9 @@ services:
       - API_DEBUG=false
       - API_RELOAD=false
     env_file:
-      - ./backend/.env
+      - .env
     volumes:
-      - ./backend/logs:/app/logs
-      - ./backend/finx.db:/app/finx.db
+      - ./logs:/app/logs
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -28,3 +27,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    networks:
+      - finx-network
+
+networks:
+  finx-network:
+    driver: bridge

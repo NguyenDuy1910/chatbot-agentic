@@ -6,10 +6,6 @@ from src.web.internal.db import Base, JSONField, get_db_context
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import BigInteger, Column, String, Text, ForeignKey
 
-####################
-# Group DB Schema
-####################
-
 class Group(Base):
     __tablename__ = "group"
     __table_args__ = {'extend_existing': True}
@@ -25,7 +21,6 @@ class Group(Base):
     created_at = Column(BigInteger)
     updated_at = Column(BigInteger)
 
-
 class GroupModel(BaseModel):
     id: str
     user_id: str
@@ -40,16 +35,10 @@ class GroupModel(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-
-####################
-# Forms
-####################
-
 class GroupForm(BaseModel):
     name: str
     description: Optional[str] = None
     user_ids: Optional[List[str]] = None
-
 
 class GroupUpdateForm(BaseModel):
     name: Optional[str] = None
@@ -58,11 +47,6 @@ class GroupUpdateForm(BaseModel):
     meta: Optional[dict] = None
     permissions: Optional[dict] = None
     user_ids: Optional[List[str]] = None
-
-
-####################
-# Groups Table
-####################
 
 class GroupsTable:
     def insert_new_group(self, user_id: str, form_data: GroupForm) -> Optional[GroupModel]:
@@ -190,6 +174,5 @@ class GroupsTable:
                 return True
         except Exception:
             return False
-
 
 Groups = GroupsTable()

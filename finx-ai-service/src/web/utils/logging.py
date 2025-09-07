@@ -14,10 +14,6 @@ from typing import Dict, Any, Optional, Union
 from enum import Enum
 from pathlib import Path
 
-####################
-# Enums & Constants
-####################
-
 class LogLevel(str, Enum):
     DEBUG = "DEBUG"
     INFO = "INFO"
@@ -30,10 +26,6 @@ class LogFormat(str, Enum):
     DETAILED = "detailed"
     JSON = "json"
     STRUCTURED = "structured"
-
-####################
-# Custom Formatters
-####################
 
 class JSONFormatter(logging.Formatter):
     """JSON formatter for structured logging"""
@@ -87,10 +79,6 @@ class StructuredFormatter(logging.Formatter):
         
         return message
 
-####################
-# Logger Configuration
-####################
-
 class LoggerConfig:
     """Configuration class for logger settings"""
     
@@ -118,10 +106,6 @@ class LoggerConfig:
         self.console_enabled = os.getenv("LOG_CONSOLE_ENABLED", "true").lower() == "true"
         self.file_enabled = os.getenv("LOG_FILE_ENABLED", "true").lower() == "true"
         self.json_enabled = os.getenv("LOG_JSON_ENABLED", "false").lower() == "true"
-
-####################
-# Main Logger Class
-####################
 
 class FinxLogger:
     """Main logger class for FINX backend"""
@@ -264,10 +248,6 @@ class FinxLogger:
             for handler in logger.handlers:
                 handler.setLevel(log_level)
 
-####################
-# Context Logger
-####################
-
 class ContextLogger:
     """Logger with context information"""
     
@@ -304,10 +284,6 @@ class ContextLogger:
     
     def critical(self, message: str, extra: Dict[str, Any] = None):
         self._log_with_context("CRITICAL", message, extra)
-
-####################
-# Convenience Functions
-####################
 
 def get_logger(name: str, context: Dict[str, Any] = None) -> Union[logging.Logger, ContextLogger]:
     """Get logger instance"""
@@ -352,10 +328,6 @@ def error(message: str, logger_name: str = "finx", **kwargs):
 
 def critical(message: str, logger_name: str = "finx", **kwargs):
     get_logger(logger_name).critical(message, extra=kwargs)
-
-####################
-# Decorators
-####################
 
 def log_function_call(logger_name: str = None, level: str = "INFO"):
     """Decorator to log function calls"""
@@ -444,10 +416,6 @@ def log_performance(logger_name: str = None, threshold_seconds: float = 1.0):
             return result
         return wrapper
     return decorator
-
-####################
-# Specialized Loggers
-####################
 
 class DatabaseLogger(ContextLogger):
     """Specialized logger for database operations"""
