@@ -3,15 +3,14 @@ name: Backend CI/CD Pipeline
 on:
   push:
     branches:
-      - main
-      - feature/*
+      - release/*
     paths:
       - 'finx-ai-service/**'
       - 'deployment/**'
       - '.github/workflows/deploy-vps.yml'
   pull_request:
     branches: 
-      - main
+      - release/*
     paths:
       - 'finx-ai-service/**'
       - 'deployment/**'
