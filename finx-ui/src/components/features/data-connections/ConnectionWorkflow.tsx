@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardBody, Button, Tabs, Tab } from '@heroui/react';
 import { ArrowLeft, Plus } from 'lucide-react';
-import { Connection } from '@/types/features/connections';
 import { PostgreSQLConnectionForm } from './forms/PostgreSQLConnectionForm';
 import { AthenaConnectionForm } from './forms/AthenaConnectionForm';
 import { DuckDBConnectionForm } from './forms/DuckDBConnectionForm';
@@ -128,20 +127,29 @@ export const ConnectionWorkflow: React.FC<ConnectionWorkflowProps> = ({
   // Step 0: Choose between existing or new (if has saved connections AND not forced new)
   if (step === 'choose' && hasSavedConnections && !forceNew) {
     return (
-      <div className="w-full space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          {onBack && (
-            <Button
-              isIconOnly
-              variant="light"
-              onClick={onBack}
-              startContent={<ArrowLeft className="h-4 w-4" />}
-            />
-          )}
-          <h2 className="text-2xl font-bold">Connection Setup</h2>
-        </div>
+      <div className="h-full p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex items-center gap-4 mb-6">
+            {onBack && (
+              <Button
+                isIconOnly
+                variant="light"
+                onClick={onBack}
+                className="hover:bg-gray-100"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+            )}
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Connection Setup
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Use a saved connection or create a new one
+              </p>
+            </div>
+          </div>
 
-        <div className="max-w-2xl">
           <ConnectionSelector
             onSelectExisting={handleUseExisting}
             onCreateNew={handleCreateNew}
@@ -156,87 +164,119 @@ export const ConnectionWorkflow: React.FC<ConnectionWorkflowProps> = ({
   // Step 1: Select Database Type
   if (step === 'select') {
     return (
-      <div className="w-full space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Button
-            isIconOnly
-            variant="light"
-            onClick={hasSavedConnections ? handleBackToChoose : (onBack || undefined)}
-            startContent={<ArrowLeft className="h-4 w-4" />}
-          />
-          <h2 className="text-2xl font-bold">Create New Connection</h2>
-        </div>
-
-        <p className="text-gray-600 mb-6">
-          Select a database type to create a new connection
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* PostgreSQL Card */}
-          <Card
-            isPressable
-            onClick={() => handleDatabaseSelect('postgresql')}
-            className="hover:shadow-lg transition-all cursor-pointer"
-          >
-            <CardBody className="gap-4 p-6">
-              <div className="text-4xl">🐘</div>
-              <h3 className="text-lg font-semibold">PostgreSQL</h3>
-              <p className="text-sm text-gray-600">
-                Connect to PostgreSQL databases with full schema introspection
-              </p>
+      <div className="h-full p-6">
+        <div className="max-w-7xl mx-auto space-y-8">
+          {/* Header */}
+          <div className="flex items-center gap-4">
+            {onBack && (
               <Button
-                color="primary"
-                size="sm"
-                startContent={<Plus className="h-4 w-4" />}
+                isIconOnly
+                variant="light"
+                onClick={onBack}
+                className="hover:bg-gray-100"
               >
-                Create Connection
+                <ArrowLeft className="h-5 w-5" />
               </Button>
-            </CardBody>
-          </Card>
-
-          {/* Athena Card */}
-          <Card
-            isPressable
-            onClick={() => handleDatabaseSelect('athena')}
-            className="hover:shadow-lg transition-all cursor-pointer"
-          >
-            <CardBody className="gap-4 p-6">
-              <div className="text-4xl">☁️</div>
-              <h3 className="text-lg font-semibold">Amazon Athena</h3>
-              <p className="text-sm text-gray-600">
-                Query data in S3 using Athena with environment-based auth
+            )}
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Create New Connection
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Select a database type to get started
               </p>
-              <Button
-                color="primary"
-                size="sm"
-                startContent={<Plus className="h-4 w-4" />}
-              >
-                Create Connection
-              </Button>
-            </CardBody>
-          </Card>
+            </div>
+          </div>
 
-          {/* DuckDB Card */}
-          <Card
-            isPressable
-            onClick={() => handleDatabaseSelect('duckdb')}
-            className="hover:shadow-lg transition-all cursor-pointer"
-          >
-            <CardBody className="gap-4 p-6">
-              <div className="text-4xl">🦆</div>
-              <h3 className="text-lg font-semibold">DuckDB</h3>
-              <p className="text-sm text-gray-600">
-                Lightweight analytical database for local or in-memory queries
-              </p>
-              <Button
-                color="primary"
-                size="sm"
-                startContent={<Plus className="h-4 w-4" />}
-              >
-                Create Connection
-              </Button>
-            </CardBody>
-          </Card>
+          {/* Database Type Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* PostgreSQL Card */}
+            <Card
+              isPressable
+              onClick={() => handleDatabaseSelect('postgresql')}
+              className="hover:shadow-2xl transition-all duration-300 cursor-pointer hover:scale-[1.03] border-2 border-transparent hover:border-blue-200"
+            >
+              <CardBody className="gap-5 p-8 flex flex-col items-center text-center min-h-[320px]">
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 shadow-lg">
+                  <div className="text-6xl">🐘</div>
+                </div>
+                <div className="flex-1 flex flex-col justify-center space-y-3">
+                  <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    PostgreSQL
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed px-2">
+                    Connect to PostgreSQL databases with full schema introspection and relationship mapping
+                  </p>
+                </div>
+                <Button
+                  color="primary"
+                  size="lg"
+                  startContent={<Plus className="h-5 w-5" />}
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+                >
+                  Select PostgreSQL
+                </Button>
+              </CardBody>
+            </Card>
+
+            {/* Athena Card */}
+            <Card
+              isPressable
+              onClick={() => handleDatabaseSelect('athena')}
+              className="hover:shadow-2xl transition-all duration-300 cursor-pointer hover:scale-[1.03] border-2 border-transparent hover:border-orange-200"
+            >
+              <CardBody className="gap-5 p-8 flex flex-col items-center text-center min-h-[320px]">
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-orange-100 to-yellow-100 shadow-lg">
+                  <div className="text-6xl">☁️</div>
+                </div>
+                <div className="flex-1 flex flex-col justify-center space-y-3">
+                  <h3 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-yellow-600 bg-clip-text text-transparent">
+                    Amazon Athena
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed px-2">
+                    Query data in S3 using Athena with environment-based authentication and serverless compute
+                  </p>
+                </div>
+                <Button
+                  color="warning"
+                  size="lg"
+                  startContent={<Plus className="h-5 w-5" />}
+                  className="w-full bg-gradient-to-r from-orange-500 to-yellow-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+                >
+                  Select Athena
+                </Button>
+              </CardBody>
+            </Card>
+
+            {/* DuckDB Card */}
+            <Card
+              isPressable
+              onClick={() => handleDatabaseSelect('duckdb')}
+              className="hover:shadow-2xl transition-all duration-300 cursor-pointer hover:scale-[1.03] border-2 border-transparent hover:border-green-200"
+            >
+              <CardBody className="gap-5 p-8 flex flex-col items-center text-center min-h-[320px]">
+                <div className="p-5 rounded-2xl bg-gradient-to-br from-green-100 to-emerald-100 shadow-lg">
+                  <div className="text-6xl">🦆</div>
+                </div>
+                <div className="flex-1 flex flex-col justify-center space-y-3">
+                  <h3 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                    DuckDB
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed px-2">
+                    Lightweight analytical database for local or in-memory queries with blazing fast performance
+                  </p>
+                </div>
+                <Button
+                  color="success"
+                  size="lg"
+                  startContent={<Plus className="h-5 w-5" />}
+                  className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+                >
+                  Select DuckDB
+                </Button>
+              </CardBody>
+            </Card>
+          </div>
         </div>
       </div>
     );
@@ -245,18 +285,27 @@ export const ConnectionWorkflow: React.FC<ConnectionWorkflowProps> = ({
   // Step 2: Create Connection
   if (step === 'create' && selectedDatabase) {
     return (
-      <div className="w-full space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Button
-            isIconOnly
-            variant="light"
-            onClick={handleBackToSelect}
-            startContent={<ArrowLeft className="h-4 w-4" />}
-          />
-          <h2 className="text-2xl font-bold">Create {selectedDatabase} Connection</h2>
-        </div>
+      <div className="h-full p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button
+              isIconOnly
+              variant="light"
+              onClick={handleBackToSelect}
+              className="hover:bg-gray-100"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Configure {selectedDatabase.charAt(0).toUpperCase() + selectedDatabase.slice(1)} Connection
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Enter your connection details
+              </p>
+            </div>
+          </div>
 
-        <div className="max-w-2xl">
           {selectedDatabase === 'postgresql' && (
             <PostgreSQLConnectionForm
               onSuccess={handleConnectionCreated}
@@ -285,18 +334,27 @@ export const ConnectionWorkflow: React.FC<ConnectionWorkflowProps> = ({
   // Step 3: Select Catalog (for Athena)
   if (step === 'catalog' && createdConnection && createdConnection.config) {
     return (
-      <div className="w-full space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Button
-            isIconOnly
-            variant="light"
-            onClick={handleBackToCreate}
-            startContent={<ArrowLeft className="h-4 w-4" />}
-          />
-          <h2 className="text-2xl font-bold">Select Catalog</h2>
-        </div>
+      <div className="h-full p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button
+              isIconOnly
+              variant="light"
+              onClick={handleBackToCreate}
+              className="hover:bg-gray-100"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Select Catalog
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Choose a data catalog to explore
+              </p>
+            </div>
+          </div>
 
-        <div className="max-w-2xl">
           <CatalogSelector
             connectionConfig={createdConnection.config}
             connectionName={createdConnection.name}
@@ -311,29 +369,40 @@ export const ConnectionWorkflow: React.FC<ConnectionWorkflowProps> = ({
   // Step 4: Explore Schema
   if (step === 'explore' && createdConnection) {
     return (
-      <div className="w-full space-y-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Button
-            isIconOnly
-            variant="light"
-            onClick={selectedDatabase === 'athena' ? handleBackToCatalog : handleBackToCreate}
-            startContent={<ArrowLeft className="h-4 w-4" />}
-          />
-          <h2 className="text-2xl font-bold">Schema Explorer</h2>
-        </div>
+      <div className="h-full p-6">
+        <div className="max-w-7xl mx-auto space-y-6">
+          <div className="flex items-center gap-4 mb-6">
+            <Button
+              isIconOnly
+              variant="light"
+              onClick={selectedDatabase === 'athena' ? handleBackToCatalog : handleBackToCreate}
+              className="hover:bg-gray-100"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Schema Explorer
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Browse and explore your database schema
+              </p>
+            </div>
+          </div>
 
-        {selectedDatabase === 'athena' && createdConnection.config ? (
-          <AthenaSchemaExplorer
-            connectionConfig={createdConnection.config}
-            connectionName={createdConnection.name}
-            catalogName={selectedCatalog}
-          />
-        ) : createdConnection.id ? (
-          <SchemaExplorer
-            connectionId={createdConnection.id}
-            connectionName={createdConnection.name}
-          />
-        ) : null}
+          {selectedDatabase === 'athena' && createdConnection.config ? (
+            <AthenaSchemaExplorer
+              connectionConfig={createdConnection.config}
+              connectionName={createdConnection.name}
+              catalogName={selectedCatalog}
+            />
+          ) : createdConnection.id ? (
+            <SchemaExplorer
+              connectionId={createdConnection.id}
+              connectionName={createdConnection.name}
+            />
+          ) : null}
+        </div>
       </div>
     );
   }

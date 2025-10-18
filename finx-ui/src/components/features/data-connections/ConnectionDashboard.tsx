@@ -6,6 +6,8 @@ import {
   ConnectionDashboardStats
 } from '@/types/features/connections';
 import { ConnectionWorkflow } from './ConnectionWorkflow';
+import { ConnectionWorkflowWithType } from './ConnectionWorkflowWithType';
+import { ConnectionTypeModal } from './ConnectionTypeModal';
 // import { ConnectionTemplateGrid } from '../connections/ConnectionTemplateGrid';
 import { ConnectionStatsGrid } from './ConnectionStatsGrid';
 import {
@@ -47,7 +49,6 @@ import {
 } from 'lucide-react';
 import { connectionAPI } from '@/lib/connectionAPI';
 import { SavedConnectionsList } from './SavedConnectionsList';
-import { QuickConnectionReuse } from './QuickConnectionReuse';
 import { useConnection, type StoredConnection } from '@/contexts/ConnectionContext';
 
 interface ConnectionDashboardProps {
@@ -84,8 +85,10 @@ export const ConnectionDashboard: React.FC<ConnectionDashboardProps> = ({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedType, setSelectedType] = useState<string>('all');
   const { isOpen: isFormOpen, onOpen: onFormOpen, onClose: onFormClose } = useDisclosure();
+  const { isOpen: isTypeModalOpen, onOpen: onTypeModalOpen, onClose: onTypeModalClose } = useDisclosure();
   const { connections: sessionConnections } = useConnection();
   const [reusingConnection, setReusingConnection] = useState<StoredConnection | null>(null);
+  const [selectedConnectionType, setSelectedConnectionType] = useState<string | null>(null);
 
   useEffect(() => {
     loadConnections();
@@ -217,6 +220,13 @@ export const ConnectionDashboard: React.FC<ConnectionDashboardProps> = ({
     setEditingConnection(null);
   };
 
+  const handleSelectConnectionType = (typeId: string) => {
+    console.log('Selected connection type:', typeId);
+    setSelectedConnectionType(typeId);
+    // Don't close modal yet, let it close after selection
+    // The modal will close itself via onSelectType callback
+  };
+
   const handleRefresh = () => {
     loadConnections();
     loadStats();
@@ -280,63 +290,64 @@ export const ConnectionDashboard: React.FC<ConnectionDashboardProps> = ({
     return matchesSearch && matchesType;
   });
 
-  // If user is reusing a saved connection, show quick reuse flow
+  // If user is reusing a saved connection, go straight to workflow with that connection
   if (reusingConnection) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="p-6">
-          <div className="max-w-6xl mx-auto">
-            <QuickConnectionReuse
-              connection={reusingConnection}
-              onBack={() => setReusingConnection(null)}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // If user is reusing a connection, go straight to workflow with that connection
-  if (reusingConnection) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="p-6">
-          <div className="max-w-6xl mx-auto">
-            <ConnectionWorkflow
-              reuseConnection={reusingConnection}
-              onBack={() => {
-                setReusingConnection(null);
-              }}
-            />
-          </div>
-        </div>
+      <div className="h-full">
+        <ConnectionWorkflow
+          reuseConnection={reusingConnection}
+          onBack={() => setReusingConnection(null)}
+        />
       </div>
     );
   }
 
   // If user wants to create a new connection, redirect to ConnectionWorkflow
   if (showForm || isFormOpen) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="p-6">
-          <div className="max-w-6xl mx-auto">
-            <ConnectionWorkflow
-              forceNew={true}
-              onBack={() => {
-                setShowForm(false);
-                onFormClose();
-                setEditingConnection(null);
-                setSelectedTemplate(null);
-              }}
-            />
-          </div>
+    // If a connection type was selected from modal, use the simplified workflow
+    if (selectedConnectionType) {
+      return (
+        <div className="h-full">
+          <ConnectionWorkflowWithType
+            preSelectedDatabaseType={selectedConnectionType}
+            onBack={() => {
+              setShowForm(false);
+              onFormClose();
+              setEditingConnection(null);
+              setSelectedTemplate(null);
+              setSelectedConnectionType(null);
+            }}
+          />
         </div>
+      );
+    }
+    
+    // Otherwise use the full workflow
+    return (
+      <div className="h-full">
+        <ConnectionWorkflow
+          forceNew={true}
+          onBack={() => {
+            setShowForm(false);
+            onFormClose();
+            setEditingConnection(null);
+            setSelectedTemplate(null);
+            setSelectedConnectionType(null);
+          }}
+        />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      {/* Connection Type Selection Modal */}
+      <ConnectionTypeModal
+        isOpen={isTypeModalOpen}
+        onClose={onTypeModalClose}
+        onSelectType={handleSelectConnectionType}
+      />
+
       <div className="p-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between mb-8">
@@ -354,8 +365,7 @@ export const ConnectionDashboard: React.FC<ConnectionDashboardProps> = ({
                 if (onNewConnection) {
                   onNewConnection();
                 } else {
-                  setShowForm(true);
-                  onFormOpen();
+                  onTypeModalOpen();
                 }
               }}
               className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
@@ -490,7 +500,11 @@ export const ConnectionDashboard: React.FC<ConnectionDashboardProps> = ({
                   </div>
                   <SavedConnectionsList 
                     onConnectionClick={(connection) => {
-                      // Reuse this connection - go straight to catalog/schema
+                      // Set as active connection
+                      console.log('Using connection:', connection.name);
+                    }}
+                    onExploreSchema={(connection) => {
+                      // Explore schema - go straight to catalog/schema
                       setReusingConnection(connection);
                     }}
                   />
@@ -518,8 +532,7 @@ export const ConnectionDashboard: React.FC<ConnectionDashboardProps> = ({
                       size="lg"
                       startContent={<Plus className="h-5 w-5" />}
                       onPress={() => {
-                        setShowForm(true);
-                        onFormOpen();
+                        onTypeModalOpen();
                       }}
                       className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
                     >

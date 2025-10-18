@@ -8,6 +8,7 @@ export interface TableListProps {
   schemaName: string;
   selectedTable?: string;
   onTableSelect: (tableName: string) => void;
+  onTablesLoaded?: (tables: string[]) => void;
 }
 
 interface TablePreviewData {
@@ -20,6 +21,7 @@ export const TableList: React.FC<TableListProps> = ({
   schemaName,
   selectedTable,
   onTableSelect,
+  onTablesLoaded,
 }) => {
   const [tables, setTables] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +46,10 @@ export const TableList: React.FC<TableListProps> = ({
     try {
       const tableList = await schemaAPI.getTables(connectionId, schemaName);
       setTables(tableList);
+      // Notify parent component of loaded tables
+      if (onTablesLoaded) {
+        onTablesLoaded(tableList);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load tables');
       console.error('Error loading tables:', err);

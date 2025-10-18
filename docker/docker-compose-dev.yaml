@@ -29,28 +29,29 @@ services:
       start_period: 40s
 
   # PostgreSQL Database (optional, for testing)
-  # postgres:
-  #   image: postgres:14-alpine
-  #   container_name: finx-postgres
-  #   platform: linux/amd64
-  #   ports:
-  #     - "9432:5432"
-  #   volumes:
-  #     - data:/var/lib/postgresql/data
-  #   environment:
-  #     - POSTGRES_PASSWORD=secret
-  #     - POSTGRES_USER=test
-  #     - POSTGRES_DB=test
-  #     - PGDATA=/var/lib/postgresql/data/pgdata
-  #   networks:
-  #     - finx
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U test"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #   profiles:
-  #     - postgres
+  postgres:
+    image: postgres:14-alpine
+    container_name: finx-postgres
+    platform: linux/amd64
+    ports:
+      - "9432:5432"
+    volumes:
+      - data:/var/lib/postgresql/data
+      - ../finx-engine/docker/init-postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - POSTGRES_PASSWORD=admin 
+      - POSTGRES_USER=admin
+      - POSTGRES_DB=vikki
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    networks:
+      - finx
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d vikki"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - postgres
 
   # Redis (optional, for caching)
   # redis:

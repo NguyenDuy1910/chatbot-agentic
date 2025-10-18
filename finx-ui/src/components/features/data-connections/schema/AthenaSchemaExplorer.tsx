@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardBody, Tabs, Tab, Spinner, Alert, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@heroui/react';
+import { Card, CardBody, Tabs, Tab, Spinner, Alert, Button, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip } from '@heroui/react';
 import { Database, Table as TableIcon, AlertCircle, RefreshCw, Network, Eye, Clock } from 'lucide-react';
 import { createAthenaClient, type AthenaConnectionConfig, type AthenaDatabase, type AthenaTable, type AthenaQueryResult } from '@/lib/athenaClient';
 // import { AthenaDiagramView } from '../../connections/AthenaDiagramView';
@@ -162,10 +162,73 @@ export const AthenaSchemaExplorer: React.FC<AthenaSchemaExplorerProps> = ({
       )}
 
       {viewMode === 'diagram' && selectedDatabase && tables.length > 0 ? (
-        <Card>
-          <CardBody className="text-center py-12">
-            <p className="text-gray-500">Diagram view coming soon</p>
-            <p className="text-sm text-gray-400 mt-2">Diagram visualization feature will be added</p>
+        <Card className="h-full">
+          <CardBody className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg">
+                  <Network className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Table Overview - {selectedDatabase}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-0.5">
+                    {tables.length} tables in catalog
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Table Grid View */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-y-auto">
+              {tables.map(table => (
+                <Card 
+                  key={table.name}
+                  isPressable
+                  onPress={() => {
+                    setSelectedTable(table);
+                    setViewMode('list');
+                  }}
+                  className="hover:shadow-xl transition-all border-2 hover:border-blue-300"
+                >
+                  <CardBody className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 text-blue-600">
+                        <TableIcon className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-bold text-gray-800 truncate">{table.name}</h4>
+                        {table.tableType && (
+                          <p className="text-xs text-gray-500 mt-1">{table.tableType}</p>
+                        )}
+                        <div className="flex items-center gap-2 mt-2">
+                          <Chip size="sm" variant="flat" color="primary">
+                            {table.columns?.length || 0} columns
+                          </Chip>
+                        </div>
+                        
+                        {/* Show first few columns */}
+                        {table.columns && table.columns.length > 0 && (
+                          <div className="mt-3 space-y-1">
+                            {table.columns.slice(0, 3).map((col, idx) => (
+                              <div key={idx} className="flex items-center gap-2 text-xs">
+                                <div className="w-2 h-2 rounded-full bg-blue-400" />
+                                <span className="font-mono text-gray-600 truncate">{col.name}</span>
+                                <span className="text-gray-400 text-[10px] ml-auto">{col.type.split('(')[0]}</span>
+                              </div>
+                            ))}
+                            {table.columns.length > 3 && (
+                              <p className="text-xs text-gray-400 ml-4">+{table.columns.length - 3} more...</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardBody>
+                </Card>
+              ))}
+            </div>
           </CardBody>
         </Card>
       ) : viewMode === 'diagram' && selectedDatabase ? (

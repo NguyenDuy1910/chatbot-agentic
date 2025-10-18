@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardBody, Spinner, Alert } from '@heroui/react';
-import { AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Card, CardBody, Spinner, Alert, Button, Chip } from '@heroui/react';
+import { AlertCircle, Table as TableIcon, Key, Link2, Database, FileText, ArrowRight, Maximize2 } from 'lucide-react';
 import { schemaAPI } from '@/lib/schemaAPI';
 import { TableInfo } from '@/types/features/connections';
 
@@ -18,6 +18,7 @@ export const TableDiagram: React.FC<TableDiagramProps> = ({
   const [tableData, setTableData] = useState<TableInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     if (tableName) {
@@ -47,9 +48,13 @@ export const TableDiagram: React.FC<TableDiagramProps> = ({
 
   if (!tableName) {
     return (
-      <Card>
-        <CardBody className="text-center py-8">
-          <p className="text-sm text-gray-500">Select a table to view its schema</p>
+      <Card className="h-full">
+        <CardBody className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="p-6 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 mb-4">
+            <TableIcon className="h-16 w-16 text-gray-400" />
+          </div>
+          <p className="text-gray-600 font-medium text-lg">No Table Selected</p>
+          <p className="text-sm text-gray-400 mt-2">Select a table to view its schema diagram</p>
         </CardBody>
       </Card>
     );
@@ -57,10 +62,11 @@ export const TableDiagram: React.FC<TableDiagramProps> = ({
 
   if (isLoading) {
     return (
-      <Card>
-        <CardBody className="flex items-center justify-center py-8">
-          <Spinner size="sm" />
-          <span className="text-sm text-gray-500 ml-2">Loading table schema...</span>
+      <Card className="h-full">
+        <CardBody className="flex flex-col items-center justify-center py-16">
+          <Spinner size="lg" color="primary" />
+          <p className="text-gray-600 font-medium mt-4">Loading table schema...</p>
+          <p className="text-sm text-gray-400 mt-1">Fetching structure for {tableName}</p>
         </CardBody>
       </Card>
     );
@@ -68,13 +74,15 @@ export const TableDiagram: React.FC<TableDiagramProps> = ({
 
   if (error) {
     return (
-      <Card>
-        <CardBody>
+      <Card className="h-full">
+        <CardBody className="p-6">
           <Alert
             color="danger"
-            startContent={<AlertCircle className="h-4 w-4" />}
-            title="Error"
+            variant="flat"
+            startContent={<AlertCircle className="h-5 w-5" />}
+            title="Error Loading Schema"
             description={error}
+            className="bg-red-50 border border-red-200"
           />
         </CardBody>
       </Card>
@@ -83,111 +91,189 @@ export const TableDiagram: React.FC<TableDiagramProps> = ({
 
   if (!tableData) {
     return (
-      <Card>
-        <CardBody className="text-center py-8">
-          <p className="text-sm text-gray-500">No table data available</p>
+      <Card className="h-full">
+        <CardBody className="flex flex-col items-center justify-center py-16">
+          <FileText className="h-16 w-16 text-gray-300 mb-4" />
+          <p className="text-gray-500 font-medium">No schema data available</p>
         </CardBody>
       </Card>
     );
   }
 
   return (
-    <Card>
-      <CardBody className="gap-4">
-        <div>
-          <h3 className="font-semibold text-lg mb-2">{tableData.name}</h3>
-          {tableData.schema && (
-            <p className="text-xs text-gray-500">Schema: {tableData.schema}</p>
-          )}
-        </div>
-
-        {/* Columns Table */}
-        <div>
-          <h4 className="font-semibold text-sm mb-2">Columns ({tableData.columns.length})</h4>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left px-2 py-1 font-semibold">Name</th>
-                  <th className="text-left px-2 py-1 font-semibold">Type</th>
-                  <th className="text-left px-2 py-1 font-semibold">Nullable</th>
-                  <th className="text-left px-2 py-1 font-semibold">Key</th>
-                </tr>
-              </thead>
-              <tbody>
-                {tableData.columns.map(col => (
-                  <tr key={col.name} className="border-b hover:bg-gray-50">
-                    <td className="px-2 py-1 font-mono text-xs">{col.name}</td>
-                    <td className="px-2 py-1 text-xs text-gray-600">{col.type}</td>
-                    <td className="px-2 py-1 text-xs">
-                      {col.nullable ? '✓' : '✗'}
-                    </td>
-                    <td className="px-2 py-1 text-xs">
-                      {col.isPrimaryKey && (
-                        <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">
-                          PK
-                        </span>
-                      )}
-                      {col.isForeignKey && (
-                        <span className="bg-green-100 text-green-800 px-2 py-0.5 rounded text-xs ml-1">
-                          FK
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+    <Card className="h-full">
+      <CardBody className="gap-6 p-6">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg">
+              <Database className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                {tableData.name}
+              </h3>
+              {tableData.schema && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Schema: <span className="font-mono bg-gray-100 px-2 py-0.5 rounded">{tableData.schema}</span>
+                </p>
+              )}
+              <div className="flex items-center gap-3 mt-2">
+                <Chip size="sm" variant="flat" color="primary" startContent={<TableIcon className="h-3 w-3" />}>
+                  {tableData.columns.length} columns
+                </Chip>
+                {tableData.primary_keys.length > 0 && (
+                  <Chip size="sm" variant="flat" color="success" startContent={<Key className="h-3 w-3" />}>
+                    {tableData.primary_keys.length} PK
+                  </Chip>
+                )}
+                {tableData.foreign_keys.length > 0 && (
+                  <Chip size="sm" variant="flat" color="warning" startContent={<Link2 className="h-3 w-3" />}>
+                    {tableData.foreign_keys.length} FK
+                  </Chip>
+                )}
+              </div>
+            </div>
           </div>
+          <Button
+            isIconOnly
+            size="sm"
+            variant="flat"
+            onPress={() => setIsExpanded(!isExpanded)}
+          >
+            <Maximize2 className="h-4 w-4" />
+          </Button>
         </div>
 
-        {/* Primary Keys */}
-        {tableData.primary_keys.length > 0 && (
-          <div>
-            <h4 className="font-semibold text-sm mb-2">Primary Keys</h4>
-            <div className="flex flex-wrap gap-2">
-              {tableData.primary_keys.map(pk => (
-                <span
-                  key={pk}
-                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-mono"
+        {/* Table Diagram Card */}
+        <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-blue-50 rounded-xl p-6 border-2 border-blue-100 shadow-inner">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
+            {/* Table Header */}
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-3">
+              <div className="flex items-center gap-2">
+                <TableIcon className="h-5 w-5" />
+                <span className="font-bold text-lg">{tableData.name}</span>
+              </div>
+            </div>
+
+            {/* Columns List */}
+            <div className="divide-y divide-gray-100">
+              {tableData.columns.map((col, idx) => (
+                <div
+                  key={col.name}
+                  className={`px-4 py-3 hover:bg-blue-50 transition-colors ${
+                    idx === 0 ? 'bg-gray-50' : ''
+                  }`}
                 >
-                  {pk}
-                </span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                      {/* Column Icon */}
+                      <div className={`p-1.5 rounded ${
+                        col.isPrimaryKey 
+                          ? 'bg-blue-100 text-blue-600' 
+                          : col.isForeignKey 
+                          ? 'bg-green-100 text-green-600' 
+                          : 'bg-gray-100 text-gray-500'
+                      }`}>
+                        {col.isPrimaryKey ? (
+                          <Key className="h-3 w-3" />
+                        ) : col.isForeignKey ? (
+                          <Link2 className="h-3 w-3" />
+                        ) : (
+                          <FileText className="h-3 w-3" />
+                        )}
+                      </div>
+
+                      {/* Column Name */}
+                      <span className={`font-mono text-sm ${
+                        col.isPrimaryKey ? 'font-bold text-blue-700' : 'text-gray-800'
+                      }`}>
+                        {col.name}
+                      </span>
+
+                      {/* Badges */}
+                      <div className="flex items-center gap-2">
+                        {col.isPrimaryKey && (
+                          <span className="bg-blue-500 text-white px-2 py-0.5 rounded text-xs font-bold">
+                            PK
+                          </span>
+                        )}
+                        {col.isForeignKey && (
+                          <span className="bg-green-500 text-white px-2 py-0.5 rounded text-xs font-bold">
+                            FK
+                          </span>
+                        )}
+                        {!col.nullable && (
+                          <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-xs font-semibold">
+                            NOT NULL
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Column Type */}
+                    <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+                      {col.type}
+                    </span>
+                  </div>
+                </div>
               ))}
             </div>
           </div>
-        )}
+        </div>
 
-        {/* Foreign Keys */}
+        {/* Foreign Key Relationships */}
         {tableData.foreign_keys.length > 0 && (
-          <div>
-            <h4 className="font-semibold text-sm mb-2">Foreign Keys</h4>
+          <div className="space-y-3">
+            <h4 className="font-bold text-sm text-gray-700 flex items-center gap-2">
+              <Link2 className="h-4 w-4 text-green-600" />
+              Foreign Key Relationships
+            </h4>
             <div className="space-y-2">
               {tableData.foreign_keys.map((fk, idx) => (
                 <div
                   key={idx}
-                  className="bg-green-50 border border-green-200 rounded p-2 text-xs"
+                  className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                 >
-                  <p className="font-mono">
-                    <span className="font-semibold">{fk.column}</span>
-                    {' → '}
-                    <span className="text-green-700">
-                      {fk.referenced_table}.{fk.referenced_column}
-                    </span>
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 flex-1">
+                      <div className="p-2 rounded-lg bg-white shadow-sm">
+                        <TableIcon className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <span className="font-mono text-sm font-semibold text-gray-800">
+                        {tableData.name}.{fk.column}
+                      </span>
+                    </div>
+
+                    <ArrowRight className="h-5 w-5 text-green-600 flex-shrink-0" />
+
+                    <div className="flex items-center gap-2 flex-1">
+                      <div className="p-2 rounded-lg bg-white shadow-sm">
+                        <Database className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <span className="font-mono text-sm font-semibold text-green-700">
+                        {fk.referenced_table}.{fk.referenced_column}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* Metadata */}
+        {/* Metadata Section */}
         {tableData.metadata && Object.keys(tableData.metadata).length > 0 && (
-          <div>
-            <h4 className="font-semibold text-sm mb-2">Metadata</h4>
-            <pre className="bg-gray-50 p-2 rounded text-xs overflow-auto max-h-32">
-              {JSON.stringify(tableData.metadata, null, 2)}
-            </pre>
+          <div className="space-y-3">
+            <h4 className="font-bold text-sm text-gray-700 flex items-center gap-2">
+              <FileText className="h-4 w-4 text-gray-600" />
+              Additional Metadata
+            </h4>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <pre className="text-xs font-mono overflow-auto max-h-48 text-gray-700">
+                {JSON.stringify(tableData.metadata, null, 2)}
+              </pre>
+            </div>
           </div>
         )}
       </CardBody>
@@ -196,4 +282,3 @@ export const TableDiagram: React.FC<TableDiagramProps> = ({
 };
 
 export default TableDiagram;
-

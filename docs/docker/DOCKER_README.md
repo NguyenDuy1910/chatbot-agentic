@@ -22,9 +22,11 @@ This directory contains Docker Compose configurations for the FinX AI Service de
 - **Image:** postgres:14-alpine
 - **Port:** 9432 (mapped from 5432)
 - **Credentials:**
-  - User: test
-  - Password: secret
-  - Database: test
+  - User: admin
+  - Password: admin
+  - Database: vikki
+- **Connection String:** `postgresql://admin:admin@localhost:9432/vikki`
+- **Profile:** postgres (enable with `--profile postgres` or use `./start.sh -pg`)
 - **Usage:** Uncomment or use `--profile postgres` to enable
 
 #### Redis Cache
@@ -35,25 +37,73 @@ This directory contains Docker Compose configurations for the FinX AI Service de
 
 ## Quick Start
 
-### Start Core Services (Qdrant only)
+### Using start.sh Script (Recommended)
+
+#### Start Core Services (Qdrant only)
+```bash
+./start.sh
+```
+
+#### Start with PostgreSQL
+```bash
+./start.sh --with-postgres
+# or short form
+./start.sh -pg
+```
+
+#### Start All Services (Qdrant + PostgreSQL + Redis)
+```bash
+./start.sh --with-all
+# or short form
+./start.sh -all
+```
+
+### Using Docker Compose Directly
+
+#### Start Core Services (Qdrant only)
 ```bash
 cd docker
 docker-compose -f docker-compose-dev.yaml up -d
 ```
 
-### Start with PostgreSQL
+#### Start with PostgreSQL
 ```bash
 docker-compose -f docker-compose-dev.yaml --profile postgres up -d
 ```
 
-### Start with Redis
+#### Start with Redis
 ```bash
 docker-compose -f docker-compose-dev.yaml --profile redis up -d
 ```
 
-### Start All Services
+#### Start All Services
 ```bash
 docker-compose -f docker-compose-dev.yaml --profile postgres --profile redis up -d
+```
+
+### Using Makefile
+
+```bash
+# See all available commands
+make help
+
+# Start core services
+make up
+
+# Start with PostgreSQL
+make up-pg
+
+# Start all services
+make up-all
+
+# Stop services
+make down
+
+# View logs
+make logs
+
+# Check health
+make health
 ```
 
 ## Managing Services
@@ -98,7 +148,10 @@ docker-compose -f docker-compose-dev.yaml restart
 ### PostgreSQL (if enabled)
 - **Host:** localhost
 - **Port:** 9432
-- **Connection String:** `postgresql://test:secret@localhost:9432/test`
+- **Database:** vikki
+- **User:** admin
+- **Password:** admin
+- **Connection String:** `postgresql://admin:admin@localhost:9432/vikki`
 
 ### Redis (if enabled)
 - **Host:** localhost
@@ -157,7 +210,10 @@ curl http://localhost:6333/collections
 docker-compose -f docker-compose-dev.yaml ps postgres
 
 # Test connection
-docker exec finx-postgres psql -U test -d test -c "SELECT version();"
+docker exec finx-postgres psql -U admin -d vikki -c "SELECT version();"
+
+# Connect to database
+docker exec -it finx-postgres psql -U admin -d vikki
 ```
 
 ### Port Conflicts

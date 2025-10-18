@@ -9,3 +9,4 @@ export { CatalogSelector } from './CatalogSelector';
 export { TableDiagram } from './TableDiagram';
 export { TableList } from './TableList';
 export { AthenaSchemaExplorer } from './AthenaSchemaExplorer';
+export { SchemaRelationshipDiagram } from './SchemaRelationshipDiagram';

@@ -227,3 +227,7 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# finx-ui package files
+finx-ui/package-lock.json
+finx-ui/package.json
