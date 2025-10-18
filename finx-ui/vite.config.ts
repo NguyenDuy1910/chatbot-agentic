@@ -53,29 +53,6 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8000',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
-            const timestamp = new Date().toLocaleTimeString();
-            console.log(`\x1b[36m[${timestamp}]\x1b[0m \x1b[34m[API]\x1b[0m \x1b[35m${req.method}\x1b[0m ${req.url} → \x1b[33mhttp://localhost:8000\x1b[0m`);
-          });
-
-          proxy.on('proxyRes', (proxyRes, req, res) => {
-            const timestamp = new Date().toLocaleTimeString();
-            const status = proxyRes.statusCode;
-            let statusColor = '\x1b[32m'; // Green
-            if (status && status >= 400) statusColor = '\x1b[31m'; // Red
-            else if (status && status >= 300) statusColor = '\x1b[33m'; // Yellow
-
-            console.log(`\x1b[36m[${timestamp}]\x1b[0m \x1b[34m[API]\x1b[0m Response ${statusColor}${status} OK\x1b[0m for ${req.url}`);
-          });
-        }
-      }
-    }
+    port: 3000
   }
 })

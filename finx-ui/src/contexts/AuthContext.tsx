@@ -88,29 +88,49 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return;
       }
 
-      // Real API mode - clear any mock data first
-      console.log('🔓 Real API mode - clearing any existing auth data');
+      // Real API mode - check for existing token
+      console.log('🔓 Real API mode - checking for existing auth');
 
-      // Clear localStorage and tokens to start fresh
-      localStorage.removeItem('user');
-      authAPI.setToken(null);
-
-      // Start with unauthenticated state
-      setAuthState({
-        isAuthenticated: false,
-        user: null,
-        loading: false,
-        error: null
-      });
-
-      console.log('✅ Auth initialized - ready for login');
-
-      // If no stored user but have token, try to get user from API
+      // Check if we have a stored token (don't clear it yet!)
       if (authAPI.isAuthenticated()) {
+        console.log('🔍 Token found, validating...');
         try {
-          console.log('🔍 Token exists, fetching user from API...');
+          // Check if token is expired
+          if (authAPI.isTokenExpired()) {
+            console.log('⏰ Token expired, attempting refresh...');
+            try {
+              const refreshResponse = await authAPI.refreshToken();
+              setAuthState({
+                isAuthenticated: true,
+                user: refreshResponse.user,
+                loading: false,
+                error: null
+              });
+              return;
+            } catch (refreshError) {
+              console.warn('Token refresh failed, clearing auth:', refreshError);
+              authAPI.setToken(null);
+              localStorage.removeItem('user');
+              sessionStorage.removeItem('user');
+              setAuthState({
+                isAuthenticated: false,
+                user: null,
+                loading: false,
+                error: null
+              });
+              return;
+            }
+          }
+
+          // Token is valid, try to get user
+          console.log('✅ Token valid, fetching user...');
           const user = await authAPI.getCurrentUser();
-          localStorage.setItem('user', JSON.stringify(user));
+          
+          // Store user in appropriate storage
+          const storage = localStorage.getItem('authToken') ? localStorage : sessionStorage;
+          storage.setItem('user', JSON.stringify(user));
+          
+          console.log('✅ User authenticated:', user.email);
           setAuthState({
             isAuthenticated: true,
             user,
@@ -118,10 +138,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             error: null
           });
         } catch (apiError) {
-          // API failed but token exists - clear token and show login
-          console.warn('Token exists but API failed, clearing auth:', apiError);
+          // API failed - check if it's a real auth error or just network issue
+          console.error('Failed to validate token:', apiError);
+          
+          // Try to use cached user data if available
+          const cachedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
+          if (cachedUser) {
+            console.log('⚠️ Using cached user data (API unavailable)');
+            try {
+              const user = JSON.parse(cachedUser);
+              setAuthState({
+                isAuthenticated: true,
+                user,
+                loading: false,
+                error: null
+              });
+              return;
+            } catch (parseError) {
+              console.error('Failed to parse cached user:', parseError);
+            }
+          }
+          
+          // No cached data or parse failed - clear auth
+          console.warn('❌ Token validation failed, clearing auth');
           authAPI.setToken(null);
           localStorage.removeItem('user');
+          sessionStorage.removeItem('user');
           setAuthState({
             isAuthenticated: false,
             user: null,
@@ -130,8 +172,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           });
         }
       } else {
-        // No token, show login
-        console.log('🔓 No token found, showing login');
+        // No token found, start fresh
+        console.log('🔓 No token found, ready for login');
         setAuthState({
           isAuthenticated: false,
           user: null,
@@ -154,13 +196,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setAuthState(prev => ({ ...prev, loading: true, error: null }));
 
-      // Use real API login
+      // Use real API login with rememberMe option
+      const rememberMe = credentials.rememberMe !== false; // Default to true if not specified
+      const response = await authAPI.login(credentials, rememberMe);
 
-      // Real API login (fallback)
-      const response = await authAPI.login(credentials);
-
-      // Store user data in localStorage for persistence
-      localStorage.setItem('user', JSON.stringify(response.user));
+      // Store user data in appropriate storage based on rememberMe
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem('user', JSON.stringify(response.user));
 
       setAuthState({
         isAuthenticated: true,
@@ -209,6 +251,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       await authAPI.logout();
       
+      // Clear user data from localStorage
+      localStorage.removeItem('user');
+      
+      // Clear connections from sessionStorage
+      sessionStorage.removeItem('vikki_connections');
+      
       setAuthState({
         isAuthenticated: false,
         user: null,
@@ -217,6 +265,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
     } catch (error) {
       // Even if logout fails on server, clear local state
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('vikki_connections');
+      
       setAuthState({
         isAuthenticated: false,
         user: null,

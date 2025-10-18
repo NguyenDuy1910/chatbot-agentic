@@ -1,0 +1,60 @@
+# Minimal Pipeline Configuration for Gemini Indexing
+# Focus: Database schema and document indexing with Google Gemini
+#
+# Prerequisites:
+# - Set GOOGLE_API_KEY environment variable
+# - Install required packages: google-ai-haystack, qdrant-client
+#
+# Usage:
+# 1. Copy this file to config.yaml
+# 2. Adjust settings as needed
+# 3. Run your indexing pipeline
+
+# Google Gemini LLM Configuration
+type: llm
+provider: litellm_llm
+models:
+  - model: gemini/gemini-2.0-flash-exp
+    alias: default
+    timeout: 600
+    kwargs:
+      temperature: 0
+      max_tokens: 8192
+      n: 1
+
+---
+# Google Gemini Embedding Configuration
+type: embedder
+provider: litellm_embedder
+models:
+  - model: text-embedding-004
+    alias: default
+    timeout: 600
+
+---
+# Qdrant Vector Store Configuration
+type: document_store
+provider: qdrant
+location: http://localhost:6333  # Local Qdrant instance
+embedding_model_dim: 768  # Google text-embedding-004 dimension
+timeout: 120
+recreate_index: false  # Set to true to recreate indexes on startup
+
+---
+# Indexing Pipeline Configuration
+type: pipeline
+pipes:
+  # Core indexing pipelines
+  - name: db_schema_indexing
+    embedder: litellm_embedder.default
+    document_store: qdrant
+    
+  - name: question_recommendation
+    llm: litellm_llm.default
+
+---
+# Basic Settings
+settings:
+  column_indexing_batch_size: 50
+  logging_level: INFO
+  development: true

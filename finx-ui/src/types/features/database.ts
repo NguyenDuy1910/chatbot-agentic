@@ -28,33 +28,38 @@ export type DatabaseType =
 
 export interface DatabaseMetadata {
   version?: string;
-  tables: TableInfo[];
+  tables: DatabaseTableInfo[];
   schemas: string[];
   totalSize?: string;
 }
 
-export interface TableInfo {
+export interface DatabaseTableInfo {
   name: string;
   schema: string;
-  columns: ColumnInfo[];
+  columns: DatabaseColumnInfo[];
   rowCount?: number;
   description?: string;
 }
 
-export interface ColumnInfo {
+export interface DatabaseColumnInfo {
   name: string;
   type: string;
   nullable: boolean;
   primaryKey: boolean;
-  foreignKey?: ForeignKeyInfo;
+  foreignKey?: DatabaseForeignKeyInfo;
   description?: string;
 }
 
-export interface ForeignKeyInfo {
+export interface DatabaseForeignKeyInfo {
   table: string;
   column: string;
   schema?: string;
 }
+
+// Aliases for backward compatibility
+export type TableInfo = DatabaseTableInfo;
+export type ColumnInfo = DatabaseColumnInfo;
+export type ForeignKeyInfo = DatabaseForeignKeyInfo;
 
 export interface SQLQuery {
   id: string;

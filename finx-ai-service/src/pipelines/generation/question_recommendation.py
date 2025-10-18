@@ -10,10 +10,19 @@ from langfuse.decorators import observe
 from pydantic import BaseModel
 from src.core.pipeline import BasicPipeline
 from src.core.provider import LLMProvider
-# from src.pipelines.common import clean_up_new_lines
 from src.utils import trace_cost
 
 logger = logging.getLogger("wren-ai-service")
+
+
+def clean_up_new_lines(text: str) -> str:
+    """Clean up excessive newlines in text"""
+    import re
+    # Replace multiple newlines with double newlines
+    text = re.sub(r'\n{3,}', '\n\n', text)
+    # Clean up spaces before newlines
+    text = re.sub(r' +\n', '\n', text)
+    return text.strip()
 
 
 system_prompt = """
@@ -188,22 +197,36 @@ def prompt(
 @observe(as_type="generation", capture_input=False)
 @trace_cost
 async def generate(prompt: dict, generator: Any, generator_name: str) -> dict:
-    return await generator(prompt=prompt.get("prompt")), generator_name
+    result = await generator(prompt=prompt.get("prompt"))
+    return {"result": result, "generator_name": generator_name}
 
 
 @observe(capture_input=False)
 def normalized(generate: dict) -> dict:
     def wrapper(text: str) -> list:
+        # Log the raw text for debugging
+        logger.info(f"Raw response text (first 500 chars): {text[:500]}")
+        
+        # Try to extract JSON from markdown code blocks if present
+        import re
+        json_match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+        if json_match:
+            text = json_match.group(1)
+            logger.info("Extracted JSON from code block")
+        
         text = text.replace("\n", " ")
         text = " ".join(text.split())
         try:
             text_list = orjson.loads(text.strip())
+            logger.info(f"Successfully parsed JSON with {len(text_list.get('questions', []))} questions")
             return text_list
         except orjson.JSONDecodeError as e:
             logger.error(f"Error decoding JSON: {e}")
-            return []  # Return an empty list if JSON decoding fails
+            logger.error(f"Failed text: {text[:500]}")  # Log first 500 chars
+            return {"questions": []}  # Return an empty dict with questions key
 
-    reply = generate.get("replies")[0]  # Expecting only one reply
+    result_data = generate.get("result", {})
+    reply = result_data.get("replies", ["{}"])[0]  # Expecting only one reply
     normalized = wrapper(reply)
 
     return normalized

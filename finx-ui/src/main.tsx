@@ -5,6 +5,7 @@ import { AppRouter } from '@/router'
 import { NavigationLoadingProvider } from '@/contexts/NavigationLoadingContext'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { ThemeProvider } from '@/contexts/ThemeContext'
+import { ConnectionProvider } from '@/contexts/ConnectionContext'
 import './styles/index.css'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -13,7 +14,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
       <HeroUIProvider>
         <NavigationLoadingProvider>
           <AuthProvider>
-            <AppRouter />
+            <ConnectionProvider>
+              <AppRouter />
+            </ConnectionProvider>
           </AuthProvider>
         </NavigationLoadingProvider>
       </HeroUIProvider>

@@ -63,6 +63,18 @@ def get_current_user(
     request: Request,
     auth_token: HTTPAuthorizationCredentials = Depends(bearer_security),
 ):
+    # Development mode: bypass authentication
+    if SECURITY_CONFIG.get("DISABLE_AUTH", False):
+        from src.web.models.users import UserModel
+        # Return a mock admin user for development
+        return UserModel(
+            id="dev-user-id",
+            email="dev@example.com",
+            name="Dev User",
+            role="admin",
+            profile_image_url="/user.png"
+        )
+    
     token = None
 
     if auth_token is not None:

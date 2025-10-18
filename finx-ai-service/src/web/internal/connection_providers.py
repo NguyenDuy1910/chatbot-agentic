@@ -1,8 +1,3 @@
-"""
-Connection Providers for Data Sources
-Handles actual connections to various data sources like PostgreSQL, AWS Athena, Snowflake, etc.
-"""
-
 import time
 import logging
 from abc import ABC, abstractmethod
@@ -15,7 +10,6 @@ log = logging.getLogger(__name__)
 
 @dataclass
 class ConnectionResult:
-    """Result of a connection operation"""
     success: bool
     message: str
     data: Optional[Any] = None
@@ -25,7 +19,6 @@ class ConnectionResult:
 
 @dataclass
 class QueryResult:
-    """Result of a query operation"""
     success: bool
     data: Optional[List[Dict[str, Any]]] = None
     columns: Optional[List[str]] = None
@@ -34,7 +27,6 @@ class QueryResult:
     error: Optional[str] = None
 
 class BaseConnectionProvider(ABC):
-    """Base class for all connection providers"""
     
     def __init__(self, connection: ConnectionModel):
         self.connection = connection
@@ -43,26 +35,21 @@ class BaseConnectionProvider(ABC):
     
     @abstractmethod
     def connect(self) -> ConnectionResult:
-        """Establish connection to the data source"""
         pass
     
     @abstractmethod
     def disconnect(self) -> ConnectionResult:
-        """Close connection to the data source"""
         pass
     
     @abstractmethod
     def test_connection(self) -> ConnectionResult:
-        """Test the connection"""
         pass
     
     @abstractmethod
     def execute_query(self, query: str, params: Optional[Dict] = None) -> QueryResult:
-        """Execute a query"""
         pass
     
     def get_connection_info(self) -> Dict[str, Any]:
-        """Get connection information"""
         return {
             "name": self.connection.name,
             "type": self.connection.type,
@@ -74,18 +61,14 @@ class BaseConnectionProvider(ABC):
         }
 
 class PostgreSQLProvider(BaseConnectionProvider):
-    """PostgreSQL connection provider"""
     
     def connect(self) -> ConnectionResult:
-        """Connect to PostgreSQL database"""
         start_time = time.time()
         
         try:
-            # Mock implementation - in real usage, use psycopg2 or asyncpg
             connection_string = self._build_connection_string()
             
-            # Simulate connection
-            time.sleep(0.1)  # Simulate connection time
+            time.sleep(0.1)
             
             self._is_connected = True
             response_time = time.time() - start_time
@@ -110,10 +93,8 @@ class PostgreSQLProvider(BaseConnectionProvider):
             )
     
     def disconnect(self) -> ConnectionResult:
-        """Disconnect from PostgreSQL"""
         try:
             if self.client:
-                # self.client.close()  # In real implementation
                 pass
             
             self._is_connected = False
@@ -129,14 +110,12 @@ class PostgreSQLProvider(BaseConnectionProvider):
             )
     
     def test_connection(self) -> ConnectionResult:
-        """Test PostgreSQL connection"""
         if not self._is_connected:
             connect_result = self.connect()
             if not connect_result.success:
                 return connect_result
         
         try:
-            # Test with simple query
             query_result = self.execute_query("SELECT version(), current_database(), current_user")
             
             if query_result.success:
@@ -161,11 +140,9 @@ class PostgreSQLProvider(BaseConnectionProvider):
             )
     
     def execute_query(self, query: str, params: Optional[Dict] = None) -> QueryResult:
-        """Execute PostgreSQL query"""
         start_time = time.time()
         
         try:
-            # Mock implementation
             if "version()" in query.lower():
                 mock_data = [{
                     "version": "PostgreSQL 14.5 on x86_64-pc-linux-gnu",
@@ -195,7 +172,6 @@ class PostgreSQLProvider(BaseConnectionProvider):
             )
     
     def _build_connection_string(self) -> str:
-        """Build PostgreSQL connection string"""
         if self.connection.connection_string:
             return self.connection.connection_string
         
@@ -206,7 +182,6 @@ class PostgreSQLProvider(BaseConnectionProvider):
         
         conn_str += f"@{self.connection.host}:{self.connection.port}/{self.connection.database_name}"
         
-        # Add SSL and other parameters
         if self.connection.config:
             params = []
             for key, value in self.connection.config.items():
@@ -217,17 +192,13 @@ class PostgreSQLProvider(BaseConnectionProvider):
         return conn_str
 
 class AthenaProvider(BaseConnectionProvider):
-    """AWS Athena connection provider"""
     
     def connect(self) -> ConnectionResult:
-        """Connect to AWS Athena"""
         start_time = time.time()
         
         try:
-            # Mock implementation - in real usage, use boto3
             region = self.connection.config.get("region", "us-east-1") if self.connection.config else "us-east-1"
             
-            # Simulate AWS connection
             time.sleep(0.2)
             
             self._is_connected = True
@@ -254,7 +225,6 @@ class AthenaProvider(BaseConnectionProvider):
             )
     
     def disconnect(self) -> ConnectionResult:
-        """Disconnect from AWS Athena"""
         self._is_connected = False
         return ConnectionResult(
             success=True,
@@ -262,14 +232,12 @@ class AthenaProvider(BaseConnectionProvider):
         )
     
     def test_connection(self) -> ConnectionResult:
-        """Test AWS Athena connection"""
         if not self._is_connected:
             connect_result = self.connect()
             if not connect_result.success:
                 return connect_result
         
         try:
-            # Test with simple query
             query_result = self.execute_query("SELECT 1 as test_column")
             
             if query_result.success:
@@ -294,11 +262,9 @@ class AthenaProvider(BaseConnectionProvider):
             )
     
     def execute_query(self, query: str, params: Optional[Dict] = None) -> QueryResult:
-        """Execute Athena query"""
         start_time = time.time()
         
         try:
-            # Mock implementation
             if "select 1" in query.lower():
                 mock_data = [{"test_column": 1}]
                 columns = ["test_column"]
@@ -306,7 +272,6 @@ class AthenaProvider(BaseConnectionProvider):
                 mock_data = [{"result": "Athena query executed"}]
                 columns = ["result"]
             
-            # Simulate Athena query time
             time.sleep(0.5)
             execution_time = time.time() - start_time
             
@@ -326,18 +291,14 @@ class AthenaProvider(BaseConnectionProvider):
             )
 
 class SnowflakeProvider(BaseConnectionProvider):
-    """Snowflake connection provider"""
 
     def connect(self) -> ConnectionResult:
-        """Connect to Snowflake"""
         start_time = time.time()
 
         try:
-            # Mock implementation - in real usage, use snowflake-connector-python
             account = self.connection.config.get("account") if self.connection.config else None
             warehouse = self.connection.config.get("warehouse") if self.connection.config else None
 
-            # Simulate Snowflake connection
             time.sleep(0.3)
 
             self._is_connected = True
@@ -365,7 +326,6 @@ class SnowflakeProvider(BaseConnectionProvider):
             )
 
     def disconnect(self) -> ConnectionResult:
-        """Disconnect from Snowflake"""
         self._is_connected = False
         return ConnectionResult(
             success=True,
@@ -373,7 +333,6 @@ class SnowflakeProvider(BaseConnectionProvider):
         )
 
     def test_connection(self) -> ConnectionResult:
-        """Test Snowflake connection"""
         if not self._is_connected:
             connect_result = self.connect()
             if not connect_result.success:
@@ -404,11 +363,9 @@ class SnowflakeProvider(BaseConnectionProvider):
             )
 
     def execute_query(self, query: str, params: Optional[Dict] = None) -> QueryResult:
-        """Execute Snowflake query"""
         start_time = time.time()
 
         try:
-            # Mock implementation
             if "current_version()" in query.lower():
                 mock_data = [{
                     "current_version()": "7.4.0",
@@ -420,7 +377,6 @@ class SnowflakeProvider(BaseConnectionProvider):
                 mock_data = [{"result": "Snowflake query executed"}]
                 columns = ["result"]
 
-            # Simulate Snowflake query time
             time.sleep(0.2)
             execution_time = time.time() - start_time
 
@@ -440,18 +396,14 @@ class SnowflakeProvider(BaseConnectionProvider):
             )
 
 class BigQueryProvider(BaseConnectionProvider):
-    """Google BigQuery connection provider"""
 
     def connect(self) -> ConnectionResult:
-        """Connect to BigQuery"""
         start_time = time.time()
 
         try:
-            # Mock implementation - in real usage, use google-cloud-bigquery
             project_id = self.connection.config.get("project_id") if self.connection.config else None
             location = self.connection.config.get("location", "US") if self.connection.config else "US"
 
-            # Simulate BigQuery connection
             time.sleep(0.2)
 
             self._is_connected = True
@@ -477,7 +429,6 @@ class BigQueryProvider(BaseConnectionProvider):
             )
 
     def disconnect(self) -> ConnectionResult:
-        """Disconnect from BigQuery"""
         self._is_connected = False
         return ConnectionResult(
             success=True,
@@ -485,7 +436,6 @@ class BigQueryProvider(BaseConnectionProvider):
         )
 
     def test_connection(self) -> ConnectionResult:
-        """Test BigQuery connection"""
         if not self._is_connected:
             connect_result = self.connect()
             if not connect_result.success:
@@ -516,11 +466,9 @@ class BigQueryProvider(BaseConnectionProvider):
             )
 
     def execute_query(self, query: str, params: Optional[Dict] = None) -> QueryResult:
-        """Execute BigQuery query"""
         start_time = time.time()
 
         try:
-            # Mock implementation
             if "select 1" in query.lower():
                 mock_data = [{"test_value": 1}]
                 columns = ["test_value"]
@@ -528,7 +476,6 @@ class BigQueryProvider(BaseConnectionProvider):
                 mock_data = [{"result": "BigQuery query executed"}]
                 columns = ["result"]
 
-            # Simulate BigQuery query time
             time.sleep(0.4)
             execution_time = time.time() - start_time
 
@@ -548,18 +495,14 @@ class BigQueryProvider(BaseConnectionProvider):
             )
 
 class S3Provider(BaseConnectionProvider):
-    """AWS S3 connection provider"""
 
     def connect(self) -> ConnectionResult:
-        """Connect to S3"""
         start_time = time.time()
 
         try:
-            # Mock implementation - in real usage, use boto3
             bucket = self.connection.config.get("bucket") if self.connection.config else None
             region = self.connection.config.get("region", "us-east-1") if self.connection.config else "us-east-1"
 
-            # Simulate S3 connection
             time.sleep(0.1)
 
             self._is_connected = True
@@ -585,7 +528,6 @@ class S3Provider(BaseConnectionProvider):
             )
 
     def disconnect(self) -> ConnectionResult:
-        """Disconnect from S3"""
         self._is_connected = False
         return ConnectionResult(
             success=True,
@@ -593,17 +535,14 @@ class S3Provider(BaseConnectionProvider):
         )
 
     def test_connection(self) -> ConnectionResult:
-        """Test S3 connection"""
         if not self._is_connected:
             connect_result = self.connect()
             if not connect_result.success:
                 return connect_result
 
         try:
-            # Test by listing bucket contents
             bucket = self.connection.config.get("bucket") if self.connection.config else "test-bucket"
 
-            # Mock S3 list operation
             mock_objects = [
                 {"key": "data/file1.parquet", "size": 1024, "last_modified": "2024-01-15"},
                 {"key": "data/file2.parquet", "size": 2048, "last_modified": "2024-01-16"}
@@ -624,11 +563,9 @@ class S3Provider(BaseConnectionProvider):
             )
 
     def execute_query(self, query: str, params: Optional[Dict] = None) -> QueryResult:
-        """Execute S3 operation (list, read, etc.)"""
         start_time = time.time()
 
         try:
-            # Mock implementation for S3 operations
             if "list" in query.lower():
                 mock_data = [
                     {"key": "data/file1.parquet", "size": 1024},
@@ -657,7 +594,6 @@ class S3Provider(BaseConnectionProvider):
             )
 
 class ConnectionProviderFactory:
-    """Factory to create connection providers"""
 
     _providers = {
         ConnectionType.POSTGRESQL: PostgreSQLProvider,
@@ -665,12 +601,10 @@ class ConnectionProviderFactory:
         ConnectionType.SNOWFLAKE: SnowflakeProvider,
         ConnectionType.BIGQUERY: BigQueryProvider,
         ConnectionType.AWS_S3: S3Provider,
-        # Add more providers as needed
     }
     
     @classmethod
     def create_provider(cls, connection: ConnectionModel) -> Optional[BaseConnectionProvider]:
-        """Create a connection provider based on connection type"""
         try:
             connection_type = ConnectionType(connection.type)
             provider_class = cls._providers.get(connection_type)
@@ -687,29 +621,23 @@ class ConnectionProviderFactory:
     
     @classmethod
     def get_supported_types(cls) -> List[ConnectionType]:
-        """Get list of supported connection types"""
         return list(cls._providers.keys())
     
     @classmethod
     def register_provider(cls, connection_type: ConnectionType, provider_class: type):
-        """Register a new provider"""
         cls._providers[connection_type] = provider_class
 
 class ConnectionManager:
-    """Manages multiple connections and their providers"""
     
     def __init__(self):
         self._active_connections: Dict[str, BaseConnectionProvider] = {}
     
     def get_provider(self, connection: ConnectionModel) -> Optional[BaseConnectionProvider]:
-        """Get or create a provider for a connection"""
         connection_id = connection.id
         
-        # Return existing provider if available
         if connection_id in self._active_connections:
             return self._active_connections[connection_id]
         
-        # Create new provider
         provider = ConnectionProviderFactory.create_provider(connection)
         if provider:
             self._active_connections[connection_id] = provider
@@ -717,7 +645,6 @@ class ConnectionManager:
         return provider
     
     def test_connection(self, connection: ConnectionModel) -> ConnectionResult:
-        """Test a connection"""
         provider = self.get_provider(connection)
         if not provider:
             return ConnectionResult(
@@ -728,7 +655,6 @@ class ConnectionManager:
         return provider.test_connection()
     
     def execute_query(self, connection: ConnectionModel, query: str, params: Optional[Dict] = None) -> QueryResult:
-        """Execute a query on a connection"""
         provider = self.get_provider(connection)
         if not provider:
             return QueryResult(
@@ -739,7 +665,6 @@ class ConnectionManager:
         return provider.execute_query(query, params)
     
     def close_connection(self, connection_id: str) -> ConnectionResult:
-        """Close a specific connection"""
         if connection_id in self._active_connections:
             provider = self._active_connections[connection_id]
             result = provider.disconnect()
@@ -752,7 +677,6 @@ class ConnectionManager:
         )
     
     def close_all_connections(self) -> Dict[str, ConnectionResult]:
-        """Close all active connections"""
         results = {}
         
         for connection_id in list(self._active_connections.keys()):
@@ -761,11 +685,9 @@ class ConnectionManager:
         return results
     
     def get_active_connections(self) -> Dict[str, Dict[str, Any]]:
-        """Get information about active connections"""
         return {
             connection_id: provider.get_connection_info()
             for connection_id, provider in self._active_connections.items()
         }
 
-# Global connection manager instance
 connection_manager = ConnectionManager()

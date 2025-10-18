@@ -6,7 +6,7 @@ import { ChatVisualization } from '@/components/features/admin/ChatVisualization
 import { SystemSettingsPanel } from '@/components/features/admin/SystemSettings';
 import { AdminPromptManagement } from '@/components/features/admin/AdminPromptManagement';
 import { ManagementUriPage } from '@/components/features/admin/ManagementUriPage';
-import { ConnectionDashboard } from '@/components/features/connections';
+import { ConnectionDashboard } from '@/components/features/data-connections';
 import { DashboardHeader } from '@/components/features/admin/DashboardHeader';
 import { QuickStatsGrid } from '@/components/features/admin/QuickStatsGrid';
 import { LoadingState, ErrorState } from '@/components/features/admin/DashboardStates';

@@ -217,5 +217,6 @@ sqlparse==0.5.3
 sqlglot==27.10.0
 farm-haystack
 haystack-ai==2.7.0
+google-ai-haystack
 langfuse ==2.43.3
 

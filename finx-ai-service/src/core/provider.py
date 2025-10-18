@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-# from haystack.document_stores.types import DocumentStore
+from haystack.document_stores.types import DocumentStore
 
 
 class LLMProvider(metaclass=ABCMeta):
@@ -31,11 +31,11 @@ class EmbedderProvider(metaclass=ABCMeta):
         return self._embedding_model
 
 
-# class DocumentStoreProvider(metaclass=ABCMeta):
-#     @abstractmethod
-#     def get_store(self, *args, **kwargs) -> DocumentStore:
-#         ...
+class DocumentStoreProvider(metaclass=ABCMeta):
+    @abstractmethod
+    def get_store(self, *args, **kwargs) -> DocumentStore:
+        ...
 
-#     @abstractmethod
-#     def get_retriever(self, *args, **kwargs):
-#         ...
+    @abstractmethod
+    def get_retriever(self, *args, **kwargs):
+        ...
