@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Optional
+
+from haystack.document_stores.types import DocumentStore
 
 
 class LLMProvider(metaclass=ABCMeta):
@@ -32,7 +33,7 @@ class EmbedderProvider(metaclass=ABCMeta):
 
 class DocumentStoreProvider(metaclass=ABCMeta):
     @abstractmethod
-    def get_store(self, *args, **kwargs) -> Any:
+    def get_store(self, *args, **kwargs) -> DocumentStore:
         ...
 
     @abstractmethod

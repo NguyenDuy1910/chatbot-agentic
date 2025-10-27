@@ -221,10 +221,17 @@ class HealthMonitor:
     
     async def send_error_notification(self, connection: Connection, result):
         """Send error notification (implement based on your notification system)"""
+        # Placeholder for error notification logic
+        # You could integrate with:
+        # - Email service
+        # - Slack/Teams webhooks
+        # - SMS service
+        # - Push notifications
         pass
     
     async def send_recovery_notification(self, connection: Connection, result):
         """Send recovery notification"""
+        # Placeholder for recovery notification logic
         pass
     
     async def get_connection_health_summary(self, db: Session) -> Dict[str, Any]:
