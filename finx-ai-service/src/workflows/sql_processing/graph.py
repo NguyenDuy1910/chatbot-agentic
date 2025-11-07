@@ -51,76 +51,76 @@ class SQLProcessingGraph(BaseGraph):
             sql_question_node,
         )
         
-        # Core SQL generation nodes
-        self.graph.add_node("sql_reasoning", sql_reasoning_node)
-        self.graph.add_node("sql_generation", sql_generation_node)
-        self.graph.add_node("followup_sql_reasoning", followup_sql_reasoning_node)
-        self.graph.add_node("followup_sql_generation", followup_sql_generation_node)
+        # Core SQL generation nodes (using _node suffix to avoid conflict with state keys)
+        self.graph.add_node("sql_reasoning_node", sql_reasoning_node)
+        self.graph.add_node("sql_generation_node", sql_generation_node)
+        self.graph.add_node("followup_sql_reasoning_node", followup_sql_reasoning_node)
+        self.graph.add_node("followup_sql_generation_node", followup_sql_generation_node)
         
         # SQL quality & correction nodes
-        self.graph.add_node("sql_validation", self._sql_validation_node)
-        self.graph.add_node("sql_diagnosis", sql_diagnosis_node)
-        self.graph.add_node("sql_correction", sql_correction_node)
-        self.graph.add_node("sql_regeneration", sql_regeneration_node)
+        self.graph.add_node("sql_validation_node", self._sql_validation_node)
+        self.graph.add_node("sql_diagnosis_node", sql_diagnosis_node)
+        self.graph.add_node("sql_correction_node", sql_correction_node)
+        self.graph.add_node("sql_regeneration_node", sql_regeneration_node)
         
         # SQL answer processing nodes
-        self.graph.add_node("sql_tables_extraction", sql_tables_extraction_node)
-        self.graph.add_node("sql_question", sql_question_node)
-        self.graph.add_node("sql_answer", sql_answer_node)
+        self.graph.add_node("sql_tables_extraction_node", sql_tables_extraction_node)
+        self.graph.add_node("sql_question_node", sql_question_node)
+        self.graph.add_node("sql_answer_node", sql_answer_node)
         
         # Helper nodes
-        self.graph.add_node("format_response", self._format_response_node)
+        self.graph.add_node("format_response_node", self._format_response_node)
     
     def _add_edges(self) -> None:
         """Define workflow with conditional routing."""
         
         # ========== Entry Point ==========
-        self.graph.set_entry_point("check_followup")
-        self.graph.add_node("check_followup", self._check_followup_node)
+        self.graph.set_entry_point("check_followup_node")
+        self.graph.add_node("check_followup_node", self._check_followup_node)
         
         # ========== Follow-up Routing ==========
         self.graph.add_conditional_edges(
-            "check_followup",
+            "check_followup_node",
             self._route_by_followup,
             {
-                "followup": "followup_sql_reasoning",
-                "new_query": "sql_reasoning",
+                "followup": "followup_sql_reasoning_node",
+                "new_query": "sql_reasoning_node",
             }
         )
         
         # ========== Follow-up Path ==========
-        self.graph.add_edge("followup_sql_reasoning", "followup_sql_generation")
-        self.graph.add_edge("followup_sql_generation", "sql_validation")
+        self.graph.add_edge("followup_sql_reasoning_node", "followup_sql_generation_node")
+        self.graph.add_edge("followup_sql_generation_node", "sql_validation_node")
         
         # ========== New Query Path ==========
-        self.graph.add_edge("sql_reasoning", "sql_generation")
-        self.graph.add_edge("sql_generation", "sql_validation")
+        self.graph.add_edge("sql_reasoning_node", "sql_generation_node")
+        self.graph.add_edge("sql_generation_node", "sql_validation_node")
         
         # ========== Validation Routing (with Retry Loop) ==========
         self.graph.add_conditional_edges(
-            "sql_validation",
+            "sql_validation_node",
             self._route_after_validation,
             {
-                "valid": "sql_tables_extraction",
-                "invalid": "sql_diagnosis",
-                "max_retries": "sql_regeneration",
+                "valid": "sql_tables_extraction_node",
+                "invalid": "sql_diagnosis_node",
+                "max_retries": "sql_regeneration_node",
             }
         )
         
         # ========== Correction Retry Loop ==========
-        self.graph.add_edge("sql_diagnosis", "sql_correction")
-        self.graph.add_edge("sql_correction", "sql_validation")  # Loop back to validation
+        self.graph.add_edge("sql_diagnosis_node", "sql_correction_node")
+        self.graph.add_edge("sql_correction_node", "sql_validation_node")  # Loop back to validation
         
         # ========== Regeneration Path ==========
-        self.graph.add_edge("sql_regeneration", "sql_validation")
+        self.graph.add_edge("sql_regeneration_node", "sql_validation_node")
         
         # ========== Answer Processing Path ==========
-        self.graph.add_edge("sql_tables_extraction", "sql_question")
-        self.graph.add_edge("sql_question", "sql_answer")
-        self.graph.add_edge("sql_answer", "format_response")
+        self.graph.add_edge("sql_tables_extraction_node", "sql_question_node")
+        self.graph.add_edge("sql_question_node", "sql_answer_node")
+        self.graph.add_edge("sql_answer_node", "format_response_node")
         
         # ========== Final Step ==========
-        self.graph.add_edge("format_response", END)
+        self.graph.add_edge("format_response_node", END)
     
     # ==================== Routing Functions ====================
     
@@ -155,14 +155,14 @@ class SQLProcessingGraph(BaseGraph):
     
     async def _check_followup_node(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Check if this is a follow-up question."""
-        state["current_step"] = "check_followup"
+        state["current_step"] = "check_followup_node"
         logger.info(f"Checking if follow-up question: {state.get('is_followup', False)}")
         return state
     
     async def _sql_validation_node(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Validate generated SQL."""
         logger.info("Validating SQL...")
-        state["current_step"] = "sql_validation"
+        state["current_step"] = "sql_validation_node"
         
         try:
             sql = state.get("generated_sql") or state.get("followup_generated_sql") or state.get("corrected_sql")
@@ -186,7 +186,7 @@ class SQLProcessingGraph(BaseGraph):
     async def _format_response_node(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Format final response."""
         logger.info("Formatting SQL processing response...")
-        state["current_step"] = "format_response"
+        state["current_step"] = "format_response_node"
         
         try:
             response = {
