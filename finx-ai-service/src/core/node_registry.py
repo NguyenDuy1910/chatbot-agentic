@@ -1,10 +1,3 @@
-"""
-Node registry for managing and discovering nodes across graphs.
-
-Provides utilities for registering, discovering, and managing nodes
-in a centralized registry.
-"""
-
 import logging
 from typing import Any, Callable, Dict, List, Optional
 
