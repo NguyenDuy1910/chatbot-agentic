@@ -1,18 +1,11 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from api.models import (
     DataSourceCreate,
+    DataSourceUpdate,
     DataSourceResponse,
-    SchemaResponse,
-    TableListResponse,
-    TableDetailResponse,
-    ColumnInfo,
-    ForeignKeyInfo
+    ConnectionTestResponse
 )
 from api.storage import DataSourceStorage
 from src.connectors import ConnectorFactory, DataSourceConfig
@@ -20,199 +13,156 @@ from src.connectors import ConnectorFactory, DataSourceConfig
 router = APIRouter()
 
 
+@router.post("/datasources", response_model=DataSourceResponse, status_code=status.HTTP_201_CREATED)
+async def create_datasource(datasource: DataSourceCreate):
+    """
+    Create a new datasource.
+    
+    Creates a datasource configuration for connecting to a database.
+    The password is stored securely.
+    """
+    try:
+        # Convert to dict and create
+        datasource_data = datasource.model_dump()
+        created = DataSourceStorage.create(datasource_data)
+        
+        # Don't return password in response
+        response_data = {k: v for k, v in created.items() if k != "password"}
+        
+        return DataSourceResponse(**response_data)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create datasource: {str(e)}"
+        )
+
+
 @router.get("/datasources", response_model=List[DataSourceResponse])
 async def list_datasources():
+    """
+    List all datasources.
+    
+    Returns a list of all configured datasources (without passwords).
+    """
     datasources = DataSourceStorage.list_all()
+    
+    # Remove passwords from response
     return [
-        DataSourceResponse(
-            datasource_id=ds["datasource_id"],
-            datasource_type=ds["datasource_type"],
-            connection_params=ds["connection_params"]
-        )
+        DataSourceResponse(**{k: v for k, v in ds.items() if k != "password"})
         for ds in datasources
     ]
 
 
-@router.post("/datasources", response_model=DataSourceResponse, status_code=status.HTTP_201_CREATED)
-async def create_datasource(datasource: DataSourceCreate):
-    if DataSourceStorage.exists(datasource.datasource_id):
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Data source with ID '{datasource.datasource_id}' already exists"
-        )
-    
-    config = DataSourceConfig(
-        datasource_type=datasource.datasource_type,
-        datasource_id=datasource.datasource_id,
-        connection_params=datasource.connection_params
-    )
-    
-    try:
-        connector = ConnectorFactory.create_connector(config)
-        if not connector.test_connection():
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Failed to connect to data source"
-            )
-        connector.disconnect()
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=str(e)
-        )
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error testing connection: {str(e)}"
-        )
-    
-    DataSourceStorage.add(datasource.datasource_id, datasource.model_dump())
-    
-    return DataSourceResponse(
-        datasource_id=datasource.datasource_id,
-        datasource_type=datasource.datasource_type,
-        connection_params=datasource.connection_params,
-        status="connected"
-    )
-
-
 @router.get("/datasources/{datasource_id}", response_model=DataSourceResponse)
 async def get_datasource(datasource_id: str):
+    """
+    Get a specific datasource by ID.
+    
+    Returns datasource configuration (without password).
+    """
     datasource = DataSourceStorage.get(datasource_id)
+    
     if not datasource:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Data source '{datasource_id}' not found"
+            detail=f"Datasource '{datasource_id}' not found"
         )
     
-    return DataSourceResponse(**datasource)
+    # Remove password from response
+    response_data = {k: v for k, v in datasource.items() if k != "password"}
+    return DataSourceResponse(**response_data)
+
+
+@router.put("/datasources/{datasource_id}", response_model=DataSourceResponse)
+async def update_datasource(datasource_id: str, datasource: DataSourceUpdate):
+    """
+    Update an existing datasource.
+    
+    Updates datasource configuration. Only provided fields will be updated.
+    """
+    existing = DataSourceStorage.get(datasource_id)
+    
+    if not existing:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Datasource '{datasource_id}' not found"
+        )
+    
+    # Update only provided fields
+    update_data = datasource.model_dump(exclude_unset=True)
+    updated = DataSourceStorage.update(datasource_id, update_data)
+    
+    # Remove password from response
+    response_data = {k: v for k, v in updated.items() if k != "password"}
+    return DataSourceResponse(**response_data)
 
 
 @router.delete("/datasources/{datasource_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_datasource(datasource_id: str):
-    if not DataSourceStorage.remove(datasource_id):
+    """
+    Delete a datasource.
+    
+    Removes datasource configuration and associated MDL.
+    """
+    if not DataSourceStorage.get(datasource_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Data source '{datasource_id}' not found"
+            detail=f"Datasource '{datasource_id}' not found"
         )
+    
+    # Delete datasource
+    DataSourceStorage.delete(datasource_id)
+    
+    # Also delete associated MDL
+    from api.storage import MDLStorage
+    MDLStorage.delete(datasource_id)
+    
+    return None
 
 
-@router.get("/datasources/{datasource_id}/test")
+@router.post("/datasources/{datasource_id}/test", response_model=ConnectionTestResponse)
 async def test_datasource_connection(datasource_id: str):
+    """
+    Test database connection.
+    
+    Tests connectivity to the database and returns latency.
+    """
     datasource = DataSourceStorage.get(datasource_id)
+    
     if not datasource:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Data source '{datasource_id}' not found"
+            detail=f"Datasource '{datasource_id}' not found"
         )
     
-    config = DataSourceConfig(**datasource)
-    
     try:
-        connector = ConnectorFactory.create_connector(config)
-        is_connected = connector.test_connection()
-        connector.disconnect()
-        
-        return {
-            "datasource_id": datasource_id,
-            "connected": is_connected,
-            "status": "success" if is_connected else "failed"
+        # Create connector config - filter only the fields needed by DataSourceConfig
+        config_data = {
+            "type": datasource["type"],
+            "host": datasource.get("host", ""),
+            "port": datasource.get("port", 443),
+            "database": datasource["database"],
+            "username": datasource.get("username", ""),
+            "password": datasource.get("password", ""),
+            "schema": datasource.get("schema"),
+            "extra_params": datasource.get("extra_params", {})
         }
-    except Exception as e:
-        return {
-            "datasource_id": datasource_id,
-            "connected": False,
-            "status": "error",
-            "error": str(e)
-        }
-
-
-@router.get("/datasources/{datasource_id}/schemas", response_model=SchemaResponse)
-async def list_schemas(datasource_id: str):
-    datasource = DataSourceStorage.get(datasource_id)
-    if not datasource:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Data source '{datasource_id}' not found"
-        )
-    
-    config = DataSourceConfig(**datasource)
-    
-    try:
+        config = DataSourceConfig(**config_data)
+        
+        # Create connector
         connector = ConnectorFactory.create_connector(config)
-        connector.connect()
-        schemas = connector.get_schemas()
-        connector.disconnect()
         
-        return SchemaResponse(schemas=schemas)
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error fetching schemas: {str(e)}"
-        )
-
-
-@router.get("/datasources/{datasource_id}/schemas/{schema_name}/tables", response_model=TableListResponse)
-async def list_tables(datasource_id: str, schema_name: str):
-    datasource = DataSourceStorage.get(datasource_id)
-    if not datasource:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Data source '{datasource_id}' not found"
-        )
-    
-    config = DataSourceConfig(**datasource)
-    
-    try:
-        connector = ConnectorFactory.create_connector(config)
-        connector.connect()
-        tables = connector.get_tables(schema=schema_name)
-        connector.disconnect()
+        # Test connection
+        result = connector.test_connection()
         
-        return TableListResponse(tables=tables)
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error fetching tables: {str(e)}"
-        )
-
-
-@router.get("/datasources/{datasource_id}/schemas/{schema_name}/tables/{table_name}", response_model=TableDetailResponse)
-async def get_table_details(datasource_id: str, schema_name: str, table_name: str):
-    datasource = DataSourceStorage.get(datasource_id)
-    if not datasource:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Data source '{datasource_id}' not found"
-        )
-    
-    config = DataSourceConfig(**datasource)
-    
-    try:
-        connector = ConnectorFactory.create_connector(config)
-        connector.connect()
-        
-        columns_data = connector.get_columns(table_name, schema=schema_name)
-        primary_keys = connector.get_primary_keys(table_name, schema=schema_name)
-        foreign_keys_data = connector.get_foreign_keys(table_name, schema=schema_name)
-        metadata = connector.get_table_metadata(table_name, schema=schema_name)
-        
-        connector.disconnect()
-        
-        columns = [ColumnInfo(**col) for col in columns_data]
-        foreign_keys = [ForeignKeyInfo(**fk) for fk in foreign_keys_data]
-        
-        return TableDetailResponse(
-            name=table_name,
-            schema_name=schema_name,
-            columns=columns,
-            primary_keys=primary_keys,
-            foreign_keys=foreign_keys,
-            metadata=metadata
+        return ConnectionTestResponse(
+            status="connected" if result["success"] else "failed",
+            message=result["message"],
+            latency_ms=result.get("latency_ms")
         )
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error fetching table details: {str(e)}"
+        return ConnectionTestResponse(
+            status="error",
+            message=f"Connection test failed: {str(e)}",
+            latency_ms=None
         )
-

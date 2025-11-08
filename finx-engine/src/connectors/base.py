@@ -1,81 +1,160 @@
+"""
+Base Connector Interface for Database Connections
+"""
+
 from abc import ABC, abstractmethod
-from typing import List, Dict, Any, Optional
+from typing import Any, Dict, List, Optional
 from dataclasses import dataclass
 
 
 @dataclass
 class DataSourceConfig:
-    datasource_type: str
-    datasource_id: str
-    connection_params: Dict[str, Any]
-    
-    def to_dict(self) -> Dict[str, Any]:
-        return {
-            "datasource_type": self.datasource_type,
-            "datasource_id": self.datasource_id,
-            "connection_params": self.connection_params
-        }
+    """Configuration for database connection"""
+    type: str
+    host: str
+    port: int
+    database: str
+    username: str
+    password: str
+    schema: Optional[str] = None
+    extra_params: Optional[Dict[str, Any]] = None
 
 
 class BaseConnector(ABC):
+    """
+    Abstract base class for database connectors.
+    
+    All database connectors must implement these methods.
+    """
     
     def __init__(self, config: DataSourceConfig):
+        """Initialize connector with configuration"""
         self.config = config
-        self.datasource_id = config.datasource_id
-        self.datasource_type = config.datasource_type
-        self._connection = None
+        self.connection = None
     
     @abstractmethod
     def connect(self) -> None:
+        """Establish connection to database"""
         pass
     
     @abstractmethod
     def disconnect(self) -> None:
+        """Close database connection"""
         pass
     
     @abstractmethod
-    def test_connection(self) -> bool:
-        pass
-    
-    @abstractmethod
-    def get_schemas(self) -> List[str]:
+    def test_connection(self) -> Dict[str, Any]:
+        """
+        Test database connection.
+        
+        Returns:
+            Dict with 'success' (bool), 'message' (str), and 'latency_ms' (float)
+        """
         pass
     
     @abstractmethod
     def get_tables(self, schema: Optional[str] = None) -> List[str]:
+        """
+        Get list of table names.
+        
+        Args:
+            schema: Schema name (uses default if None)
+            
+        Returns:
+            List of table names
+        """
         pass
     
     @abstractmethod
-    def get_table_metadata(self, table_name: str, schema: Optional[str] = None) -> Dict[str, Any]:
+    def get_columns(
+        self, 
+        table_name: str, 
+        schema: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Get column information for a table.
+        
+        Args:
+            table_name: Name of the table
+            schema: Schema name
+            
+        Returns:
+            List of dicts with keys: name, type, nullable, comment
+        """
         pass
     
     @abstractmethod
-    def get_columns(self, table_name: str, schema: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_primary_keys(
+        self, 
+        table_name: str, 
+        schema: Optional[str] = None
+    ) -> List[str]:
+        """
+        Get primary key columns for a table.
+        
+        Args:
+            table_name: Name of the table
+            schema: Schema name
+            
+        Returns:
+            List of primary key column names
+        """
         pass
     
     @abstractmethod
-    def get_primary_keys(self, table_name: str, schema: Optional[str] = None) -> List[str]:
-        pass
-    
-    @abstractmethod
-    def get_foreign_keys(self, table_name: str, schema: Optional[str] = None) -> List[Dict[str, Any]]:
-        pass
-    
-    @abstractmethod
-    def execute_query(self, query: str) -> List[Dict[str, Any]]:
+    def get_foreign_keys(
+        self, 
+        table_name: str, 
+        schema: Optional[str] = None
+    ) -> List[Dict[str, str]]:
+        """
+        Get foreign key constraints for a table.
+        
+        Args:
+            table_name: Name of the table
+            schema: Schema name
+            
+        Returns:
+            List of dicts with keys: column, referenced_table, referenced_column
+        """
         pass
     
     def __enter__(self):
+        """Context manager entry"""
         self.connect()
         return self
     
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Context manager exit"""
         self.disconnect()
-    
-    def get_datasource_info(self) -> Dict[str, Any]:
-        return {
-            "datasource_id": self.datasource_id,
-            "datasource_type": self.datasource_type,
-            "status": "connected" if self._connection else "disconnected"
-        }
 
+
+class ConnectorFactory:
+    """Factory for creating database connectors"""
+    
+    _connectors = {}
+    
+    @classmethod
+    def register(cls, db_type: str, connector_class):
+        """Register a connector class for a database type"""
+        cls._connectors[db_type] = connector_class
+    
+    @classmethod
+    def create_connector(cls, config: DataSourceConfig) -> BaseConnector:
+        """
+        Create connector instance for given configuration.
+        
+        Args:
+            config: Database configuration
+            
+        Returns:
+            Connector instance
+            
+        Raises:
+            ValueError: If database type is not supported
+        """
+        connector_class = cls._connectors.get(config.type)
+        if not connector_class:
+            raise ValueError(f"Unsupported database type: {config.type}")
+        
+        return connector_class(config)

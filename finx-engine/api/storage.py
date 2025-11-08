@@ -1,79 +1,145 @@
+"""
+Storage layer for datasources and MDL
+"""
+
 import json
+import os
+from datetime import datetime
+from typing import Dict, List, Optional
 from pathlib import Path
-from typing import Dict, Optional, List
+import uuid
+
 from api.config import settings
 
 
 class DataSourceStorage:
+    """In-memory storage for datasources with file persistence"""
     
     _datasources: Dict[str, Dict] = {}
+    _storage_file = Path(settings.STORAGE_PATH) / "datasources.json"
     
     @classmethod
-    def add(cls, datasource_id: str, config: Dict) -> None:
-        cls._datasources[datasource_id] = config
+    def _ensure_storage_dir(cls):
+        """Ensure storage directory exists"""
+        Path(settings.STORAGE_PATH).mkdir(parents=True, exist_ok=True)
+    
+    @classmethod
+    def save_to_file(cls):
+        """Save datasources to file"""
+        cls._ensure_storage_dir()
+        with open(cls._storage_file, 'w') as f:
+            json.dump(cls._datasources, f, indent=2)
+    
+    @classmethod
+    def load_from_file(cls):
+        """Load datasources from file"""
+        if cls._storage_file.exists():
+            with open(cls._storage_file, 'r') as f:
+                cls._datasources = json.load(f)
+    
+    @classmethod
+    def create(cls, datasource_data: Dict) -> Dict:
+        """Create new datasource"""
+        datasource_id = str(uuid.uuid4())
+        now = datetime.utcnow().isoformat()
+        
+        datasource = {
+            "id": datasource_id,
+            **datasource_data,
+            "created_at": now,
+            "updated_at": now
+        }
+        
+        cls._datasources[datasource_id] = datasource
+        cls.save_to_file()
+        return datasource
     
     @classmethod
     def get(cls, datasource_id: str) -> Optional[Dict]:
+        """Get datasource by ID"""
         return cls._datasources.get(datasource_id)
     
     @classmethod
-    def remove(cls, datasource_id: str) -> bool:
+    def list_all(cls) -> List[Dict]:
+        """List all datasources"""
+        return list(cls._datasources.values())
+    
+    @classmethod
+    def update(cls, datasource_id: str, update_data: Dict) -> Optional[Dict]:
+        """Update datasource"""
+        if datasource_id not in cls._datasources:
+            return None
+        
+        datasource = cls._datasources[datasource_id]
+        datasource.update(update_data)
+        datasource["updated_at"] = datetime.utcnow().isoformat()
+        
+        cls.save_to_file()
+        return datasource
+    
+    @classmethod
+    def delete(cls, datasource_id: str) -> bool:
+        """Delete datasource"""
         if datasource_id in cls._datasources:
             del cls._datasources[datasource_id]
+            cls.save_to_file()
+            return True
+        return False
+
+
+class MDLStorage:
+    """Storage for MDL (Model Definition Language)"""
+    
+    _mdls: Dict[str, Dict] = {}
+    _storage_file = Path(settings.STORAGE_PATH) / "mdls.json"
+    
+    @classmethod
+    def _ensure_storage_dir(cls):
+        """Ensure storage directory exists"""
+        Path(settings.STORAGE_PATH).mkdir(parents=True, exist_ok=True)
+    
+    @classmethod
+    def save_to_file(cls):
+        """Save MDLs to file"""
+        cls._ensure_storage_dir()
+        with open(cls._storage_file, 'w') as f:
+            json.dump(cls._mdls, f, indent=2)
+    
+    @classmethod
+    def load_from_file(cls):
+        """Load MDLs from file"""
+        if cls._storage_file.exists():
+            with open(cls._storage_file, 'r') as f:
+                cls._mdls = json.load(f)
+    
+    @classmethod
+    def save(cls, datasource_id: str, mdl: Dict) -> Dict:
+        """Save MDL for datasource"""
+        mdl_data = {
+            "datasource_id": datasource_id,
+            **mdl,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+        cls._mdls[datasource_id] = mdl_data
+        cls.save_to_file()
+        return mdl_data
+    
+    @classmethod
+    def get(cls, datasource_id: str) -> Optional[Dict]:
+        """Get MDL for datasource"""
+        return cls._mdls.get(datasource_id)
+    
+    @classmethod
+    def delete(cls, datasource_id: str) -> bool:
+        """Delete MDL for datasource"""
+        if datasource_id in cls._mdls:
+            del cls._mdls[datasource_id]
+            cls.save_to_file()
             return True
         return False
     
     @classmethod
     def list_all(cls) -> List[Dict]:
-        return list(cls._datasources.values())
-    
-    @classmethod
-    def exists(cls, datasource_id: str) -> bool:
-        return datasource_id in cls._datasources
-    
-    @classmethod
-    def save_to_file(cls) -> None:
-        storage_path = Path(settings.STORAGE_FILE)
-        with open(storage_path, 'w') as f:
-            json.dump(cls._datasources, f, indent=2)
-    
-    @classmethod
-    def load_from_file(cls) -> None:
-        storage_path = Path(settings.STORAGE_FILE)
-        if storage_path.exists():
-            with open(storage_path, 'r') as f:
-                cls._datasources = json.load(f)
-
-
-class MDLStorage:
-    
-    @classmethod
-    def save(cls, datasource_id: str, mdl: Dict) -> None:
-        storage_dir = Path(settings.MDL_STORAGE_DIR)
-        storage_dir.mkdir(exist_ok=True)
-        
-        mdl_path = storage_dir / f"{datasource_id}.json"
-        with open(mdl_path, 'w') as f:
-            json.dump(mdl, f, indent=2)
-    
-    @classmethod
-    def get(cls, datasource_id: str) -> Optional[Dict]:
-        mdl_path = Path(settings.MDL_STORAGE_DIR) / f"{datasource_id}.json"
-        if mdl_path.exists():
-            with open(mdl_path, 'r') as f:
-                return json.load(f)
-        return None
-    
-    @classmethod
-    def exists(cls, datasource_id: str) -> bool:
-        mdl_path = Path(settings.MDL_STORAGE_DIR) / f"{datasource_id}.json"
-        return mdl_path.exists()
-    
-    @classmethod
-    def delete(cls, datasource_id: str) -> bool:
-        mdl_path = Path(settings.MDL_STORAGE_DIR) / f"{datasource_id}.json"
-        if mdl_path.exists():
-            mdl_path.unlink()
-            return True
-        return False
-
+        """List all MDLs"""
+        return list(cls._mdls.values())

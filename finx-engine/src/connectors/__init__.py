@@ -1,15 +1,23 @@
-from .base import BaseConnector, DataSourceConfig
-from .athena import AthenaConnector
-from .duckdb_connector import DuckDBConnector
+"""
+Connectors Package
+
+Database connectors for schema introspection.
+"""
+
+from .base import BaseConnector, ConnectorFactory, DataSourceConfig
 from .postgresql import PostgreSQLConnector
-from .factory import ConnectorFactory, ConnectorRegistry
+from .mysql import MySQLConnector
+from .mongodb import MongoDBConnector
+from .athena import AthenaConnector
+from .redshift import RedshiftConnector
 
 __all__ = [
     "BaseConnector",
-    "DataSourceConfig",
-    "AthenaConnector",
-    "DuckDBConnector",
-    "PostgreSQLConnector",
     "ConnectorFactory",
-    "ConnectorRegistry"
+    "DataSourceConfig",
+    "PostgreSQLConnector",
+    "MySQLConnector",
+    "MongoDBConnector",
+    "AthenaConnector",
+    "RedshiftConnector",
 ]

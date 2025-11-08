@@ -1,4 +1,7 @@
-from .main import app
+"""
+API Package Init
+"""
 
-__all__ = ["app"]
+from .config import settings
 
+__all__ = ["settings"]

@@ -1,3 +1,4 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -19,45 +20,29 @@ wheels/
 .installed.cfg
 *.egg
 
-.env
-.venv
-env/
+# Virtual Environment
 venv/
+env/
 ENV/
-env.bak/
-venv.bak/
 
-*.log
-*.pot
-*.pyc
-
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.hypothesis/
-
-*.db
-*.sqlite
-*.duckdb
-
-data/
-mdl_storage/
-datasources.json
-
-node_modules/
-web-ui/dist/
-web-ui/build/
-web-ui/.vite/
-
-.DS_Store
-.idea/
+# IDEs
 .vscode/
+.idea/
 *.swp
 *.swo
 *~
 
-*.pem
-*.key
-credentials.json
+# Environment
+.env
+.env.local
 
+# Storage
+data/
+*.json
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
