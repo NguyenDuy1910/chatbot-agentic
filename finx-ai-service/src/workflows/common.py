@@ -1,7 +1,13 @@
 import re
 from typing import Any, List, Optional, Tuple
 
-# from haystack import Document, component
+# Import new schema builder utilities
+try:
+    from src.utils.schema_builder import SchemaBuilder, build_ddl_from_json
+except ImportError:
+    # Fallback if import fails
+    SchemaBuilder = None
+    build_ddl_from_json = None
 
 
 def get_engine_supported_data_type(data_type: str) -> str:

@@ -1,14 +1,3 @@
-"""
-Master Orchestrator Graph.
-
-Orchestrates the complete chatbot workflow by coordinating:
-1. Intent & Recommendation Graph
-2. SQL Processing Graph  
-3. Assistance & Visualization Graph
-
-This provides a user-friendly conversational experience.
-"""
-
 import logging
 from typing import Any, Dict, Type, TypedDict
 
@@ -125,7 +114,7 @@ class OrchestratorGraph(BaseGraph):
     
     async def _invoke_intent_recommendation(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Invoke Intent & Recommendation sub-graph."""
-        logger.info("🎯 Invoking Intent & Recommendation Graph...")
+        logger.info("Invoking Intent & Recommendation Graph...")
         state["current_step"] = "intent_recommendation"
         
         try:
@@ -157,10 +146,10 @@ class OrchestratorGraph(BaseGraph):
             state["db_schemas"] = result.get("db_schemas", [])
             state["retrieved_tables"] = result.get("retrieved_tables", [])
             
-            logger.info(f"✅ Intent classified as: {state['intent']}")
+            logger.info(f"Intent classified as: {state['intent']}")
             
         except Exception as e:
-            logger.error(f"❌ Error in intent recommendation graph: {e}")
+            logger.error(f"Error in intent recommendation graph: {e}")
             state["errors"].append(f"Intent classification failed: {str(e)}")
             state["intent"] = "ERROR"
         
@@ -168,7 +157,7 @@ class OrchestratorGraph(BaseGraph):
     
     async def _invoke_sql_processing(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Invoke SQL Processing sub-graph."""
-        logger.info("🔧 Invoking SQL Processing Graph...")
+        logger.info("Invoking SQL Processing Graph...")
         state["current_step"] = "sql_processing"
         
         try:
@@ -207,10 +196,10 @@ class OrchestratorGraph(BaseGraph):
             # Store for potential follow-up
             state["previous_sql"] = state["generated_sql"]
             
-            logger.info(f"✅ SQL generated successfully (valid: {state['sql_valid']})")
+            logger.info(f"SQL generated successfully (valid: {state['sql_valid']})")
             
         except Exception as e:
-            logger.error(f"❌ Error in SQL processing graph: {e}")
+            logger.error(f"Error in SQL processing graph: {e}")
             state["errors"].append(f"SQL generation failed: {str(e)}")
             state["sql_valid"] = False
         
@@ -218,7 +207,7 @@ class OrchestratorGraph(BaseGraph):
     
     async def _invoke_assistance_visualization(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Invoke Assistance & Visualization sub-graph."""
-        logger.info("📊 Invoking Assistance & Visualization Graph...")
+        logger.info("Invoking Assistance & Visualization Graph...")
         state["current_step"] = "assistance_visualization"
         
         try:
@@ -258,10 +247,10 @@ class OrchestratorGraph(BaseGraph):
                 state["chart_type"] = response["chart"]["type"]
                 state["chart_reasoning"] = response["chart"]["reasoning"]
             
-            logger.info("✅ Assistance/Visualization generated successfully")
+            logger.info("Assistance/Visualization generated successfully")
             
         except Exception as e:
-            logger.error(f"❌ Error in assistance/visualization graph: {e}")
+            logger.error(f"Error in assistance/visualization graph: {e}")
             state["errors"].append(f"Assistance/Visualization failed: {str(e)}")
         
         return state
@@ -274,36 +263,36 @@ class OrchestratorGraph(BaseGraph):
         
         # Check for errors first
         if intent == "ERROR" or state.get("errors"):
-            logger.warning("⚠️ Routing to error handler")
+            logger.warning("Routing to error handler")
             return "error"
         
         # Route based on intent
         if intent == "TEXT_TO_SQL":
-            logger.info("➡️ Routing to SQL Processing")
+            logger.info("Routing to SQL Processing")
             return "sql_processing"
         elif intent in ["GENERAL", "USER_GUIDE", "MISLEADING_QUERY"]:
-            logger.info("➡️ Routing to Assistance & Visualization")
+            logger.info("Routing to Assistance & Visualization")
             return "assistance"
         else:
-            logger.warning(f"⚠️ Unknown intent: {intent}, routing to assistance")
+            logger.warning(f"Unknown intent: {intent}, routing to assistance")
             return "assistance"
     
     def _check_visualization_needed(self, state: Dict[str, Any]) -> str:
         """Check if visualization is needed after SQL processing."""
         # Check if SQL was successfully generated
         if not state.get("sql_valid"):
-            logger.info("❌ SQL invalid, skipping visualization")
+            logger.info("SQL invalid, skipping visualization")
             return "finalize"
         
         # Check user preferences or query content for visualization keywords
         needs_viz = self._should_visualize(state)
         
         if needs_viz:
-            logger.info("📊 Visualization needed")
+            logger.info("Visualization needed")
             state["needs_visualization"] = True
             return "visualize"
         else:
-            logger.info("📝 No visualization needed")
+            logger.info("No visualization needed")
             return "finalize"
     
     def _check_streaming(self, state: Dict[str, Any]) -> str:
@@ -315,17 +304,17 @@ class OrchestratorGraph(BaseGraph):
         should_stream = enable_streaming and intent in ["GENERAL", "USER_GUIDE"]
         
         if should_stream:
-            logger.info("🌊 Streaming enabled")
+            logger.info("Streaming enabled")
             return "stream"
         else:
-            logger.info("📄 No streaming")
+            logger.info("No streaming")
             return "no_stream"
     
     # ==================== Helper Nodes ====================
     
     async def _initialize_session_node(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Initialize session with user context and history."""
-        logger.info("🚀 Initializing session...")
+        logger.info("Initializing session...")
         state["current_step"] = "initialize_session"
         
         try:
@@ -335,7 +324,7 @@ class OrchestratorGraph(BaseGraph):
                 # Load from database or cache
                 # state["conversation_history"] = await load_history(session_id)
                 state["conversation_history"] = []  # Placeholder
-                logger.info(f"📚 Loaded conversation history for session: {session_id}")
+                logger.info(f"Loaded conversation history for session: {session_id}")
             
             # Set defaults
             if "user_preferences" not in state:
@@ -352,17 +341,17 @@ class OrchestratorGraph(BaseGraph):
             from datetime import datetime
             state["session_start"] = datetime.utcnow().isoformat()
             
-            logger.info("✅ Session initialized successfully")
+            logger.info("Session initialized successfully")
             
         except Exception as e:
-            logger.error(f"❌ Error initializing session: {e}")
+            logger.error(f"Error initializing session: {e}")
             state["errors"].append(f"Session initialization failed: {str(e)}")
         
         return state
     
     async def _stream_response_node(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Stream response to user for better UX."""
-        logger.info("🌊 Streaming response...")
+        logger.info("Streaming response...")
         state["current_step"] = "stream_response"
         
         try:
@@ -372,17 +361,17 @@ class OrchestratorGraph(BaseGraph):
             state["streaming_enabled"] = True
             state["stream_chunks"] = self._chunk_text(response_text)
             
-            logger.info(f"✅ Streaming {len(state['stream_chunks'])} chunks")
+            logger.info(f"Streaming {len(state['stream_chunks'])} chunks")
             
         except Exception as e:
-            logger.error(f"❌ Error streaming response: {e}")
+            logger.error(f"Error streaming response: {e}")
             state["streaming_enabled"] = False
         
         return state
     
     async def _format_final_response_node(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Format final user-friendly response."""
-        logger.info("📦 Formatting final response...")
+        logger.info("Formatting final response...")
         state["current_step"] = "format_final_response"
         
         try:
@@ -442,10 +431,10 @@ class OrchestratorGraph(BaseGraph):
             state["final_response"] = final_response
             state["status"] = "success"
             
-            logger.info("✅ Final response formatted successfully")
+            logger.info("Final response formatted successfully")
             
         except Exception as e:
-            logger.error(f"❌ Error formatting final response: {e}")
+            logger.error(f"Error formatting final response: {e}")
             state["errors"].append(f"Response formatting failed: {str(e)}")
             state["status"] = "error"
         
@@ -453,7 +442,7 @@ class OrchestratorGraph(BaseGraph):
     
     async def _save_history_node(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Save conversation to history for multi-turn support."""
-        logger.info("💾 Saving conversation history...")
+        logger.info("Saving conversation history...")
         state["current_step"] = "save_history"
         
         try:
@@ -478,17 +467,17 @@ class OrchestratorGraph(BaseGraph):
                 # Save to database (placeholder)
                 # await save_history(session_id, history_entry)
                 
-                logger.info(f"✅ History saved (total: {len(state['conversation_history'])} entries)")
+                logger.info(f"History saved (total: {len(state['conversation_history'])} entries)")
         
         except Exception as e:
-            logger.error(f"❌ Error saving history: {e}")
+            logger.error(f"Error saving history: {e}")
             # Don't fail the entire workflow if history save fails
         
         return state
     
     async def _handle_error_node(self, state: Dict[str, Any]) -> Dict[str, Any]:
         """Handle errors gracefully with user-friendly messages."""
-        logger.info("⚠️ Handling error...")
+        logger.info("Handling error...")
         state["current_step"] = "handle_error"
         
         errors = state.get("errors", [])
@@ -512,7 +501,7 @@ class OrchestratorGraph(BaseGraph):
                 "recommendations": state.get("recommended_questions", []),
             }
         
-        logger.warning(f"⚠️ Error handled: {len(errors)} errors")
+        logger.warning(f"Error handled: {len(errors)} errors")
         return state
     
     # ==================== Helper Methods ====================

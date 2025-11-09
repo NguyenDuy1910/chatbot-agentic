@@ -1,10 +1,3 @@
-"""
-User Guide Assistance Node.
-
-Provide assistance for Wren AI usage questions (streaming)
-Adapted from src/generation/user_guide_assistance.py
-"""
-
 import logging
 from typing import Any, Dict
 

@@ -1,10 +1,3 @@
-"""
-Misleading Assistance Node.
-
-Handle irrelevant or misleading questions
-Adapted from src/generation/misleading_assistance.py
-"""
-
 import logging
 from typing import Any, Dict
 

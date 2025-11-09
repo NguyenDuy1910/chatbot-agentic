@@ -1,0 +1,32 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	initialize_session(initialize_session)
+	save_history(save_history)
+	intent_recommendation(intent_recommendation)
+	sql_processing(sql_processing)
+	assistance_visualization(assistance_visualization)
+	stream_response(stream_response)
+	format_final_response(format_final_response)
+	handle_error(handle_error)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> initialize_session;
+	assistance_visualization -. &nbsp;no_stream&nbsp; .-> format_final_response;
+	assistance_visualization -. &nbsp;stream&nbsp; .-> stream_response;
+	format_final_response --> save_history;
+	handle_error --> save_history;
+	initialize_session --> intent_recommendation;
+	intent_recommendation -. &nbsp;assistance&nbsp; .-> assistance_visualization;
+	intent_recommendation -. &nbsp;error&nbsp; .-> handle_error;
+	intent_recommendation -.-> sql_processing;
+	sql_processing -. &nbsp;visualize&nbsp; .-> assistance_visualization;
+	sql_processing -. &nbsp;finalize&nbsp; .-> format_final_response;
+	stream_response --> format_final_response;
+	save_history --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

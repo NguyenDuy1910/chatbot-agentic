@@ -1,10 +1,3 @@
-"""
-Follow-up SQL Generation Node.
-
-Generate SQL for follow-up questions
-Adapted from src/generation/followup_sql_generation.py
-"""
-
 import logging
 from typing import Any, Dict
 

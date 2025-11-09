@@ -1,10 +1,3 @@
-"""
-Chart Adjustment Node.
-
-Adjust and customize chart based on instructions
-Adapted from src/generation/chart_adjustment.py
-"""
-
 import logging
 from typing import Any, Dict
 

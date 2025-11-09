@@ -1,10 +1,3 @@
-"""
-Data Assistance Node.
-
-Provide assistance for database schema questions (streaming)
-Adapted from src/generation/data_assistance.py
-"""
-
 import logging
 from typing import Any, Dict
 

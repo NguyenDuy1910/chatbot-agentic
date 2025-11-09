@@ -1,10 +1,3 @@
-"""
-Chart Generation Node.
-
-Generate Vega-Lite chart schema from data
-Adapted from src/generation/chart_generation.py
-"""
-
 import logging
 from typing import Any, Dict
 
