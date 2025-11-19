@@ -1,7 +1,39 @@
 // Connection Management Types
 // Comprehensive types for external service connections similar to Julius AI
 
-export type ConnectionType = 
+// Schema and Table Types
+export interface ColumnInfo {
+  name: string;
+  type: string;
+  nullable: boolean;
+  default?: string | null;
+  comment?: string;
+  isPrimaryKey?: boolean;
+  isForeignKey?: boolean;
+  foreignKeyTable?: string;
+}
+
+export interface ForeignKeyInfo {
+  column: string;
+  referenced_table: string;
+  referenced_column: string;
+}
+
+export interface TableInfo {
+  name: string;
+  schema?: string;
+  columns: ColumnInfo[];
+  primary_keys: string[];
+  foreign_keys: ForeignKeyInfo[];
+  metadata?: Record<string, any>;
+}
+
+export interface SchemaInfo {
+  name: string;
+  tables?: string[];
+}
+
+export type ConnectionType =
   | 'api'
   | 'database'
   | 'webhook'

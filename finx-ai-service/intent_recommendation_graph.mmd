@@ -1,0 +1,24 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	intent_classification(intent_classification)
+	question_recommendation(question_recommendation)
+	relationship_recommendation(relationship_recommendation)
+	generate_semantics_description(generate_semantics_description)
+	format_response(format_response)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> intent_classification;
+	generate_semantics_description --> relationship_recommendation;
+	intent_classification -. &nbsp;misleading_end&nbsp; .-> format_response;
+	intent_classification -. &nbsp;general_recommendation&nbsp; .-> generate_semantics_description;
+	intent_classification -. &nbsp;text2sql_recommendation&nbsp; .-> question_recommendation;
+	question_recommendation --> format_response;
+	relationship_recommendation --> format_response;
+	format_response --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

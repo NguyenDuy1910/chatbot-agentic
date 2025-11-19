@@ -1,0 +1,17 @@
+graph TB
+    A[User Query] --> B[Graph 2: Intent & Recommendation]
+    B --> C{Intent Type}
+    
+    C -->|TEXT_TO_SQL| D[Graph 1: SQL Processing]
+    C -->|GENERAL| E[Graph 3: Assistance - Data]
+    C -->|USER_GUIDE| F[Graph 3: Assistance - User Guide]
+    C -->|MISLEADING| G[Graph 3: Assistance - Misleading]
+    
+    D --> H{Need Visualization?}
+    H -->|Yes| I[Graph 3: Chart Generation]
+    H -->|No| J[Return SQL Answer]
+    
+    I --> K[Return Chart + Answer]
+    E --> L[Return Assistance]
+    F --> L
+    G --> L

@@ -1,0 +1,20 @@
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+pydantic==2.9.2
+pydantic-settings==2.6.0
+python-dotenv==1.0.1
+
+# Database Connectors
+psycopg2-binary==2.9.9
+pymysql==1.1.1
+pymongo==4.10.1
+snowflake-connector-python==3.12.2
+
+# AWS Connectors
+pyathena==3.8.3
+boto3==1.35.0
+redshift-connector==2.1.3
+
+# Utilities
+python-multipart==0.0.12
+aiofiles==24.1.0

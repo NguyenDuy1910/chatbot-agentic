@@ -1,0 +1,280 @@
+{
+  "graph_name": "SQL Processing Graph",
+  "total_nodes": 15,
+  "total_edges": 17,
+  "nodes": [
+    "__start__",
+    "sql_reasoning_node",
+    "sql_generation_node",
+    "followup_sql_reasoning_node",
+    "followup_sql_generation_node",
+    "sql_validation_node",
+    "sql_diagnosis_node",
+    "sql_correction_node",
+    "sql_regeneration_node",
+    "sql_tables_extraction_node",
+    "sql_question_node",
+    "sql_answer_node",
+    "format_response_node",
+    "check_followup_node",
+    "__end__"
+  ],
+  "edges": [
+    {
+      "source": "__start__",
+      "target": "check_followup_node",
+      "conditional": null,
+      "data": null
+    },
+    {
+      "source": "check_followup_node",
+      "target": "followup_sql_reasoning_node",
+      "conditional": "True",
+      "data": "followup"
+    },
+    {
+      "source": "check_followup_node",
+      "target": "sql_reasoning_node",
+      "conditional": "True",
+      "data": "new_query"
+    },
+    {
+      "source": "followup_sql_generation_node",
+      "target": "sql_validation_node",
+      "conditional": null,
+      "data": null
+    },
+    {
+      "source": "followup_sql_reasoning_node",
+      "target": "followup_sql_generation_node",
+      "conditional": null,
+      "data": null
+    },
+    {
+      "source": "sql_answer_node",
+      "target": "format_response_node",
+      "conditional": null,
+      "data": null
+    },
+    {
+      "source": "sql_correction_node",
+      "target": "sql_validation_node",
+      "conditional": null,
+      "data": null
+    },
+    {
+      "source": "sql_diagnosis_node",
+      "target": "sql_correction_node",
+      "conditional": null,
+      "data": null
+    },
+    {
+      "source": "sql_generation_node",
+      "target": "sql_validation_node",
+      "conditional": null,
+      "data": null
+    },
+    {
+      "source": "sql_question_node",
+      "target": "sql_answer_node",
+      "conditional": null,
+      "data": null
+    },
+    {
+      "source": "sql_reasoning_node",
+      "target": "sql_generation_node",
+      "conditional": null,
+      "data": null
+    },
+    {
+      "source": "sql_regeneration_node",
+      "target": "sql_validation_node",
+      "conditional": null,
+      "data": null
+    },
+    {
+      "source": "sql_tables_extraction_node",
+      "target": "sql_question_node",
+      "conditional": null,
+      "data": null
+    },
+    {
+      "source": "sql_validation_node",
+      "target": "sql_diagnosis_node",
+      "conditional": "True",
+      "data": "invalid"
+    },
+    {
+      "source": "sql_validation_node",
+      "target": "sql_regeneration_node",
+      "conditional": "True",
+      "data": "max_retries"
+    },
+    {
+      "source": "sql_validation_node",
+      "target": "sql_tables_extraction_node",
+      "conditional": "True",
+      "data": "valid"
+    },
+    {
+      "source": "format_response_node",
+      "target": "__end__",
+      "conditional": null,
+      "data": null
+    }
+  ],
+  "node_analysis": {
+    "__start__": {
+      "incoming": [],
+      "outgoing": [
+        "check_followup_node"
+      ],
+      "in_degree": 0,
+      "out_degree": 1
+    },
+    "sql_reasoning_node": {
+      "incoming": [
+        "check_followup_node"
+      ],
+      "outgoing": [
+        "sql_generation_node"
+      ],
+      "in_degree": 1,
+      "out_degree": 1
+    },
+    "sql_generation_node": {
+      "incoming": [
+        "sql_reasoning_node"
+      ],
+      "outgoing": [
+        "sql_validation_node"
+      ],
+      "in_degree": 1,
+      "out_degree": 1
+    },
+    "followup_sql_reasoning_node": {
+      "incoming": [
+        "check_followup_node"
+      ],
+      "outgoing": [
+        "followup_sql_generation_node"
+      ],
+      "in_degree": 1,
+      "out_degree": 1
+    },
+    "followup_sql_generation_node": {
+      "incoming": [
+        "followup_sql_reasoning_node"
+      ],
+      "outgoing": [
+        "sql_validation_node"
+      ],
+      "in_degree": 1,
+      "out_degree": 1
+    },
+    "sql_validation_node": {
+      "incoming": [
+        "followup_sql_generation_node",
+        "sql_correction_node",
+        "sql_generation_node",
+        "sql_regeneration_node"
+      ],
+      "outgoing": [
+        "sql_diagnosis_node",
+        "sql_regeneration_node",
+        "sql_tables_extraction_node"
+      ],
+      "in_degree": 4,
+      "out_degree": 3
+    },
+    "sql_diagnosis_node": {
+      "incoming": [
+        "sql_validation_node"
+      ],
+      "outgoing": [
+        "sql_correction_node"
+      ],
+      "in_degree": 1,
+      "out_degree": 1
+    },
+    "sql_correction_node": {
+      "incoming": [
+        "sql_diagnosis_node"
+      ],
+      "outgoing": [
+        "sql_validation_node"
+      ],
+      "in_degree": 1,
+      "out_degree": 1
+    },
+    "sql_regeneration_node": {
+      "incoming": [
+        "sql_validation_node"
+      ],
+      "outgoing": [
+        "sql_validation_node"
+      ],
+      "in_degree": 1,
+      "out_degree": 1
+    },
+    "sql_tables_extraction_node": {
+      "incoming": [
+        "sql_validation_node"
+      ],
+      "outgoing": [
+        "sql_question_node"
+      ],
+      "in_degree": 1,
+      "out_degree": 1
+    },
+    "sql_question_node": {
+      "incoming": [
+        "sql_tables_extraction_node"
+      ],
+      "outgoing": [
+        "sql_answer_node"
+      ],
+      "in_degree": 1,
+      "out_degree": 1
+    },
+    "sql_answer_node": {
+      "incoming": [
+        "sql_question_node"
+      ],
+      "outgoing": [
+        "format_response_node"
+      ],
+      "in_degree": 1,
+      "out_degree": 1
+    },
+    "format_response_node": {
+      "incoming": [
+        "sql_answer_node"
+      ],
+      "outgoing": [
+        "__end__"
+      ],
+      "in_degree": 1,
+      "out_degree": 1
+    },
+    "check_followup_node": {
+      "incoming": [
+        "__start__"
+      ],
+      "outgoing": [
+        "followup_sql_reasoning_node",
+        "sql_reasoning_node"
+      ],
+      "in_degree": 1,
+      "out_degree": 2
+    },
+    "__end__": {
+      "incoming": [
+        "format_response_node"
+      ],
+      "outgoing": [],
+      "in_degree": 1,
+      "out_degree": 0
+    }
+  }
+}

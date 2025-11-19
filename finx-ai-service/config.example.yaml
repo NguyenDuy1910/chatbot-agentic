@@ -1,0 +1,257 @@
+# Sample Pipeline Configuration with Google Gemini
+# This configuration uses Google's Gemini models for LLM and embedding tasks
+# 
+# Setup Instructions:
+# 1. Copy this file to config.yaml
+# 2. Set your GOOGLE_API_KEY environment variable
+# 3. Adjust model names and settings as needed
+# 4. Update embedding model dimensions to match your chosen model
+
+# LLM Configuration - Using Google Gemini
+type: llm
+provider: google_genai
+models:
+  - model: gemini-2.0-flash-exp
+    alias: default
+    timeout: 600
+    kwargs:
+      temperature: 0
+      top_p: 0.95
+      top_k: 40
+      max_output_tokens: 8192
+
+---
+# Alternative LLM Configuration using LiteLLM wrapper for Gemini
+# type: llm
+# provider: litellm_llm
+# models:
+#   - model: gemini/gemini-2.0-flash-exp
+#     alias: default
+#     timeout: 600
+#     kwargs:
+#       temperature: 0
+#       max_tokens: 8192
+
+---
+# Embedder Configuration - Using Google Gemini Embedding
+type: embedder
+provider: google_genai_embedder
+models:
+  - model: models/text-embedding-004
+    alias: default
+    timeout: 600
+    kwargs:
+      task_type: retrieval_document
+
+---
+# Alternative Embedder using LiteLLM
+# type: embedder
+# provider: litellm_embedder
+# models:
+#   - model: text-embedding-004
+#     alias: default
+#     api_base: https://generativelanguage.googleapis.com/v1beta
+#     timeout: 600
+
+---
+# Engine Configuration - Wren UI
+type: engine
+provider: wren_ui
+endpoint: http://wren-ui:3000
+
+---
+# Engine Configuration - Wren Ibis
+type: engine
+provider: wren_ibis
+endpoint: http://ibis-server:8000
+
+---
+# Document Store Configuration - Qdrant
+type: document_store
+provider: qdrant
+location: http://qdrant:6333
+embedding_model_dim: 768  # text-embedding-004 has 768 dimensions
+timeout: 120
+recreate_index: true
+
+---
+# Alternative Document Store - In-Memory (for development)
+# type: document_store
+# provider: in_memory
+# embedding_model_dim: 768
+
+---
+# Pipeline Definitions
+# Configure all pipelines with their respective components
+type: pipeline
+pipes:
+  # Indexing Pipelines
+  - name: db_schema_indexing
+    embedder: google_genai_embedder.default
+    document_store: qdrant
+    
+  - name: historical_question_indexing
+    embedder: google_genai_embedder.default
+    document_store: qdrant
+    
+  - name: table_description_indexing
+    embedder: google_genai_embedder.default
+    document_store: qdrant
+    
+  - name: sql_pairs_indexing
+    embedder: google_genai_embedder.default
+    document_store: qdrant
+    
+  - name: instructions_indexing
+    embedder: google_genai_embedder.default
+    document_store: qdrant
+    
+  - name: project_meta_indexing
+    document_store: qdrant
+  
+  # Retrieval Pipelines
+  - name: db_schema_retrieval
+    llm: google_genai.default
+    embedder: google_genai_embedder.default
+    document_store: qdrant
+    
+  - name: historical_question_retrieval
+    embedder: google_genai_embedder.default
+    document_store: qdrant
+    
+  - name: sql_pairs_retrieval
+    embedder: google_genai_embedder.default
+    document_store: qdrant
+    llm: google_genai.default
+    
+  - name: instructions_retrieval
+    embedder: google_genai_embedder.default
+    document_store: qdrant
+    
+  - name: sql_functions_retrieval
+    engine: wren_ibis
+    document_store: qdrant
+  
+  - name: question_recommendation_db_schema_retrieval
+    llm: google_genai.default
+    embedder: google_genai_embedder.default
+    document_store: qdrant
+  
+  # Generation Pipelines
+  - name: sql_generation
+    llm: google_genai.default
+    engine: wren_ui
+    document_store: qdrant
+    
+  - name: sql_correction
+    llm: google_genai.default
+    engine: wren_ui
+    document_store: qdrant
+    
+  - name: followup_sql_generation
+    llm: google_genai.default
+    engine: wren_ui
+    document_store: qdrant
+    
+  - name: sql_regeneration
+    llm: google_genai.default
+    engine: wren_ui
+    
+  - name: question_recommendation
+    llm: google_genai.default
+    
+  - name: question_recommendation_sql_generation
+    llm: google_genai.default
+    engine: wren_ui
+    document_store: qdrant
+  
+  # Analysis Pipelines
+  - name: sql_answer
+    llm: google_genai.default
+    
+  - name: semantics_description
+    llm: google_genai.default
+    
+  - name: relationship_recommendation
+    llm: google_genai.default
+    engine: wren_ui
+    
+  - name: chart_generation
+    llm: google_genai.default
+    
+  - name: chart_adjustment
+    llm: google_genai.default
+    
+  - name: intent_classification
+    llm: google_genai.default
+    embedder: google_genai_embedder.default
+    document_store: qdrant
+  
+  # Assistance Pipelines
+  - name: misleading_assistance
+    llm: google_genai.default
+    
+  - name: data_assistance
+    llm: google_genai.default
+    
+  - name: user_guide_assistance
+    llm: google_genai.default
+  
+  # Processing Pipelines
+  - name: preprocess_sql_data
+    llm: google_genai.default
+    
+  - name: sql_executor
+    engine: wren_ui
+    
+  - name: sql_question_generation
+    llm: google_genai.default
+    
+  - name: sql_generation_reasoning
+    llm: google_genai.default
+    
+  - name: followup_sql_generation_reasoning
+    llm: google_genai.default
+    
+  - name: sql_tables_extraction
+    llm: google_genai.default
+    
+  - name: sql_diagnosis
+    llm: google_genai.default
+
+---
+# System Settings
+settings:
+  # Engine settings
+  engine_timeout: 30
+  
+  # Indexing settings
+  column_indexing_batch_size: 50
+  
+  # Retrieval settings
+  table_retrieval_size: 10
+  table_column_retrieval_size: 100
+  historical_question_retrieval_similarity_threshold: 0.9
+  sql_pairs_similarity_threshold: 0.7
+  sql_pairs_retrieval_max_size: 10
+  instructions_similarity_threshold: 0.7
+  instructions_top_k: 10
+  
+  # Feature flags
+  allow_intent_classification: true
+  allow_sql_generation_reasoning: true
+  allow_sql_functions_retrieval: true
+  enable_column_pruning: false
+  
+  # SQL generation settings
+  max_sql_correction_retries: 3
+  
+  # Cache settings
+  query_cache_maxsize: 1000
+  query_cache_ttl: 3600
+  
+  # Monitoring and logging
+  langfuse_host: https://cloud.langfuse.com
+  langfuse_enable: false  # Set to true if using Langfuse for monitoring
+  logging_level: INFO
+  development: true

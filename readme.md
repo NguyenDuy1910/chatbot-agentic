@@ -21,10 +21,14 @@ A modern chatbot application built with React, TypeScript, and Tailwind CSS, fea
 ## 🚀 Key Features
 
 - 🤖 **Modern Chat Interface**: Clean, intuitive, and responsive design.
-- [object Object] Easily create, manage, and use prompt templates.
+- 📝 **Prompt Management**: Easily create, manage, and use prompt templates.
 - 🔗 **Database Connections**: Manage multiple database connections securely.
 - 👤 **User Authentication**: Standard login/registration system.
 - ⚙️ **System Administration**: An admin panel for user and system management.
+- 🔄 **AI Migration Agent**: Intelligent data migration system with AI-powered agents ⭐ NEW
+- 📊 **Schema Analysis**: Automatic schema comparison and compatibility scoring ⭐ NEW
+- 🚀 **Parallel Processing**: Multi-worker migration for large datasets ⭐ NEW
+- ✅ **Auto Validation**: Comprehensive validation and rollback capabilities ⭐ NEW
 
 ## 🛠️ Tech Stack
 
@@ -71,10 +75,26 @@ git pull && ./deploy.sh production
 
 ```
 .
-├── finx-ai-service/ # Backend (FastAPI)
-├── finx-ui/         # Frontend (React)
-├── deployment/      # Deployment scripts
-└── docs/            # Documentation
+├── finx-ai-service/         # Backend (FastAPI)
+│   ├── src/
+│   │   ├── core/
+│   │   │   ├── engine.py           # SQL engine utilities
+│   │   │   ├── migration_agent.py  # AI migration system ⭐ NEW
+│   │   │   ├── pipeline.py         # Pipeline framework
+│   │   │   └── provider.py         # Provider interface
+│   │   └── web/                    # Web API
+│   └── demos/
+│       └── demo_migration_agent.py # Migration demos ⭐ NEW
+├── finx-ui/                 # Frontend (React)
+├── deployment/              # Deployment scripts
+└── docs/                    # Documentation
+    ├── INDEX.md                    # Documentation index ⭐ NEW
+    ├── ARCHITECTURE.md             # System architecture ⭐ NEW
+    ├── MIGRATION_GUIDE.md          # Migration guide ⭐ NEW
+    ├── MIGRATION_DIAGRAMS.md       # Visual diagrams ⭐ NEW
+    ├── SYSTEM_DIAGRAMS.md          # Quick reference ⭐ NEW
+    ├── AI_MIGRATION_README.md      # Migration overview ⭐ NEW
+    └── QUICK_START.md              # Quick start guide
 ```
 
 ## 🚀 Getting Started
@@ -119,6 +139,30 @@ git pull && ./deploy.sh production
 - Access the application at `http://localhost:5173`
 - Register a new account or log in with existing credentials.
 - Start chatting with the AI, manage prompts, and configure database connections through the UI.
+
+### 🤖 AI Migration System
+
+Run intelligent data migrations with AI agents:
+
+```bash
+cd finx-ai-service/demos
+python demo_migration_agent.py
+```
+
+**Features**:
+- Automatic schema analysis and compatibility scoring
+- AI-powered column mapping and transformation suggestions
+- Multiple migration strategies (Full Copy, Incremental, Batch, Streaming)
+- Parallel processing with configurable workers
+- Real-time progress tracking and validation
+- Automatic rollback on failures
+
+**Documentation**:
+- 📚 [Complete Documentation Index](docs/INDEX.md)
+- 🏗️ [System Architecture](docs/ARCHITECTURE.md)
+- 🚀 [Migration Guide](docs/MIGRATION_GUIDE.md)
+- 📊 [Visual Diagrams](docs/MIGRATION_DIAGRAMS.md)
+- ⚡ [Quick Start](docs/AI_MIGRATION_README.md)
 
 ## 🚀 Deployment
 
