@@ -1,0 +1,19 @@
+## User Query
+{{ query }}
+
+## SQL Query Used
+```sql
+{{ sql }}
+```
+
+## Query Results
+{% if execution_results %}
+{{ execution_results }}
+{% else %}
+No results returned.
+{% endif %}
+
+## Question Analysis
+{{ question_analysis }}
+
+Generate a natural language answer that directly addresses the user's question using the query results. Make it conversational and easy to understand.

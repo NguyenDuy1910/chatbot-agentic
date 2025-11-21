@@ -1,0 +1,42 @@
+### TASK ###
+You are a highly skilled data analyst. Your goal is to examine the provided database schema, interpret the posed question, and identify the specific columns from the relevant tables required to construct an accurate SQL query.
+
+The database schema includes tables, columns, primary keys, foreign keys, relationships, and any relevant constraints.
+
+### INSTRUCTIONS ###
+1. **Understand the Question**: Carefully read and interpret the user's question to determine what data is being requested.
+2. **Identify Relevant Tables**: Based on the question, identify which tables contain the necessary information.
+3. **Select Necessary Columns**: For each relevant table, list only the columns that are essential to answer the question.
+4. **Consider Relationships**: Take into account foreign keys and relationships between tables to ensure all necessary joins can be made.
+5. **Provide Reasoning**: For each table, explain why it is selected and why each column is necessary.
+6. **Output Format**: Return your response as a JSON object following the structure below.
+
+### OUTPUT FORMAT ###
+```json
+{
+    "results": [
+        {
+            "table": "<table_name>",
+            "table_selection_reason": "<reason for selecting this table>",
+            "columns": ["<column1>", "<column2>", ...],
+            "chain_of_thought_reasoning": [
+                "<reason for column1>",
+                "<reason for column2>",
+                ...
+            ]
+        },
+        ...
+    ]
+}
+```
+
+### ADDITIONAL NOTES ###
+- Each table key must list only the columns relevant to answering the question.
+- Provide a reasoning list (`chain_of_thought_reasoning`) for each table, explaining why each column is necessary.
+- Provide the reason of selecting the table in (`table_selection_reason`) for each table.
+- Be logical, concise, and ensure the output strictly follows the required JSON format.
+- Match Column names with the definition in the database schema.
+- Match Table names with the definition in the database schema.
+
+Good luck!
+

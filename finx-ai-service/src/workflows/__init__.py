@@ -9,21 +9,20 @@ LangGraph-based graphs (3 main graphs):
 3. Assistance & Visualization Graph - User assistance and chart visualization
 """
 
-# LangGraph-based graphs
-from .assistance_visualization import (
+# Import from generation module (new single-file structure)
+from .generation import (
     AssistanceVisualizationGraph,
     AssistanceVisualizationState,
     create_initial_assistance_visualization_state,
-)
-from .intent_recommendation import (
+    create_assistance_visualization_graph,
     IntentRecommendationGraph,
     IntentRecommendationState,
     create_initial_intent_recommendation_state,
-)
-from .sql_processing import (
+    create_intent_recommendation_graph,
     SQLProcessingGraph,
     SQLProcessingState,
     create_initial_sql_processing_state,
+    create_sql_processing_graph,
 )
 
 __all__ = [
@@ -31,11 +30,14 @@ __all__ = [
     "SQLProcessingGraph",
     "SQLProcessingState",
     "create_initial_sql_processing_state",
+    "create_sql_processing_graph",
     "IntentRecommendationGraph",
     "IntentRecommendationState",
     "create_initial_intent_recommendation_state",
+    "create_intent_recommendation_graph",
     "AssistanceVisualizationGraph",
     "AssistanceVisualizationState",
     "create_initial_assistance_visualization_state",
+    "create_assistance_visualization_graph",
 ]
 

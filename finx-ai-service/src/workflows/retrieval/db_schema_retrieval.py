@@ -6,78 +6,9 @@ import orjson
 from langfuse.decorators import observe
 
 from src.workflows.indexing.retrieval import DBSchemaRetriever, SearchMode
+from src.workflows.prompts.prompt_manager import get_prompt_manager
 
 logger = logging.getLogger(__name__)
-
-
-# System prompt for table/column selection
-TABLE_COLUMNS_SELECTION_SYSTEM_PROMPT = """
-### TASK ###
-You are a highly skilled data analyst. Your goal is to examine the provided database schema, interpret the posed question, and identify the specific columns from the relevant tables required to construct an accurate SQL query.
-
-The database schema includes tables, columns, primary keys, foreign keys, relationships, and any relevant constraints.
-
-### INSTRUCTIONS ###
-1. Carefully analyze the schema and identify the essential tables and columns needed to answer the question.
-2. For each table, provide a clear and concise reasoning for why specific columns are selected.
-3. List each reason as part of a step-by-step chain of thought, justifying the inclusion of each column.
-4. The number of columns chosen must match the number of reasoning.
-5. Final chosen columns must be only column names, don't prefix it with table names.
-6. If the chosen column is a child column of a STRUCT type column, choose the parent column instead of the child column.
-
-### FINAL ANSWER FORMAT ###
-Please provide your response as a JSON object, structured as follows:
-
-{
-    "results": [
-        {
-            "table_selection_reason": "Reason for selecting tablename1",
-            "table_contents": {
-              "chain_of_thought_reasoning": [
-                  "Reason 1 for selecting column1",
-                  "Reason 2 for selecting column2",
-                  ...
-              ],
-              "columns": ["column1", "column2", ...]
-            },
-            "table_name":"tablename1",
-        },
-        {
-            "table_selection_reason": "Reason for selecting tablename2",
-            "table_contents": {
-              "chain_of_thought_reasoning": [
-                  "Reason 1 for selecting column1",
-                  "Reason 2 for selecting column2",
-                  ...
-              ],
-              "columns": ["column1", "column2", ...]
-            },
-            "table_name":"tablename2"
-        }
-    ]
-}
-
-### ADDITIONAL NOTES ###
-- Each table key must list only the columns relevant to answering the question.
-- Provide a reasoning list (`chain_of_thought_reasoning`) for each table, explaining why each column is necessary.
-- Provide the reason of selecting the table in (`table_selection_reason`) for each table.
-- Be logical, concise, and ensure the output strictly follows the required JSON format.
-- Match Column names with the definition in the database schema.
-- Match Table names with the definition in the database schema.
-
-Good luck!
-"""
-
-TABLE_COLUMNS_SELECTION_USER_PROMPT_TEMPLATE = """
-### Database Schema ###
-
-{% for db_schema in db_schemas %}
-{{ db_schema }}
-{% endfor %}
-
-### INPUT ###
-{{ question }}
-"""
 
 
 @dataclass
@@ -275,20 +206,27 @@ class DBSchemaRetrievalPipeline:
         schema_ddls = [self._build_table_ddl(schema) for schema in db_schemas]
         logger.info(f"Schema DDLs: {schema_ddls}")
         
-        # Properly render the template by replacing Jinja2 placeholders
-        schema_section = "\n\n".join(schema_ddls)
-        prompt = f"""### Database Schema ###
-
-{schema_section}
-
-### INPUT ###
-{query}
-"""
-        logger.info(f"LLM Prompt (first 10000 chars): {prompt[:10000]}")
+        # Use prompt manager to load templates
+        prompt_manager = get_prompt_manager()
+        
+        # Render the system and user prompts
+        system_prompt = prompt_manager.render(
+            "retrieval/table_columns_selection_system.jinja2"
+        )
+        
+        user_prompt = prompt_manager.render(
+            "retrieval/table_columns_selection_user.jinja2",
+            context={
+                "db_schemas": schema_ddls,
+                "query": query
+            }
+        )
+        
+        logger.info(f"LLM Prompt (first 10000 chars): {user_prompt[:10000]}")
         
         response = await llm_generator(
-            prompt=prompt,
-            system_prompt=TABLE_COLUMNS_SELECTION_SYSTEM_PROMPT,
+            prompt=user_prompt,
+            system_prompt=system_prompt,
             response_format={"type": "json_object"}
         )
         
@@ -314,10 +252,23 @@ class DBSchemaRetrievalPipeline:
             logger.info(f"LLM Response (first 200 chars): {response_text[:10000]}")
             
             result = orjson.loads(response_text)
-            return {
-                table['table_name']: table['table_contents']['columns']
-                for table in result['results']
-            }
+            # Handle both old and new response formats
+            selected_columns = {}
+            for table in result.get('results', []):
+                # Support both 'table' and 'table_name' keys
+                table_name = table.get('table') or table.get('table_name')
+                # Support both 'columns' and 'table_contents.columns' paths
+                if 'columns' in table:
+                    columns = table['columns']
+                elif 'table_contents' in table and 'columns' in table['table_contents']:
+                    columns = table['table_contents']['columns']
+                else:
+                    columns = []
+                
+                if table_name:
+                    selected_columns[table_name] = columns
+            
+            return selected_columns
         except Exception as e:
             logger.error(f"Error parsing LLM response: {e}")
             # Safe error logging that handles both dict and string responses

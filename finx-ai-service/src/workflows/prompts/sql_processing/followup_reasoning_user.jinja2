@@ -1,0 +1,22 @@
+## New User Request
+{{ query }}
+
+## Previous SQL Query
+```sql
+{{ previous_sql }}
+```
+
+{% if histories %}
+## Conversation History
+{% for history in histories %}
+{{ history.role }}: {{ history.content }}
+{% endfor %}
+{% endif %}
+
+## Database Schemas
+{% for schema in db_schemas %}
+{{ schema }}
+
+{% endfor %}
+
+Please analyze how the previous SQL query should be modified to fulfill the new user request. Explain your reasoning step-by-step.

@@ -1,0 +1,15 @@
+## User Query
+{{ query }}
+
+## Generated SQL Query
+```sql
+{{ sql }}
+```
+
+## Database Schemas
+{% for schema in db_schemas %}
+{{ schema }}
+
+{% endfor %}
+
+Analyze the user's question and the SQL query to determine how the results should be formatted and presented. Return a JSON object with question_type, expected_format, requires_aggregation, and key_focus.

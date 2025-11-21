@@ -123,7 +123,7 @@ async def demo_with_column_pruning():
         temperature=0.0
     )
     
-    query = "Show me total card transactions created in the last 30 days"
+    query = "Show me total card transactions created in the last 30 days and total amount spent by each card, and i need info contract of each card"
     
     print(f"\nQuery: '{query}'")
     print(f"Column Pruning: ENABLED")
