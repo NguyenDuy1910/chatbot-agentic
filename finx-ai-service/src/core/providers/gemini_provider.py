@@ -1,7 +1,11 @@
 import asyncio
 import logging
 import os
+import re
+import time
 from typing import Any, Dict, Optional
+
+from google.api_core.exceptions import ResourceExhausted
 
 from src.core.provider import LLMProvider
 
@@ -101,58 +105,90 @@ class GeminiProvider(LLMProvider):
         prompt: str,
         system_prompt: Optional[str] = None,
         response_format: Optional[Dict[str, Any]] = None,
+        max_retries: int = 3,
         **kwargs: Any,
     ) -> str:
         """
-        Generate text using Gemini model.
+        Generate text using Gemini model with automatic retry on quota errors.
         
         Args:
             prompt: User prompt
             system_prompt: System instructions (optional)
             response_format: Response format configuration (for structured output)
+            max_retries: Maximum number of retry attempts for quota errors
             **kwargs: Additional generation parameters
             
         Returns:
             Generated text
         """
-        try:
-            # Combine prompts
-            full_prompt = prompt
-            if system_prompt:
-                full_prompt = f"{system_prompt}\n\n{prompt}"
-            
-            # Build generation config
-            generation_config = {
-                "temperature": kwargs.get("temperature", self._temperature),
-                "max_output_tokens": kwargs.get("max_output_tokens", self._max_output_tokens),
-                "top_p": kwargs.get("top_p", self._top_p),
-                "top_k": kwargs.get("top_k", self._top_k),
-            }
-            
-            # Add JSON mode if response format specified
-            if response_format:
-                generation_config["response_mime_type"] = "application/json"
-            
-            # Merge with override kwargs
-            if hasattr(self, "_override_kwargs"):
-                generation_config.update(self._override_kwargs)
-            
-            # Generate content (async wrapper for sync API)
-            loop = asyncio.get_event_loop()
-            response = await loop.run_in_executor(
-                None,
-                lambda: self._client.generate_content(
-                    full_prompt,
-                    generation_config=generation_config
+        # Combine prompts
+        full_prompt = prompt
+        if system_prompt:
+            full_prompt = f"{system_prompt}\n\n{prompt}"
+        
+        # Build generation config
+        generation_config = {
+            "temperature": kwargs.get("temperature", self._temperature),
+            "max_output_tokens": kwargs.get("max_output_tokens", self._max_output_tokens),
+            "top_p": kwargs.get("top_p", self._top_p),
+            "top_k": kwargs.get("top_k", self._top_k),
+        }
+        
+        # Add JSON mode if response format specified
+        if response_format and response_format.get("type") == "json_object":
+            generation_config["response_mime_type"] = "application/json"
+            # Also add instruction to prompt for better JSON compliance
+            if "Please provide your response as a JSON object" not in full_prompt:
+                full_prompt = full_prompt + "\n\nIMPORTANT: Return ONLY valid JSON, no markdown formatting."
+        
+        # Merge with override kwargs
+        if hasattr(self, "_override_kwargs"):
+            generation_config.update(self._override_kwargs)
+        
+        # Retry logic for quota errors
+        for attempt in range(max_retries):
+            try:
+                # Generate content (async wrapper for sync API)
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    None,
+                    lambda: self._client.generate_content(
+                        full_prompt,
+                        generation_config=generation_config
+                    )
                 )
-            )
-            
-            logger.info("Generated text successfully with Gemini")
-            return response.text
-            
-        except Exception as e:
-            logger.error(f"Gemini generation error: {e}")
-            raise
+                
+                logger.info(f"Generated text successfully with Gemini (length: {len(response.text)} chars)")
+                logger.debug(f"Response preview: {response.text[:1000]}")
+                return response.text
+                
+            except ResourceExhausted as e:
+                # Extract retry delay from error message if available
+                retry_delay = 10  # Default delay
+                error_msg = str(e)
+                if "retry in" in error_msg.lower():
+                    try:
+                        # Try to extract the delay time
+                        import re
+                        match = re.search(r'retry in (\d+\.?\d*)s', error_msg)
+                        if match:
+                            retry_delay = float(match.group(1))
+                    except:
+                        pass
+                
+                if attempt < max_retries - 1:
+                    logger.warning(
+                        f"Quota exceeded (attempt {attempt + 1}/{max_retries}). "
+                        f"Retrying in {retry_delay:.1f} seconds..."
+                    )
+                    await asyncio.sleep(retry_delay)
+                else:
+                    logger.error(f"Gemini generation error after {max_retries} attempts: {e}")
+                    raise
+                    
+            except Exception as e:
+                logger.error(f"Gemini generation error: {e}")
+                raise
     
     async def generate_batch(
         self,
