@@ -5,6 +5,7 @@ This package contains utility functions and helper modules for:
 - Schema building and DDL generation
 - Data type conversions
 - Common workflow functions
+- Decorators for tracing and monitoring
 """
 
 from .schema_builder import (
@@ -18,6 +19,8 @@ from .schema_builder import (
     parse_schema_from_json,
     get_table_info
 )
+
+from .decorators import trace_cost
 
 __all__ = [
     # Classes
@@ -34,6 +37,9 @@ __all__ = [
     "build_ddl_from_json",
     "parse_schema_from_json",
     "get_table_info",
+    
+    # Decorators
+    "trace_cost",
 ]
 
 __version__ = "1.0.0"

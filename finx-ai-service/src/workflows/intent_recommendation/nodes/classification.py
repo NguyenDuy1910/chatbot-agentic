@@ -210,41 +210,7 @@ async def intent_classification_node(state: Dict[str, Any]) -> Dict[str, Any]:
         # Check if we have pipeline components (for full mode) or run in simple demo mode
         context = state.get("context", {})
         generator = context.get("generator")
-        
-        # For intent classification, we only need generator (not embedder/retrievers)
-        if not generator:
-            # DEMO MODE: Simple classification using keyword-based logic
-            logger.info("Running in demo mode (no generator) - using simple classification")
-            
-            # Simple intent classification logic based on keywords
-            query_lower = query.lower()
-            
-            # Check for misleading queries
-            if any(word in query_lower for word in ["weather", "stock", "news", "sports", "movie"]):
-                state["intent"] = "MISLEADING_QUERY"
-                state["intent_reasoning"] = "Query is not related to database analysis"
-                state["confidence_score"] = 0.95
-            # Check for general/exploration queries
-            elif any(phrase in query_lower for phrase in ["what data", "show me data", "what tables", "what can"]):
-                state["intent"] = "GENERAL"
-                state["intent_reasoning"] = "User wants to explore available data"
-                state["confidence_score"] = 0.85
-            # Check for user guide queries
-            elif any(word in query_lower for word in ["how to", "how do", "help", "guide", "tutorial", "learn"]):
-                state["intent"] = "USER_GUIDE"
-                state["intent_reasoning"] = "User needs guidance or instructions"
-                state["confidence_score"] = 0.90
-            # Default to TEXT_TO_SQL for data queries
-            else:
-                state["intent"] = "TEXT_TO_SQL"
-                state["intent_reasoning"] = "Query appears to request specific data analysis"
-                state["confidence_score"] = 0.80
-            
-            state["rephrased_question"] = query
-            state["classification_prompt"] = None
-            logger.info(f"Demo mode classification: {state['intent']} ({state['confidence_score']:.0%})")
-            return state
-        
+           
         # AI MODE: Use LLM for intent classification (simplified - no retrieval)
         logger.info("Using AI for intent classification (simplified mode - no retrieval)")
         
