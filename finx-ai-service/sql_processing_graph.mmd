@@ -20,10 +20,9 @@ graph TD;
 	check_followup_node(check_followup_node)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> check_followup_node;
-	check_followup_node -. &nbsp;followup&nbsp; .-> followup_sql_reasoning_node;
-	check_followup_node -. &nbsp;new_query&nbsp; .-> sql_reasoning_node;
 	followup_sql_generation_node --> sql_validation_node;
 	followup_sql_reasoning_node --> followup_sql_generation_node;
+	format_response_node --> __end__;
 	sql_answer_node --> format_response_node;
 	sql_correction_node --> sql_validation_node;
 	sql_diagnosis_node --> sql_correction_node;
@@ -32,10 +31,11 @@ graph TD;
 	sql_reasoning_node --> sql_generation_node;
 	sql_regeneration_node --> sql_validation_node;
 	sql_tables_extraction_node --> sql_question_node;
+	check_followup_node -. &nbsp;followup&nbsp; .-> followup_sql_reasoning_node;
+	check_followup_node -. &nbsp;new_query&nbsp; .-> sql_reasoning_node;
+	sql_validation_node -. &nbsp;valid&nbsp; .-> sql_tables_extraction_node;
 	sql_validation_node -. &nbsp;invalid&nbsp; .-> sql_diagnosis_node;
 	sql_validation_node -. &nbsp;max_retries&nbsp; .-> sql_regeneration_node;
-	sql_validation_node -. &nbsp;valid&nbsp; .-> sql_tables_extraction_node;
-	format_response_node --> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
 	classDef last fill:#bfb6fc

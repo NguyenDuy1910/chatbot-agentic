@@ -38,3 +38,9 @@ class DocumentStoreProvider(metaclass=ABCMeta):
     @abstractmethod
     def get_retriever(self, *args, **kwargs):
         ...
+
+
+class SQLExecutionProvider(metaclass=ABCMeta):
+    @abstractmethod
+    async def execute_query(self, sql: str, **kwargs) -> Any:
+        ...

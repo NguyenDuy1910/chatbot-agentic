@@ -1,0 +1,30 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	data_assistance(data_assistance)
+	user_guide_assistance(user_guide_assistance)
+	misleading_assistance(misleading_assistance)
+	chart_generation(chart_generation)
+	chart_adjustment(chart_adjustment)
+	format_response(format_response)
+	route_by_intent(route_by_intent)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> route_by_intent;
+	chart_adjustment --> format_response;
+	data_assistance --> format_response;
+	format_response --> __end__;
+	misleading_assistance --> format_response;
+	user_guide_assistance --> format_response;
+	route_by_intent -.-> data_assistance;
+	route_by_intent -.-> user_guide_assistance;
+	route_by_intent -.-> misleading_assistance;
+	route_by_intent -.-> chart_generation;
+	chart_generation -. &nbsp;adjust&nbsp; .-> chart_adjustment;
+	chart_generation -. &nbsp;no_adjust&nbsp; .-> format_response;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

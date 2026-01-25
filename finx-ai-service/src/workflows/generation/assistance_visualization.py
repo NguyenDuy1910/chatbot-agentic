@@ -1,4 +1,3 @@
-"""Assistance & Visualization Workflow - handles user assistance and chart generation."""
 
 import logging
 from typing import Any, Dict, List, Literal, Optional

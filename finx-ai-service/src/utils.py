@@ -1,7 +1,3 @@
-"""
-Utility functions for the application
-"""
-
 import functools
 import logging
 import time

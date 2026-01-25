@@ -1,0 +1,42 @@
+version: "3.9"
+services:
+  # Metadata Database
+  mysql:
+    image: openmetadata/db:1.6.4
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    expose:
+      - 3306
+
+  # Search Engine
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.10.2
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  # Core Server
+  openmetadata-server:
+    image: openmetadata/server:1.6.4
+    depends_on:
+      - mysql
+      - elasticsearch
+    ports:
+      - "8585:8585"
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - ELASTICSEARCH_HOST=elasticsearch
+      - ELASTICSEARCH_PORT=9200
+
+  # Ingestion (Airflow)
+  ingestion:
+    image: openmetadata/ingestion:1.6.4
+    depends_on:
+      - mysql
+      - openmetadata-server
+    ports:
+      - "8080:8080"

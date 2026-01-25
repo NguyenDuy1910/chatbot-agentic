@@ -9,8 +9,8 @@ from langfuse.decorators import observe
 
 from src.core.base_graph import BaseGraph
 from src.core.base_state import BaseState
-from src.core.engine import clean_generation_result, squish_sql
 from src.workflows.common import clean_up_new_lines
+from src.workflows.tools.sql_execution import clean_generation_result, squish_sql
 from src.workflows.config import (
     get_workflow_config,
     WORKFLOW_LOGGER_NAME,
@@ -925,15 +925,7 @@ class SQLProcessingGraph(BaseGraph):
         return state
 
     def _validate_sql_syntax(self, sql: str) -> Tuple[bool, List[str]]:
-        """
-        Validate SQL syntax using sqlparse.
-        
-        Args:
-            sql: SQL query string to validate
-            
-        Returns:
-            Tuple of (is_valid, list of error messages)
-        """
+
         if not sql or not sql.strip():
             return False, ["Empty SQL query"]
         

@@ -1,7 +1,3 @@
-"""
-Database factory pattern for dynamic connection management
-"""
-
 import logging
 from typing import Dict, Any, Optional, Type
 from enum import Enum

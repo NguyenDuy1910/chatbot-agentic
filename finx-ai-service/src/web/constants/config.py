@@ -1,6 +1,10 @@
 import os
 import logging
 from typing import Dict, Any
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Logging levels configuration
 SRC_LOG_LEVELS = {

@@ -1,32 +1,13 @@
-import logging 
-from src.web.constants.config import ERROR_MESSAGES, SRC_LOG_LEVELS
-from pydantic import BaseModel
-from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, Optional, Tuple
+import logging
 import re
-import aiohttp
+from typing import Tuple
+
 import sqlparse
-from sqlglot.tokens import Token, Tokenizer, TokenType
+from sqlglot import Tokenizer
+from sqlglot.tokens import Token, TokenType
 
 log = logging.getLogger(__name__)
-log.setLevel(SRC_LOG_LEVELS["CORE"])
 
-class EngineConfig(BaseModel):
-    provider: str = "finx_ui"
-    config: dict = {}    
-    
-    
-class Engine(metaclass=ABCMeta):
-    @abstractmethod
-    async def execute_sql(
-        self,
-        sql: str,
-        session: aiohttp.ClientSession,
-        dry_run: bool = True,
-        **kwargs,
-    ) -> Tuple[bool, Optional[Dict[str, Any]]]:
-        ...
-        
 
 def clean_generation_result(result: str) -> str:
     def _normalize_whitespace(s: str) -> str:

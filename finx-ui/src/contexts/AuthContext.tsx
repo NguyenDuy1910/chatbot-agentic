@@ -41,55 +41,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const initializeAuth = async () => {
     try {
-      console.log('🔍 Auth Debug:', {
-        ENABLE_MOCK_AUTH: env.ENABLE_MOCK_AUTH,
-        NODE_ENV: env.NODE_ENV,
-        shouldUseMock: env.ENABLE_MOCK_AUTH
-      });
-
-      // Development bypass - auto login with mock user
-      if (env.ENABLE_MOCK_AUTH) {
-        const mockUser = {
-          id: 'dev-user-1',
-          name: env.MOCK_USER_NAME,
-          email: env.MOCK_USER_EMAIL,
-          role: env.MOCK_USER_ROLE as 'admin' | 'user',
-          avatar: '',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          profile_image_url: '',
-          status: 'active' as const,
-          lastActive: new Date(),
-          totalChats: 0,
-          totalMessages: 0,
-          preferences: {
-            theme: 'light' as const,
-            language: 'en',
-            notifications: {
-              email: true,
-              push: true,
-              chat: true
-            },
-            privacy: {
-              showProfile: true,
-              showActivity: true
-            }
-          }
-        };
-
-        console.log('🚀 Development Mode: Auto-login with mock user:', mockUser);
-
-        setAuthState({
-          isAuthenticated: true,
-          user: mockUser,
-          loading: false,
-          error: null
-        });
-        return;
-      }
-
-      // Real API mode - check for existing token
-      console.log('🔓 Real API mode - checking for existing auth');
+      console.log('� Checking for existing authentication');
 
       // Check if we have a stored token (don't clear it yet!)
       if (authAPI.isAuthenticated()) {
@@ -123,14 +75,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
 
           // Token is valid, try to get user
-          console.log('✅ Token valid, fetching user...');
+          console.log('Token valid, fetching user...');
           const user = await authAPI.getCurrentUser();
           
           // Store user in appropriate storage
           const storage = localStorage.getItem('authToken') ? localStorage : sessionStorage;
           storage.setItem('user', JSON.stringify(user));
           
-          console.log('✅ User authenticated:', user.email);
+          console.log('User authenticated:', user.email);
           setAuthState({
             isAuthenticated: true,
             user,
@@ -144,7 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Try to use cached user data if available
           const cachedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
           if (cachedUser) {
-            console.log('⚠️ Using cached user data (API unavailable)');
+            console.log(' Using cached user data (API unavailable)');
             try {
               const user = JSON.parse(cachedUser);
               setAuthState({
@@ -160,7 +112,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
           
           // No cached data or parse failed - clear auth
-          console.warn('❌ Token validation failed, clearing auth');
+          console.warn(' Token validation failed, clearing auth');
           authAPI.setToken(null);
           localStorage.removeItem('user');
           sessionStorage.removeItem('user');
