@@ -1,0 +1,27 @@
+## Invalid SQL Query
+```sql
+{{ sql }}
+```
+
+## Diagnosed Issues
+{% for issue in issues %}
+- {{ issue }}
+{% endfor %}
+
+## Suggested Fixes
+{% for suggestion in suggestions %}
+- {{ suggestion }}
+{% endfor %}
+
+## Original User Query
+{{ query }}
+
+## Database Schemas
+{% for schema in db_schemas %}
+{{ schema }}
+
+{% endfor %}
+
+Apply the suggested fixes to correct the SQL query. Return only the corrected SQL query as plain text.
+
+Attempt: {{ attempt }}

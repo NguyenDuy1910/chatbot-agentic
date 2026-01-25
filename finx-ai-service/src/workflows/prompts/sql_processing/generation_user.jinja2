@@ -1,0 +1,35 @@
+## User Query
+{{ query }}
+
+## Reasoning
+{{ reasoning }}
+
+## Database Schemas
+{% for schema in db_schemas %}
+{{ schema }}
+
+{% endfor %}
+
+{% if sql_samples %}
+## Example Queries for Reference
+{% for sample in sql_samples %}
+{{ sample.sql }}
+
+{% endfor %}
+{% endif %}
+
+{% if instructions %}
+## Instructions
+{% for instruction in instructions %}
+- {{ instruction }}
+{% endfor %}
+{% endif %}
+
+{% if sql_functions %}
+## Available SQL Functions
+{% for func in sql_functions %}
+- {{ func }}
+{% endfor %}
+{% endif %}
+
+Generate the SQL query based on the reasoning and schema provided. Return only the SQL query without any additional text or formatting.

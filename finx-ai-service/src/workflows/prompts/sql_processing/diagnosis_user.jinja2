@@ -1,0 +1,20 @@
+## Invalid SQL Query
+```sql
+{{ sql }}
+```
+
+## Validation Errors
+{% for error in errors %}
+- {{ error }}
+{% endfor %}
+
+## Original User Query
+{{ query }}
+
+## Database Schemas
+{% for schema in db_schemas %}
+{{ schema }}
+
+{% endfor %}
+
+Analyze the SQL query and validation errors to diagnose the issues. Return a JSON object with "issues" and "suggestions" arrays.

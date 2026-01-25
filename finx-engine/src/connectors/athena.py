@@ -7,23 +7,7 @@ from .base import BaseConnector, ConnectorFactory, DataSourceConfig
 
 
 class AthenaConnector(BaseConnector):
-    """
-    AWS Athena connector for querying S3 data lake.
-    
-    Configuration requirements:
-    - database: Athena database name
-    - extra_params:
-        - aws_region: AWS region (e.g., 'us-east-1')
-        - s3_staging_dir: S3 bucket for query results (e.g., 's3://my-bucket/athena/')
-        - catalog_name: (Optional) AWS Glue Data Catalog name (default: 'AwsDataCatalog')
-        - aws_access_key_id: (Optional) AWS access key
-        - aws_secret_access_key: (Optional) AWS secret key
-        - aws_session_token: (Optional) AWS session token for temporary credentials
-        - work_group: (Optional) Athena workgroup (default: 'primary')
-    
-    Note: If AWS credentials are not provided, will use IAM role or default credentials.
-    """
-    
+
     def __init__(self, config: DataSourceConfig):
         super().__init__(config)
         self.cursor = None

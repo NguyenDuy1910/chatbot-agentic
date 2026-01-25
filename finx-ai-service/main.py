@@ -14,7 +14,13 @@ from src.web.constants.config import (
 )
 # from src.web.internal.db import init_database, init_supabase, create_tables, get_db, get_supabase
 from src.web.internal.database_factory import get_current_provider, test_current_provider
-from src.web.routers import connections, users, chats, messages, knowledge, files, prompts, auth
+from src.web.routers import connections, users, chats, messages, knowledge, files, prompts, auth, ask
+from src.web.services import AskService
+from src.workflows import (
+    create_sql_processing_graph,
+    create_intent_recommendation_graph,
+    create_assistance_visualization_graph,
+)
 
 # Setup logging
 logging.basicConfig(
@@ -49,11 +55,47 @@ async def lifespan(app: FastAPI):
 
     except Exception as e:
         logger.warning(f"Database initialization skipped: {e}")
-    
+
+    # Initialize workflows and ask service
+    try:
+        logger.info("Initializing workflows...")
+
+        # Create workflow graphs
+        sql_processing_graph = create_sql_processing_graph()
+        intent_recommendation_graph = create_intent_recommendation_graph()
+        assistance_visualization_graph = create_assistance_visualization_graph()
+
+        # Create workflow dictionary
+        workflows = {
+            "sql_processing": sql_processing_graph,
+            "intent_recommendation": intent_recommendation_graph,
+            "assistance_visualization": assistance_visualization_graph,
+        }
+
+        # Initialize AskService
+        ask_service = AskService(
+            base_workflow=workflows,
+            allow_intent_classification=True,
+            allow_sql_generation_reasoning=True,
+            allow_sql_functions_retrieval=True,
+            enable_column_pruning=False,
+            max_sql_correction_retries=3,
+            should_execute_by_default=False,
+            execution_timeout_seconds=30,
+        )
+
+        # Set the ask service in the router
+        ask.set_ask_service(ask_service)
+
+        logger.info("Workflows and ask service initialized successfully")
+    except Exception as e:
+        logger.error(f"Failed to initialize workflows: {e}", exc_info=True)
+        logger.warning("Continuing without ask service")
+
     logger.info("Application startup completed")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down FinX Backend Application...")
 
@@ -151,6 +193,12 @@ app.include_router(
     prompts.router,
     prefix=f"{API_CONFIG['API_PREFIX']}/prompts",
     tags=["prompts"]
+)
+
+app.include_router(
+    ask.router,
+    prefix=f"{API_CONFIG['API_PREFIX']}/ask",
+    tags=["ask"]
 )
 
 

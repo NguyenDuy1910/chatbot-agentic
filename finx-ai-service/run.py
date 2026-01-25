@@ -12,11 +12,11 @@ if __name__ == "__main__":
     import uvicorn
     from src.web.constants.config import API_CONFIG
     
-    print("🚀 Starting FinX Backend Server...")
-    print(f"📍 Host: {API_CONFIG['HOST']}")
-    print(f"🔌 Port: {API_CONFIG['PORT']}")
-    print(f"🔧 Debug: {API_CONFIG['DEBUG']}")
-    print(f"🔄 Reload: {API_CONFIG['RELOAD']}")
+    print("Starting FinX Backend Server...")
+    print(f"Host: {API_CONFIG['HOST']}")
+    print(f"Port: {API_CONFIG['PORT']}")
+    print(f"Debug: {API_CONFIG['DEBUG']}")
+    print(f"Reload: {API_CONFIG['RELOAD']}")
     
     uvicorn.run(
         "main:app",

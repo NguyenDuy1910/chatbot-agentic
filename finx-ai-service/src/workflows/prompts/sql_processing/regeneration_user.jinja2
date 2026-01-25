@@ -1,0 +1,33 @@
+## User Query
+{{ query }}
+
+## Database Schemas
+{% for schema in db_schemas %}
+{{ schema }}
+
+{% endfor %}
+
+## Previous Errors to Avoid
+{% for error in previous_errors %}
+- {{ error }}
+{% endfor %}
+
+## Diagnosed Issues from Previous Attempts
+{% for issue in diagnosed_issues %}
+- {{ issue }}
+{% endfor %}
+
+{% if sql_samples %}
+## Sample SQL Queries (for reference)
+{% for sample in sql_samples %}
+{{ sample }}
+
+{% endfor %}
+{% endif %}
+
+{% if instructions %}
+## Additional Instructions
+{{ instructions }}
+{% endif %}
+
+Generate a completely new SQL query that avoids the previous errors and correctly answers the user's question. Return only the SQL query as plain text.

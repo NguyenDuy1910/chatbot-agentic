@@ -1,0 +1,26 @@
+## User Query
+{{ query }}
+
+## Available Database Schemas
+{% for schema in db_schemas %}
+{{ schema }}
+
+{% endfor %}
+
+{% if sql_samples %}
+## Example SQL Queries
+{% for sample in sql_samples %}
+Question: {{ sample.question }}
+SQL: {{ sample.sql }}
+
+{% endfor %}
+{% endif %}
+
+{% if instructions %}
+## Special Instructions
+{% for instruction in instructions %}
+- {{ instruction }}
+{% endfor %}
+{% endif %}
+
+Please analyze this query and provide step-by-step reasoning for how to construct the SQL query. Explain your thought process clearly.

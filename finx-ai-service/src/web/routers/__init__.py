@@ -2,6 +2,6 @@
 API Routers for FinX Backend
 """
 
-from . import connections
+from . import connections, ask
 
-__all__ = ["connections"]
+__all__ = ["connections", "ask"]

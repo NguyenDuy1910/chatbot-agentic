@@ -1,0 +1,43 @@
+### DATABASE SCHEMA ###
+{% for db_schema in db_schemas %}
+    {{ db_schema }}
+{% endfor %}
+
+{% if sql_samples %}
+### SQL SAMPLES ###
+{% for sql_sample in sql_samples %}
+Question:
+{{ sql_sample.question }}
+SQL:
+{{ sql_sample.sql }}
+{% endfor %}
+{% endif %}
+
+{% if instructions %}
+### USER INSTRUCTIONS ###
+{% for instruction in instructions %}
+{{ loop.index }}. {{ instruction }}
+{% endfor %}
+{% endif %}
+
+### USER GUIDE ###
+{% for doc in docs %}
+- {{ doc.path }}: {{ doc.content }}
+{% endfor %}
+
+### INPUT ###
+{% if histories %}
+User's previous questions:
+{% for history in histories %}
+Question:
+{{ history.question }}
+SQL:
+{{ history.sql }}
+{% endfor %}
+{% endif %}
+
+User's current question: {{ query }}
+Output Language: {{ language }}
+
+Let's think step by step
+

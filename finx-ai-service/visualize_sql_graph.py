@@ -1,6 +1,6 @@
-from src.workflows.sql_processing.graph import create_sql_processing_graph
-from src.workflows.intent_recommendation.graph import create_intent_recommendation_graph
-from src.workflows.orchestrator.graph import create_orchestrator_graph
+from src.workflows.generation.sql_processing import create_graph as create_sql_processing_graph
+from src.workflows.generation.intent_recommendation import create_graph as create_intent_recommendation_graph
+from src.workflows.generation.assistance_visualization import create_graph as create_assistance_visualization_graph
 
 def visualize_graph(graph_name, create_graph_func, output_filename):
     """Visualize a single graph and save outputs"""
@@ -72,7 +72,7 @@ print("=" * 80)
 
 visualize_graph("SQL Processing Graph", create_sql_processing_graph, "sql_processing_graph")
 visualize_graph("Intent Recommendation Graph", create_intent_recommendation_graph, "intent_recommendation_graph")
-visualize_graph("Orchestrator Graph", create_orchestrator_graph, "orchestrator_graph")
+visualize_graph("Assistance & Visualization Graph", create_assistance_visualization_graph, "assistance_visualization_graph")
 
 print("\n" + "=" * 80)
 print("GENERATION COMPLETE")
@@ -80,4 +80,4 @@ print("=" * 80)
 print("\nAll graphs have been generated and saved:")
 print("  - sql_processing_graph.png / .mmd")
 print("  - intent_recommendation_graph.png / .mmd")
-print("  - orchestrator_graph.png / .mmd")
+print("  - assistance_visualization_graph.png / .mmd")

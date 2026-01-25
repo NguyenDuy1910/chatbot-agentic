@@ -1,0 +1,25 @@
+## New User Request
+{{ query }}
+
+## Previous SQL Query
+```sql
+{{ previous_sql }}
+```
+
+## Modification Reasoning
+{{ reasoning }}
+
+{% if histories %}
+## Context
+{% for history in histories %}
+{{ history.role }}: {{ history.content }}
+{% endfor %}
+{% endif %}
+
+## Database Schemas
+{% for schema in db_schemas %}
+{{ schema }}
+
+{% endfor %}
+
+Generate the modified SQL query based on the previous query and the new request. Return only the SQL query without any additional text.

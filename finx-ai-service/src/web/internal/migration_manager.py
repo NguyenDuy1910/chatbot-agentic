@@ -1,7 +1,3 @@
-"""
-Migration management utilities for FinX application
-"""
-
 import logging
 import os
 import sys
@@ -26,8 +22,8 @@ class MigrationManager:
     
     def __init__(self):
         self.project_root = Path(__file__).parent.parent.parent
-        self.alembic_cfg_path = self.project_root / "finx" / "internal" / "alembic.ini"
-        self.alembic_dir = self.project_root / "finx" / "internal" / "alembic"
+        self.alembic_cfg_path = self.project_root / "web" / "internal" / "alembic.ini"
+        self.alembic_dir = self.project_root / "web" / "internal" / "alembic"
         
     def get_alembic_config(self) -> Config:
         """Get Alembic configuration"""

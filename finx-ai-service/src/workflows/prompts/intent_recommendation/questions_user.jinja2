@@ -1,0 +1,15 @@
+{% if previous_question %}
+Previous Questions: {{ previous_question }}
+{% endif %}
+
+{% if categories %}
+Categories: {{ categories | join(', ') }}
+{% endif %}
+
+Data Model:
+{% for db_schema in db_schemas %}
+{{ db_schema }}
+{% endfor %}
+
+Please generate {{ max_questions }} insightful questions.
+
